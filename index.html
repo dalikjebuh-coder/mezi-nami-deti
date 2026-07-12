@@ -262,6 +262,11 @@
   }
   .demo-card h2 { font-size: 20px; }
   .question-card.demo-card.back-side { padding-top: 40px; }
+  .demo-hint {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--rose);
+  }
 
   .onboard-dots { display: flex; justify-content: center; gap: 7px; margin-top: 28px; }
   .onboard-dots span {
@@ -662,7 +667,7 @@
             </ol>
           </div>
         </div>
-        <p class="muted" id="demoHint">Klepni na kartu a otoč si ji</p>
+        <p class="demo-hint" id="demoHint">Klepněte na kartu a získejte tipy, jak rozhovor rozvinout</p>
       </div>
       <div class="onboard-dots" id="onboardDots"></div>
     </div>
@@ -694,9 +699,10 @@
   <!-- ===== 3. Zásady ===== -->
   <section class="screen" id="s-principles">
     <div class="topbar">
-      <button class="back-btn" onclick="goOnboardHowEnd()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <button class="back-btn" onclick="go('s-names')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
     </div>
-    <h2 style="margin-bottom:24px;">Domluvme se<br>na třech věcech</h2>
+    <h2>Domluvme se<br>na třech věcech</h2>
+    <p style="margin:10px 0 24px;">💬 Přečtěte si je společně nahlas a plácněte si.</p>
 
     <div class="principle">
       <div class="p-icon" style="background:var(--honey-soft);">🤝</div>
@@ -719,8 +725,6 @@
         <p>Když bude téma nepříjemné, můžeme kdykoliv přestat.</p>
       </div>
     </div>
-
-    <p style="margin-top:6px;">Přečtěte si je společně nahlas a plácněte si.</p>
 
     <div class="btn-row">
       <button class="btn btn-primary" onclick="goHome()">Slibujeme oba</button>
@@ -1834,8 +1838,8 @@ function saveStore() {
 }
 
 /* ================= Průvodce při prvním spuštění =================
-   Dvě části: PROČ (motivace, před jmény) a JAK (mechanika hry, těsně
-   před hraním — ať to mají čerstvé v paměti). Mezi nimi jména. */
+   Tři slidy PROČ (motivace + ukázková karta) → jména → sliby.
+   Mechaniku hry ukáže sama ukázková karta, zvláštní krok nemá. */
 const ONBOARD_WHY = [
   { emoji: "🫶", bg: "var(--sage-soft)", title: "Rozhovory, které sbližují rodiče a děti",
     text: "Někdy není těžké odpovědět. Nejtěžší je položit první otázku. Jedna otázka často stačí, aby vznikl upřímný rozhovor." },
@@ -1843,24 +1847,16 @@ const ONBOARD_WHY = [
   { emoji: "📚", bg: "var(--sky-soft)", title: "Každý balíček otevírá jiné téma",
     text: "Škola. Kamarádi. Rodina. Strachy. Pocity… Vyberete si to, o čem chcete mluvit právě dnes." }
 ];
-const ONBOARD_HOW = [
-  { emoji: "🎴", bg: "var(--plum-soft)", title: "Telefon položí první otázku",
-    text: "Dítě vytáhne kartu. Oba odpovíte. Na druhé straně karty najdete tipy, jak rozhovor přirozeně rozvinout." }
-];
-let onboardStage = "why"; // "why" | "how"
 let onboardIdx = 0;
 
-function currentOnboard() { return onboardStage === "why" ? ONBOARD_WHY : ONBOARD_HOW; }
-
 function startOnboard() {
-  onboardStage = "why";
   showOnboard(0);
   go("s-onboard");
 }
 
 function showOnboard(i) {
   onboardIdx = i;
-  const list = currentOnboard();
+  const list = ONBOARD_WHY;
   const s = list[i];
   const isDemo = !!s.demo; // slide s ukázkovou kartou místo emoji a textu
   const visual = document.getElementById("onboardEmoji");
@@ -1897,7 +1893,7 @@ function resetDemoCard() {
   c.classList.remove("back-side", "flip-out", "flip-in");
   document.getElementById("demoFront").hidden = false;
   document.getElementById("demoBack").hidden = true;
-  document.getElementById("demoHint").textContent = "Klepni na kartu a otoč si ji";
+  document.getElementById("demoHint").textContent = "Klepněte na kartu a získejte tipy, jak rozhovor rozvinout";
 }
 
 function flipDemoCard() {
@@ -1913,8 +1909,8 @@ function flipDemoCard() {
     document.getElementById("demoFront").hidden = demoFlipped;
     document.getElementById("demoBack").hidden = !demoFlipped;
     document.getElementById("demoHint").textContent = demoFlipped
-      ? "A klepnutím zpátky na otázku"
-      : "Klepni na kartu a otoč si ji";
+      ? "A klepnutím se vrátíte na otázku"
+      : "Klepněte na kartu a získejte tipy, jak rozhovor rozvinout";
     void c.offsetWidth;
     c.classList.add("flip-in");
     demoFlipping = false;
@@ -1922,33 +1918,22 @@ function flipDemoCard() {
 }
 
 function onboardNext() {
-  const list = currentOnboard();
-  if (onboardIdx < list.length - 1) { showOnboard(onboardIdx + 1); return; }
-  if (onboardStage === "why") go("s-names");
-  else go("s-principles");
+  if (onboardIdx < ONBOARD_WHY.length - 1) { showOnboard(onboardIdx + 1); return; }
+  go("s-names");
 }
 
 function onboardBack() {
   if (onboardIdx > 0) { showOnboard(onboardIdx - 1); return; }
-  if (onboardStage === "why") go("s-welcome");
-  else go("s-names");
+  go("s-welcome");
 }
 
 function onboardSkip() {
-  if (onboardStage === "why") go("s-names");
-  else go("s-principles");
+  go("s-names");
 }
 
-/* Návraty zpět z jmen / slibů — vždy na poslední slide dané fáze */
+/* Návrat zpět ze jmen — na poslední slide průvodce */
 function goOnboardWhyEnd() {
-  onboardStage = "why";
   showOnboard(ONBOARD_WHY.length - 1);
-  go("s-onboard");
-}
-
-function goOnboardHowEnd() {
-  onboardStage = "how";
-  showOnboard(ONBOARD_HOW.length - 1);
   go("s-onboard");
 }
 
@@ -1957,9 +1942,7 @@ function saveNames() {
   state.nameParent = document.getElementById("nameParent").value.trim() || "Rodič";
   state.nameKid = document.getElementById("nameKid").value.trim() || "Dítě";
   saveStore();
-  onboardStage = "how";
-  showOnboard(0);
-  go("s-onboard");
+  go("s-principles");
 }
 
 /* ================= Domů ================= */
