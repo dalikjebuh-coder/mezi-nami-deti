@@ -89,6 +89,9 @@
     flex-direction: column;
   }
   @media (max-width: 480px) {
+    /* na telefonu žádný dekorativní gradient — jinak prosvítá jako tmavé
+       pruhy v safe-area a při schovávání lišty prohlížeče */
+    html, body { background: var(--paper); }
     body { padding: 0; }
     .phone { max-width: none; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
     /* v PWA na celou obrazovku nezalézat pod výřez/status bar */
@@ -366,6 +369,7 @@
     box-shadow: var(--shadow-card);
     margin-bottom: 12px;
     font-family: var(--font-body);
+    color: var(--ink); /* iOS jinak dává textu v buttonu systémovou modrou */
     transition: transform .12s ease, border-color .15s ease;
   }
   .depth-option:active { transform: scale(.97); }
@@ -1591,12 +1595,12 @@ const DECKS = [
             "Kdo u toho byl? Smáli jste se spolu?",
             "Co rozesměje spolehlivě nás oba? Vymyslíme to."
           ] },
-        { q: "Jak poznáš, že máš radost? Co dělá tvoje tělo?",
-          soft: "Kde v těle cítíš radost — v břiše, v nohách, všude?",
+        { q: "Jak vypadáš, když máš velkou radost? Předveď to!",
+          soft: "Skáčeš, výskáš, nebo se jen usmíváš, když máš radost?",
           fu: [
-            "Ukaž mi to — jak vypadáš, když máš radost?",
-            "Kdy naposledy to tělo takhle dělalo?",
-            "A jak poznáš radost na mně? Co dělám já?"
+            "Kdy naposledy jsi měl/a takhle velkou radost? Co se stalo?",
+            "Kde v těle radost cítíš — v břiše, v nohách, všude?",
+            "A teď předveď mě, když mám radost já. Jak vypadám?"
           ] },
         { q: "Co tě vždycky spolehlivě potěší?",
           soft: "Kdyby existoval lék na špatnou náladu, co by v něm bylo?",
@@ -2344,6 +2348,22 @@ function resetAll() {
 /* ================= Interakce ================= */
 document.getElementById("setNameParent").addEventListener("input", settingsNamesChanged);
 document.getElementById("setNameKid").addEventListener("input", settingsNamesChanged);
+
+/* přejetí prstem přes kartu ji otočí stejně jako klepnutí */
+function addFlipSwipe(el, flip) {
+  let sx = 0, sy = 0;
+  el.addEventListener("touchstart", (e) => {
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) flip();
+  }, { passive: true });
+}
+addFlipSwipe(document.getElementById("bigCard"), flipCard);
+addFlipSwipe(document.getElementById("demoCard"), flipDemoCard);
 
 /* ================= PWA =================
    Service worker jen na http(s) — při otevření souboru napřímo se přeskočí. */
