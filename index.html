@@ -102,12 +102,34 @@
     overflow-y: auto;
     overscroll-behavior-y: contain; /* žádné gumování celé stránky na iOS */
     padding: 28px 26px 32px;
-    animation: screenIn .35s ease both;
+    animation: fadeIn .25s ease both;
   }
   .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } }
   @keyframes screenIn {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: none; }
+  }
+
+  /* ===== Postupné najíždění obsahu =====
+     Sekce obrazovky nastupují odshora dolů s malým rozestupem. */
+  .screen.active > * { animation: rise .38s ease both; }
+  .screen.active > *:nth-child(2) { animation-delay: .06s; }
+  .screen.active > *:nth-child(3) { animation-delay: .12s; }
+  .screen.active > *:nth-child(4) { animation-delay: .18s; }
+  .screen.active > *:nth-child(5) { animation-delay: .24s; }
+  .screen.active > *:nth-child(6) { animation-delay: .3s; }
+  .screen.active > *:nth-child(7) { animation-delay: .36s; }
+  .screen.active > *:nth-child(n+8) { animation-delay: .42s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+  /* šetrný režim — kdo má animace vypnuté, dostane vše hned */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: .01ms !important;
+    }
   }
 
   /* ===== Typografie ===== */
@@ -286,6 +308,14 @@
   }
   .deck-card:hover { box-shadow: var(--shadow-float); }
   .deck-card:active { transform: scale(.97); }
+
+  /* témata nastupují jedno po druhém */
+  .deck-grid .deck-card { animation: rise .32s ease backwards; }
+  .deck-grid .deck-card:nth-child(2) { animation-delay: .06s; }
+  .deck-grid .deck-card:nth-child(3) { animation-delay: .12s; }
+  .deck-grid .deck-card:nth-child(4) { animation-delay: .18s; }
+  .deck-grid .deck-card:nth-child(5) { animation-delay: .24s; }
+  .deck-grid .deck-card:nth-child(6) { animation-delay: .3s; }
   .deck-emoji {
     width: 48px; height: 48px; border-radius: 14px; flex: none;
     display: flex; align-items: center; justify-content: center;
@@ -358,12 +388,29 @@
   }
   .draw-card:hover { --lift: -10px; }
   .draw-card:active { --scale: .97; }
+
+  /* rozdání karet — přilétají zespodu jedna po druhé */
+  .card-fan .draw-card { animation: dealIn .38s cubic-bezier(.34, 1.3, .64, 1) backwards; }
+  .card-fan .draw-card:nth-child(2) { animation-delay: .08s; }
+  .card-fan .draw-card:nth-child(3) { animation-delay: .16s; }
+  .card-fan .draw-card:nth-child(4) { animation-delay: .24s; }
+  @keyframes dealIn {
+    from { opacity: 0; transform: rotate(var(--rot, 0deg)) translateY(46px) scale(.82); }
+  }
   .draw-card.picked { --lift: -16px; --scale: 1.06; z-index: 2; }
   .draw-card.away { opacity: 0; --lift: 46px; pointer-events: none; }
 
-  .flip-in { animation: flipIn .55s ease both; }
+  /* Otočení karty ve dvou fázích: flip-out dotočí kartu na hranu,
+     v tu chvíli se vymění obsah a flip-in ji dotočí z druhé strany —
+     rotace pokračuje stejným směrem, takže působí jako skutečná karta. */
+  .flip-out { animation: flipOut .17s ease-in both; }
+  @keyframes flipOut {
+    from { transform: none; }
+    to   { transform: perspective(900px) rotateY(90deg); }
+  }
+  .flip-in { animation: flipIn .28s ease-out both; }
   @keyframes flipIn {
-    from { transform: perspective(900px) rotateY(88deg); opacity: 0; }
+    from { transform: perspective(900px) rotateY(-90deg); opacity: 0; }
     to   { transform: none; opacity: 1; }
   }
 
@@ -374,7 +421,7 @@
   /* odhalení bonusovky: otočení s odskočením a zavrtěním */
   .joker-in { animation: jokerIn .85s cubic-bezier(.34, 1.56, .64, 1) both; }
   @keyframes jokerIn {
-    0%   { transform: perspective(900px) rotateY(88deg) scale(.7); opacity: 0; }
+    0%   { transform: perspective(900px) rotateY(-88deg) scale(.7); opacity: 0; }
     55%  { transform: rotate(-3deg) scale(1.07); opacity: 1; }
     75%  { transform: rotate(2.5deg) scale(.97); }
     100% { transform: none; }
@@ -539,6 +586,14 @@
     flex: 1; background: var(--paper-soft); border-radius: var(--radius-md);
     padding: 14px 10px; text-align: center;
     display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  }
+  /* statistiky naskočí s pružným odskokem, jedna po druhé */
+  .finish-stats .stat { animation: statPop .45s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+  .finish-stats .stat:nth-child(1) { animation-delay: .25s; }
+  .finish-stats .stat:nth-child(2) { animation-delay: .4s; }
+  .finish-stats .stat:nth-child(3) { animation-delay: .55s; }
+  @keyframes statPop {
+    from { opacity: 0; transform: scale(.6); }
   }
   .stat .num { font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--plum); }
   .stat .num.words { font-size: 15px; line-height: 1.25; }
@@ -1984,9 +2039,10 @@ let flipped = false;
 
 function resetBigCard() {
   flipped = false;
+  flipping = false;
   jokerCovered = false;
   const big = document.getElementById("bigCard");
-  big.classList.remove("joker", "back-side", "face-down");
+  big.classList.remove("joker", "back-side", "face-down", "flip-out");
   document.getElementById("jokerCover").hidden = true;
   document.getElementById("cardFront").hidden = false;
   document.getElementById("cardBack").hidden = true;
@@ -1996,36 +2052,50 @@ function resetBigCard() {
 }
 
 let jokerCovered = false; // bonusovka čeká lícem dolů na otočení
+let flipping = false;     // probíhá otočení — další klepnutí počká
 
+/* Otočení ve dvou fázích: dotočit na hranu (flip-out), na hraně vyměnit
+   obsah a dotočit z druhé strany (flip-in / joker-in) — jako opravdová karta. */
 function flipCard() {
+  if (flipping) return;
+  const big = document.getElementById("bigCard");
   if (lastPickJoker) {
     if (!jokerCovered) return; // otočená bonusovka už rub nemá
+    flipping = true;
     jokerCovered = false;
-    const big = document.getElementById("bigCard");
-    big.classList.remove("face-down");
-    big.classList.add("joker");
-    document.getElementById("jokerCover").hidden = true;
-    document.getElementById("cardFront").hidden = false;
-    document.getElementById("jokerTag").hidden = false;
-    document.getElementById("flipHint").hidden = true;
     big.classList.remove("flip-in");
-    void big.offsetWidth; // restart animace otočení
-    big.classList.add("joker-in");
-    emojiBurst();
-    document.getElementById("drawBtnRow").hidden = false;
+    big.classList.add("flip-out");
+    setTimeout(() => {
+      big.classList.remove("flip-out", "face-down");
+      big.classList.add("joker");
+      document.getElementById("jokerCover").hidden = true;
+      document.getElementById("cardFront").hidden = false;
+      document.getElementById("jokerTag").hidden = false;
+      document.getElementById("flipHint").hidden = true;
+      void big.offsetWidth; // restart animace otočení
+      big.classList.add("joker-in");
+      emojiBurst();
+      document.getElementById("drawBtnRow").hidden = false;
+      flipping = false;
+    }, 170);
     return;
   }
-  flipped = !flipped;
-  const big = document.getElementById("bigCard");
-  big.classList.toggle("back-side", flipped);
-  document.getElementById("cardFront").hidden = flipped;
-  document.getElementById("cardBack").hidden = !flipped;
-  document.getElementById("flipHint").textContent = flipped
-    ? "Klepni zpátky na otázku"
-    : "Klepni na kartu — poradíme, jak si o tom povídat";
-  big.classList.remove("flip-in");
-  void big.offsetWidth; // restart animace otočení
-  big.classList.add("flip-in");
+  flipping = true;
+  big.classList.remove("flip-in", "joker-in");
+  big.classList.add("flip-out");
+  setTimeout(() => {
+    flipped = !flipped;
+    big.classList.remove("flip-out");
+    big.classList.toggle("back-side", flipped);
+    document.getElementById("cardFront").hidden = flipped;
+    document.getElementById("cardBack").hidden = !flipped;
+    document.getElementById("flipHint").textContent = flipped
+      ? "Klepni zpátky na otázku"
+      : "Klepni na kartu — poradíme, jak si o tom povídat";
+    void big.offsetWidth; // restart animace otočení
+    big.classList.add("flip-in");
+    flipping = false;
+  }, 170);
 }
 
 let bonusBag = []; // osudí — losuje se bez opakování, po vyčerpání se znovu naplní
