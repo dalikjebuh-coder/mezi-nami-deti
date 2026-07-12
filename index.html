@@ -1843,7 +1843,8 @@ function saveStore() {
 const ONBOARD_WHY = [
   { emoji: "🫶", bg: "var(--sage-soft)", title: "Rozhovory, které sbližují rodiče a děti",
     text: "Někdy není těžké odpovědět. Nejtěžší je položit první otázku. Jedna otázka často stačí, aby vznikl upřímný rozhovor." },
-  { demo: true, title: "Třeba taková otázka…" },
+  { emoji: "💭", bg: "var(--plum-soft)", title: "Třeba taková otázka…" },
+  { demo: true, title: "" },
   { emoji: "💬", bg: "var(--sky-soft)", title: "Každý balíček otevírá jiné téma",
     text: "Škola. Kamarádi. Rodina. Strachy. Pocity… Vyberete si to, o čem chcete mluvit právě dnes." }
 ];
@@ -1865,9 +1866,11 @@ function showOnboard(i) {
     visual.textContent = s.emoji;
     visual.style.background = s.bg;
   }
-  document.getElementById("onboardTitle").textContent = s.title;
+  const title = document.getElementById("onboardTitle");
+  title.hidden = !s.title;
+  title.textContent = s.title || "";
   const text = document.getElementById("onboardText");
-  text.hidden = isDemo;
+  text.hidden = isDemo || !s.text;
   text.textContent = s.text || "";
   document.getElementById("onboardDemo").hidden = !isDemo;
   if (isDemo) resetDemoCard();
