@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mezi námi — rodiče a děti</title>
+<meta name="theme-color" content="#FAF4EC">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mezi námi">
+<style>
+  :root {
+    --paper: #FAF4EC;
+    --paper-soft: #F3EAE0;
+    --card: #FFFFFF;
+    --ink: #33261F;
+    --ink-soft: #7A6A5F;
+    --ink-faint: #A99A8E;
+    --plum: #6E3B52;
+    --plum-deep: #572E41;
+    --plum-soft: #F0E2E9;
+    --rose: #C96F5B;
+    --rose-soft: #F7E5DF;
+    --sage: #7C8A6E;
+    --sage-soft: #E9EDE2;
+    --honey: #C08A2D;
+    --honey-soft: #F6EBD3;
+    --sky-soft: #E2EBF0;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --shadow-card: 0 2px 6px rgba(51,38,31,.06), 0 12px 32px rgba(51,38,31,.08);
+    --shadow-float: 0 4px 12px rgba(51,38,31,.10), 0 24px 56px rgba(51,38,31,.14);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(160deg, #E8D9CB 0%, #E3CDBB 50%, #D6BBAC 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: var(--ink);
+  }
+
+  /* ===== Telefonní rámeček ===== */
+  .phone {
+    width: 100%;
+    max-width: 400px;
+    height: min(820px, calc(100vh - 48px));
+    background: var(--paper);
+    border-radius: 40px;
+    box-shadow: var(--shadow-float), 0 0 0 10px #3A2E28;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 480px) {
+    body { padding: 0; }
+    .phone { max-width: none; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+    /* v PWA na celou obrazovku nezalézat pod výřez/status bar */
+    .phone { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  }
+
+  .screen {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 26px 32px;
+    animation: screenIn .35s ease both;
+  }
+  .screen.active { display: flex; }
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ===== Typografie ===== */
+  h1, h2, h3, .display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
+  h1 { font-size: 34px; line-height: 1.15; }
+  h2 { font-size: 26px; line-height: 1.2; }
+  h3 { font-size: 19px; line-height: 1.3; }
+  p  { font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); }
+  .muted { color: var(--ink-faint); font-size: 13.5px; }
+
+  /* ===== Tlačítka ===== */
+  .btn {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 28px;
+    cursor: pointer;
+    transition: transform .12s ease, background .15s ease, box-shadow .15s ease;
+    width: 100%;
+    text-align: center;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--plum); color: #fff; box-shadow: 0 6px 18px rgba(110,59,82,.30); }
+  .btn-primary:hover { background: var(--plum-deep); }
+  .btn-secondary { background: transparent; color: var(--plum); border: 1.5px solid rgba(110,59,82,.35); }
+  .btn-secondary:hover { background: var(--plum-soft); }
+  .btn-ghost { background: transparent; color: var(--ink-soft); font-weight: 500; padding: 12px; }
+  .btn-ghost:hover { color: var(--ink); }
+  .btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+  .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 24px; }
+
+  /* ===== Horní lišta ===== */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    min-height: 36px;
+  }
+  .back-btn {
+    background: none; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--ink-soft); font-size: 14.5px; font-weight: 500;
+    padding: 8px 10px 8px 0; border-radius: var(--radius-sm);
+    transition: color .15s ease, transform .12s ease;
+  }
+  .back-btn:active { transform: scale(.97); }
+  .back-btn:hover { color: var(--ink); }
+
+  .gear-btn {
+    background: none; border: none; cursor: pointer;
+    display: flex; align-items: center;
+    color: var(--ink-soft);
+    padding: 6px 0 6px 10px; border-radius: var(--radius-sm);
+    opacity: .55;
+    transition: opacity .15s ease, transform .12s ease;
+  }
+  .gear-btn:hover { opacity: 1; }
+  .gear-btn:active { transform: scale(.97); }
+
+  /* Lucide ikony — inline SVG (bez externí knihovny, soubor zůstává offline) */
+  .ic { width: 18px; height: 18px; flex: none; display: block; }
+  .gear-btn .ic { width: 21px; height: 21px; }
+  .deck-arrow .ic { width: 19px; height: 19px; }
+
+  /* ===== Logo ===== */
+  .brand {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--plum);
+    display: flex; align-items: center; gap: 8px;
+  }
+  /* zmenšená verze hero loga: velký kruh = rodič, malý = dítě */
+  .brand-mark {
+    width: 33px; height: 28px;
+    position: relative; flex: none;
+  }
+  .brand-mark .b1, .brand-mark .b2 {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: multiply;
+  }
+  .brand-mark .b1 { width: 21px; height: 21px; background: var(--plum); opacity: .85; left: 1px; top: 3px; }
+  .brand-mark .b2 { width: 14px; height: 14px; background: var(--honey); opacity: .9; right: 2px; top: 10px; }
+
+  /* ===== Úvodní obrazovka =====
+     Velký + malý kruh = rodič a dítě */
+  .hero-mark {
+    width: 130px; height: 110px; margin: 0 auto 28px;
+    position: relative;
+  }
+  .hero-mark .c1, .hero-mark .c2 {
+    position: absolute; border-radius: 50%;
+    mix-blend-mode: multiply;
+  }
+  .hero-mark .c1 { width: 82px; height: 82px; background: var(--plum); opacity: .85; left: 4px; top: 14px; animation: drift1 5s ease-in-out infinite; }
+  .hero-mark .c2 { width: 54px; height: 54px; background: var(--honey); opacity: .9; right: 8px; top: 42px; animation: drift2 5s ease-in-out infinite; }
+  @keyframes drift1 { 50% { transform: translateX(7px); } }
+  @keyframes drift2 { 50% { transform: translate(-7px, -5px); } }
+
+  .center-col { display: flex; flex-direction: column; justify-content: center; text-align: center; flex: 1; }
+
+  .audience-chip {
+    display: inline-block;
+    margin: 0 auto 14px;
+    background: var(--honey-soft); color: var(--honey);
+    font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 6px 14px; border-radius: 999px;
+  }
+
+  /* ===== Průvodce při prvním spuštění ===== */
+  .onboard-visual {
+    width: 110px; height: 110px; margin: 0 auto 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .onboard-dots { display: flex; justify-content: center; gap: 7px; margin-top: 28px; }
+  .onboard-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(51,38,31,.14);
+    transition: background .25s ease;
+  }
+  .onboard-dots span.on { background: var(--plum); }
+  .slide-in { animation: screenIn .3s ease both; }
+
+  /* ===== Vstupy ===== */
+  .field { margin-bottom: 16px; text-align: left; }
+  .field label { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 7px; }
+  .field input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--card);
+    border: 1.5px solid rgba(51,38,31,.14);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: border-color .15s ease;
+  }
+  .field input:focus {
+    outline: 2px solid var(--plum);
+    outline-offset: 2px;
+    border-color: transparent;
+  }
+
+  /* ===== Zásady =====
+     Naplocho, bez karty — bílá karta se stínem znamená „klikací“ */
+  .principle {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 4px 2px; margin-bottom: 20px;
+  }
+  .principle .p-icon {
+    width: 40px; height: 40px; border-radius: 12px; flex: none;
+    display: flex; align-items: center; justify-content: center; font-size: 19px;
+  }
+  .principle h3 { font-size: 16px; margin-bottom: 3px; }
+  .principle p { font-size: 13.5px; }
+
+  /* ===== Domů: balíčky ===== */
+  .deck-grid { display: flex; flex-direction: column; gap: 12px; }
+  .deck-card {
+    background: var(--card);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; text-align: left;
+    box-shadow: var(--shadow-card);
+    transition: transform .12s ease, box-shadow .15s ease;
+    font-family: var(--font-body);
+  }
+  .deck-card:hover { box-shadow: var(--shadow-float); }
+  .deck-card:active { transform: scale(.97); }
+  .deck-emoji {
+    width: 48px; height: 48px; border-radius: 14px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .deck-card h3 { font-size: 16.5px; color: var(--ink); }
+  .deck-card p { font-size: 13px; margin-top: 2px; }
+  /* postup tématem = proužky (ne tečky) — tečky v appce znamenají intenzitu otázek */
+  .deck-progress { display: flex; gap: 3px; margin-left: auto; flex: none; }
+  .deck-progress span { width: 14px; height: 5px; border-radius: 3px; background: rgba(51,38,31,.12); }
+  .deck-progress span.on { background: var(--honey); }
+  /* rozehraná hloubka — proužek vyplněný zleva */
+  .deck-progress span.half { background: linear-gradient(to right, var(--honey) 50%, rgba(51,38,31,.12) 50%); }
+  .deck-arrow { color: var(--ink-faint); flex: none; }
+
+  .section-label {
+    font-size: 12px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint);
+    margin: 26px 0 12px;
+  }
+  .section-label:first-of-type { margin-top: 4px; }
+
+  /* ===== Detail balíčku / hloubka ===== */
+  .depth-option {
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; text-align: left; width: 100%;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 12px;
+    font-family: var(--font-body);
+    transition: transform .12s ease, border-color .15s ease;
+  }
+  .depth-option:active { transform: scale(.97); }
+  .depth-option.selected { border-color: var(--plum); }
+  .depth-dots { display: flex; gap: 4px; flex: none; }
+  .depth-dots span { width: 9px; height: 9px; border-radius: 50%; background: rgba(51,38,31,.14); }
+  .depth-dots span.on { background: var(--honey); }
+  .depth-option h3 { font-size: 15.5px; }
+  .depth-option p { font-size: 13px; margin-top: 2px; }
+  .depth-option .done-badge {
+    margin-left: auto; flex: none;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+    color: var(--sage); background: var(--sage-soft);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .depth-option.done h3 { color: var(--ink-soft); }
+
+  /* ===== Losování karet ===== */
+  .card-fan {
+    display: flex; justify-content: center; align-items: flex-start;
+    margin-top: 30px; min-height: 185px;
+  }
+  .draw-card {
+    width: 112px; height: 168px; flex: none;
+    margin: 0 -12px;
+    border: none; cursor: pointer;
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
+      linear-gradient(150deg, var(--plum) 0%, var(--plum-deep) 100%);
+    box-shadow: var(--shadow-card), inset 0 0 0 5px rgba(250,244,236,.22);
+    color: var(--honey-soft);
+    font-family: var(--font-display); font-size: 44px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px)) scale(var(--scale, 1));
+    transition: transform .3s ease, opacity .35s ease;
+  }
+  .draw-card:hover { --lift: -10px; }
+  .draw-card:active { --scale: .97; }
+  .draw-card.picked { --lift: -16px; --scale: 1.06; z-index: 2; }
+  .draw-card.away { opacity: 0; --lift: 46px; pointer-events: none; }
+
+  .flip-in { animation: flipIn .55s ease both; }
+  @keyframes flipIn {
+    from { transform: perspective(900px) rotateY(88deg); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  /* ===== Bonusová otázka (žolík) ===== */
+  .question-card.joker { background: var(--honey-soft); }
+  .question-card.joker::before { content: "🎉"; font-size: 40px; opacity: 1; margin: -16px 0 8px; }
+
+  /* odhalení bonusovky: otočení s odskočením a zavrtěním */
+  .joker-in { animation: jokerIn .85s cubic-bezier(.34, 1.56, .64, 1) both; }
+  @keyframes jokerIn {
+    0%   { transform: perspective(900px) rotateY(88deg) scale(.7); opacity: 0; }
+    55%  { transform: rotate(-3deg) scale(1.07); opacity: 1; }
+    75%  { transform: rotate(2.5deg) scale(.97); }
+    100% { transform: none; }
+  }
+
+  /* gejzír emoji kolem karty */
+  .burst-emoji {
+    position: absolute; left: 50%; top: 45%;
+    font-size: 26px; pointer-events: none;
+    animation: burstFly .95s ease-out forwards;
+  }
+  @keyframes burstFly {
+    from { transform: translate(-50%, -50%) scale(.4); opacity: 1; }
+    to   { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.25) rotate(var(--rr)); opacity: 0; }
+  }
+  .joker-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--honey);
+    background: rgba(255,255,255,.65);
+    padding: 4px 12px; border-radius: 999px;
+    margin-bottom: 10px;
+  }
+
+  /* bonusovka lícem dolů — stejný rub jako karty ve vějíři, otočí se až klepnutím */
+  .question-card.face-down {
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
+      linear-gradient(150deg, var(--plum) 0%, var(--plum-deep) 100%);
+    box-shadow: var(--shadow-float), inset 0 0 0 6px rgba(250,244,236,.22);
+    align-items: center; justify-content: center;
+  }
+  .question-card.face-down::before { display: none; }
+  #jokerCover {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--honey-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  }
+  #jokerCover .cover-mark {
+    font-family: var(--font-display); font-size: 54px; font-weight: 600; line-height: 1;
+  }
+
+  /* ===== Konfety ===== */
+  #confettiLayer {
+    position: absolute; inset: 0;
+    pointer-events: none; overflow: hidden; z-index: 50;
+  }
+  .confetti-piece {
+    position: absolute; top: -16px;
+    width: 8px; height: 13px; border-radius: 2px; opacity: .95;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { top: 105%; transform: rotate(720deg); opacity: .8; }
+  }
+
+  /* ===== Karta s otázkou / povídání ===== */
+  .progress-track {
+    display: flex; gap: 6px; flex: 1; margin: 0 16px;
+  }
+  .progress-track span {
+    flex: 1; height: 4px; border-radius: 2px; background: rgba(51,38,31,.12);
+    transition: background .3s ease;
+  }
+  .progress-track span.done { background: var(--plum); }
+
+  .question-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 40px 38px 34px;
+    box-shadow: var(--shadow-float);
+    text-align: center;
+    position: relative;
+    margin-bottom: 18px;
+    /* pevná velikost — karta se při otočení (líc/rub/bonusovka) nezvětšuje;
+       výška pokrývá i nejvyšší rub (teploměr + tři dvouřádkové doptávačky) */
+    min-height: 470px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  /* rub s tipy plyne odshora, ať se číslovaný seznam čte přirozeně
+     (horní odsazení je u ostatních back-side pravidel níž) */
+  .question-card.back-side { justify-content: flex-start; }
+  .question-card::before {
+    content: "„";
+    font-family: var(--font-display);
+    font-size: 56px;
+    line-height: 1;
+    color: var(--honey);
+    opacity: .4;
+    display: block;
+    margin: -26px 0 4px;
+  }
+  .question-card h2 { font-size: 22px; line-height: 1.35; }
+
+  /* jemný dekorativní rámeček — tenká medová linka odsazená od okraje;
+     u bonusovky se vynechá (ta má vlastní světlý rámeček) */
+  .question-card::after {
+    content: "";
+    position: absolute;
+    inset: 11px;
+    border: 1px solid rgba(192,138,45,.30);
+    border-radius: 15px;
+    pointer-events: none;
+  }
+  .question-card.face-down::after,
+  .question-card.joker::after { display: none; }
+
+  /* ===== Rub karty — nápověda k rozhovoru ===== */
+  #bigCard { cursor: pointer; }
+  .question-card.back-side::before { display: none; }
+  /* větší horní odsazení, ať má rub nahoře stejný vzduch jako po stranách */
+  .question-card.back-side { padding-top: 54px; }
+  /* rub vyplní celou výšku karty, ať jde záchrana „Když nevíš“ zarovnat dolů */
+  .card-back { text-align: left; display: flex; flex-direction: column; flex: 1; width: 100%; }
+  .back-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--honey);
+    font-family: var(--font-body);
+    margin-bottom: 6px;
+  }
+  .back-fu {
+    list-style: none; counter-reset: fu;
+    margin: 0;
+  }
+  .back-fu li {
+    counter-increment: fu;
+    font-size: 15px; color: var(--ink); line-height: 1.45;
+    padding: 12px 0 12px 28px; position: relative;
+    border-top: 1px dashed rgba(51,38,31,.12);
+  }
+  .back-fu li:first-child { border-top: none; padding-top: 4px; }
+  .back-fu li::before {
+    content: counter(fu);
+    position: absolute; left: 0; top: 13px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--rose-soft); color: var(--rose);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .back-fu li:first-child::before { top: 5px; }
+  .back-soft {
+    font-size: 14px; font-style: italic; color: var(--ink-soft);
+    line-height: 1.5;
+    margin-top: auto; padding-top: 11px;
+    border-top: 1px dashed rgba(51,38,31,.12);
+  }
+  .back-soft .bs-label {
+    display: block; font-style: normal;
+    font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--rose);
+    margin-bottom: 2px;
+  }
+  .flip-hint { text-align: center; margin-top: 12px; animation: screenIn .3s ease both; }
+
+  /* ===== Závěr ===== */
+  .finish-stats {
+    display: flex; gap: 10px; margin: 24px 0; align-items: stretch;
+  }
+  .stat {
+    flex: 1; background: var(--paper-soft); border-radius: var(--radius-md);
+    padding: 14px 10px; text-align: center;
+    display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  }
+  .stat .num { font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--plum); }
+  .stat .num.words { font-size: 15px; line-height: 1.25; }
+  .stat .lbl { font-size: 12px; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ===== 1. Úvod ===== -->
+  <section class="screen active" id="s-welcome">
+    <div class="center-col">
+      <div class="hero-mark"><div class="c1"></div><div class="c2"></div></div>
+      <span class="audience-chip">Pro rodiče a děti</span>
+      <h1>Mezi námi</h1>
+      <p style="margin-top:14px; max-width:290px; margin-left:auto; margin-right:auto;">
+        Hra, která pomáhá otevírat složitá témata, o kterých je někdy těžké mluvit.
+      </p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="startOnboard()">Začít</button>
+      <p class="muted" style="text-align:center;">Vše zůstává jen ve vašem telefonu.</p>
+    </div>
+  </section>
+
+  <!-- ===== 1b. Průvodce při prvním spuštění ===== -->
+  <section class="screen" id="s-onboard">
+    <div class="topbar">
+      <button class="back-btn" onclick="onboardBack()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <span class="muted" id="onboardStep"></span>
+    </div>
+    <div class="center-col" id="onboardSlide">
+      <div class="onboard-visual" id="onboardEmoji"></div>
+      <h2 id="onboardTitle"></h2>
+      <p id="onboardText" style="margin-top:12px; max-width:290px; margin-left:auto; margin-right:auto;"></p>
+      <div class="onboard-dots" id="onboardDots"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="onboardNextBtn" onclick="onboardNext()">Pokračovat</button>
+      <button class="btn btn-ghost" onclick="onboardSkip()">Přeskočit</button>
+    </div>
+  </section>
+
+  <!-- ===== 2. Jména ===== -->
+  <section class="screen" id="s-names">
+    <div class="topbar">
+      <button class="back-btn" onclick="goOnboardWhyEnd()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <h2>Kdo si dnes povídá?</h2>
+    <p style="margin:10px 0 26px;">Jak vám budeme říkat?</p>
+    <div class="field">
+      <label for="nameParent">Rodič</label>
+      <input id="nameParent" type="text" placeholder="např. máma, táta" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="nameKid">Dítě</label>
+      <input id="nameKid" type="text" placeholder="např. Kuba" autocomplete="off">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveNames()">Pokračovat</button>
+    </div>
+  </section>
+
+  <!-- ===== 3. Zásady ===== -->
+  <section class="screen" id="s-principles">
+    <div class="topbar">
+      <button class="back-btn" onclick="goOnboardHowEnd()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <h2>Tři sliby,<br>než začnete</h2>
+    <p style="margin:10px 0 24px;">Přečtěte si je nahlas. A plácněte si na ně.</p>
+
+    <div class="principle">
+      <div class="p-icon" style="background:var(--honey-soft);">🤝</div>
+      <div>
+        <h3>Za pravdu se nezlobíme</h3>
+        <p>Co řekneš, je v pořádku — dnes, zítra, pořád.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="p-icon" style="background:var(--plum-soft);">👂</div>
+      <div>
+        <h3>Necháme domluvit</h3>
+        <p>Kdo mluví, toho posloucháme až do konce.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="p-icon" style="background:var(--sage-soft);">✋</div>
+      <div>
+        <h3>Stačí říct „dost“</h3>
+        <p>Když je toho moc, klidně přestaňte. Vrátíte se, až budete chtít.</p>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goHome()">Slibujeme oba</button>
+    </div>
+  </section>
+
+  <!-- ===== 4. Domů — výběr tématu ===== -->
+  <section class="screen" id="s-home">
+    <div class="topbar">
+      <div class="brand"><div class="brand-mark"><span class="b1"></span><span class="b2"></span></div>Mezi námi</div>
+      <button class="gear-btn" onclick="openSettings()" aria-label="Nastavení"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+
+    <p class="muted" id="welcomeBack" hidden style="margin:-6px 0 6px;">✋ Vítejte zpátky. Sliby platí dál.</p>
+
+    <div class="section-label">O čem si dnes budete povídat?</div>
+    <div class="deck-grid" id="deckGrid"></div>
+  </section>
+
+  <!-- ===== 5. Detail balíčku + hloubka ===== -->
+  <section class="screen" id="s-deck">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Témata</button>
+    </div>
+    <div class="deck-emoji" id="deckIntroEmoji" style="width:64px;height:64px;font-size:32px;border-radius:18px;margin-bottom:16px;"></div>
+    <h2 id="deckIntroTitle"></h2>
+    <p id="deckIntroDesc" style="margin:10px 0 26px;"></p>
+
+    <div class="section-label" style="margin-top:0;">Jaké otázky to budou?</div>
+    <button class="depth-option" data-depth="0" onclick="pickDepth(0)">
+      <div class="depth-dots"><span class="on"></span><span></span><span></span></div>
+      <div><h3>Na rozehřátí</h3><p>Otázky jen tak pro radost. Žádné chytáky.</p></div>
+      <span class="done-badge" hidden>✓ Hotovo</span>
+    </button>
+    <button class="depth-option" data-depth="1" onclick="pickDepth(1)">
+      <div class="depth-dots"><span class="on"></span><span class="on"></span><span></span></div>
+      <div><h3>S kouskem odvahy</h3><p>Už se ptáme i na to, co trochu zebe.</p></div>
+      <span class="done-badge" hidden>✓ Hotovo</span>
+    </button>
+    <button class="depth-option" data-depth="2" onclick="pickDepth(2)">
+      <div class="depth-dots"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+      <div><h3>Úplně upřímně</h3><p>Ty největší věci. Jen když se oba cítíte v bezpečí.</p></div>
+      <span class="done-badge" hidden>✓ Hotovo</span>
+    </button>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startSessionBtn" onclick="startSession()" disabled>Začít povídání</button>
+    </div>
+  </section>
+
+  <!-- ===== 6. Losování otázky ===== -->
+  <section class="screen" id="s-draw">
+    <div class="topbar">
+      <button class="back-btn" onclick="confirmLeave()" aria-label="Zavřít"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <div class="progress-track" id="progressTrack0"></div>
+      <span class="muted" id="progressLabel0"></span>
+    </div>
+
+    <div class="center-col" id="drawPick">
+      <h2 id="drawTitle">Vyber si kartu</h2>
+      <p id="drawWho" style="margin-top:8px;"></p>
+      <div class="card-fan" id="cardFan"></div>
+    </div>
+
+    <div class="center-col" id="drawResult" hidden>
+      <div class="question-card" id="bigCard" style="margin-bottom:0;" onclick="flipCard()">
+        <div id="jokerCover" hidden>
+          <div class="cover-mark">?</div>
+          Bonusová karta
+        </div>
+        <span class="joker-tag" id="jokerTag" hidden>Bonusová otázka</span>
+        <div id="cardFront">
+          <h2 id="drawnQuestion"></h2>
+        </div>
+        <div class="card-back" id="cardBack" hidden>
+          <p class="back-title">Pro hlubší rozhovor</p>
+          <ol class="back-fu" id="backFu"></ol>
+          <p class="back-soft"><span class="bs-label">🪄 Když nevíš, jak odpovědět</span><span id="backSoft"></span></p>
+        </div>
+      </div>
+      <p class="muted flip-hint" id="flipHint" hidden>Klepni na kartu — poradíme, jak si o tom povídat</p>
+    </div>
+
+    <div class="btn-row" id="drawBtnRow" hidden>
+      <button class="btn btn-primary" id="drawGoBtn" onclick="proceedFromDraw()">Jdeme si povídat</button>
+      <button class="btn btn-ghost" id="drawFinishBtn" onclick="finishFromTalk()" hidden>Pro dnešek stačí</button>
+    </div>
+  </section>
+
+  <!-- ===== 8. Závěr ===== -->
+  <section class="screen" id="s-finish">
+    <div class="center-col">
+      <div class="hero-mark" style="width:100px;height:86px;">
+        <div class="c1" style="width:62px;height:62px;top:12px;"></div>
+        <div class="c2" style="width:40px;height:40px;top:34px;"></div>
+      </div>
+      <h2>Dokázali jste to.</h2>
+      <p style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
+        Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.
+      </p>
+      <div class="finish-stats">
+        <div class="stat"><div class="num" id="statQuestions">0</div><div class="lbl">otázek</div></div>
+        <div class="stat"><div class="num">2</div><div class="lbl">odvážlivci</div></div>
+        <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl">hloubka</div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <p class="muted" id="nextTipLabel" style="text-align:center;">Příště zkuste</p>
+      <button class="btn btn-secondary" id="nextTipBtn"></button>
+      <button class="btn btn-primary" onclick="goHome()">Zpět na témata</button>
+    </div>
+  </section>
+
+  <!-- ===== 9. Nastavení ===== -->
+  <section class="screen" id="s-settings">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <h2>Nastavení</h2>
+
+    <div class="section-label">Jak vám říkáme</div>
+    <div class="field">
+      <label for="setNameParent">Rodič</label>
+      <input id="setNameParent" type="text" placeholder="např. máma, táta" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="setNameKid">Dítě</label>
+      <input id="setNameKid" type="text" placeholder="např. Kuba" autocomplete="off">
+    </div>
+    <p class="muted">Změny se ukládají samy.</p>
+
+    <div class="section-label">Hra</div>
+    <button class="btn btn-secondary" onclick="startOnboard()">Znovu projít průvodce</button>
+
+    <div class="section-label">Data</div>
+    <button class="btn btn-secondary" style="color:var(--rose); border-color:rgba(201,111,91,.4);" onclick="resetAll()">Smazat jména a pokrok</button>
+    <p class="muted" style="margin-top:14px;">Vše zůstává jen ve vašem telefonu — nikam se nic neposílá.</p>
+  </section>
+
+  <div id="confettiLayer"></div>
+
+</div>
+
+<script>
+/* ================= Data =================
+   Otázky pro dítě 6–9 let. Otázka se vylosuje a povídá se nahlas —
+   nic se nepíše. Rodič odpovídá taky (o práci, o svém dětství).
+   q = plné znění, soft = jemnější formulace,
+   temp = škálovací otázka („jak velké to je?“) — vplete se mezi doptávačky jako 2. v pořadí,
+   fu = doptávací otázky šité na tuhle otázku, v záměrném pořadí
+   (otevřít a nechat vyprávět → prohloubit k pocitu → bezpečně uzavřít). */
+const DECKS = [
+  {
+    id: "skola", emoji: "🎒", bg: "var(--sky-soft)",
+    title: "Škola",
+    tagline: "Učení, známky, co se tam děje",
+    desc: "Na „Jak bylo ve škole?“ se odpovídá „dobrý“. Tyhle otázky se ptají líp — a rodič odpovídá o své práci.",
+    questions: [
+      [ // Na rozehřátí
+        { q: "Co bylo dneska ve škole (nebo v práci) nejlepší?",
+          soft: "Kdybys měl/a dnešku dát známku jako ve škole, jakou by dostal? A proč?",
+          fu: [
+            "Vyprávěj mi to jako příběh — co se dělo úplně přesně?",
+            "Kdo u toho byl s tebou?",
+            "Co uděláme, aby se to stávalo častěji?"
+          ] },
+        { q: "Co ti ve škole (nebo v práci) jde nejlíp?",
+          soft: "Kdy tě naposledy někdo pochválil? Za co to bylo?",
+          fu: [
+            "Jak jsi přišel/přišla na to, že ti to jde?",
+            "Jaký je to pocit, když se ti to povede?",
+            "Naučíš mě to někdy? Chci to vidět."
+          ] },
+        { q: "Kdybys mohl/a vymyslet nový školní předmět, jaký by byl?",
+          soft: "Co by ses chtěl/a naučit, kdyby to šlo jako mávnutím kouzelné hůlky?",
+          fu: [
+            "Co by se v něm dělalo úplně první hodinu?",
+            "Proč zrovna tenhle? Co tě na tom láká?",
+            "Co z toho můžeme zkusit doma už o víkendu?"
+          ] },
+        { q: "Kdo tě ve škole (nebo v práci) nejvíc rozesměje?",
+          soft: "Vedle koho sedíš nejraději? Proč zrovna vedle něj?",
+          fu: [
+            "Co naposledy udělal nebo řekl, že ses smál/a?",
+            "Čím to je, že je s ním taková legrace?",
+            "A kdy nejvíc rozesměješ ostatní ty?"
+          ] },
+        { q: "Co se ti dneska povedlo? Klidně maličkost.",
+          soft: "Za co by sis dneska dal/a jeden bod?",
+          fu: [
+            "Vyprávěj — jak jsi to udělal/a?",
+            "Všiml si toho někdo? A potěšilo by tě, kdyby jo?",
+            "Řekneme si takhle jednu věc každý večer? Já začnu tou svojí."
+          ] },
+        { q: "Které místo ve škole (nebo v práci) máš nejraději?",
+          soft: "Kdybys mě mohl/a vzít na jedno místo ve škole, kam by to bylo?",
+          fu: [
+            "Co tam děláš? S kým tam býváš?",
+            "Čím to je, že je ti tam dobře?",
+            "A které místo máš naopak nejmíň rád/a? Proč?"
+          ] }
+      ],
+      [ // S kouskem odvahy
+        { q: "Co je pro tebe ve škole (nebo v práci) nejtěžší?",
+          soft: "Který den v týdnu máš nejmíň rád/a? Co v něm bývá?",
+          fu: [
+            "Zkus mi to popsat víc — co přesně se děje, když to přijde?",
+            "Jak ti u toho je? Co cítíš v těle?",
+            "Chceš, abychom vymysleli, co by pomohlo — nebo jsi to teď hlavně chtěl/a říct?"
+          ] },
+        { q: "Bál/a ses někdy říct, že něčemu nerozumíš?",
+          soft: "Co uděláš, když něco nechápeš — zeptáš se, nebo to radši necháš být?",
+          fu: [
+            "Co si myslíš, že by se stalo, kdybys to řekl/a?",
+            "To zná každý — i já. Chceš slyšet, kdy jsem se bál/a zeptat já?",
+            "Co by ti pomohlo, aby se ti příště zeptalo snadněji?"
+          ] },
+        { temp: "Jak nepříjemné to pro tebe je?", q: "Jaké to je, když se doma mluví o známkách?",
+          soft: "Co se ti honí hlavou, když doma padne slovo „známky“?",
+          fu: [
+            "Kdy je to příjemné — a kdy nepříjemné?",
+            "Co bys chtěl/a, abych řekl/a, když přineseš horší známku?",
+            "Máme u nás doma u známek něco dělat jinak? Navrhni to."
+          ] },
+        { temp: "Jak nepříjemné to je?", q: "Jaké to je, když tě učitel vyvolá a ty nevíš?",
+          soft: "Co se ti honí hlavou, když učitel vybírá, koho vyvolá?",
+          fu: [
+            "Kdy se ti to naposledy stalo? Co se dělo?",
+            "Co v tu chvíli cítíš — horko, knedlík v krku, nic?",
+            "Chceš vědět, co dělám já, když v práci něco nevím?"
+          ] },
+        { q: "Nudíš se někdy ve škole (nebo já v práci)? Při čem nejvíc?",
+          soft: "Kdy se ti ve škole nejvíc vleče čas?",
+          fu: [
+            "Co děláš, když se nudíš?",
+            "Je to nuda „nebaví mě to“, nebo nuda „je to moc lehké“?",
+            "Co by tu hodinu zachránilo? Vymysli to jako učitel."
+          ] },
+        { q: "Srovnáváš se někdy s ostatními ve třídě?",
+          soft: "Je někdo, komu jde všechno tak nějak samo? Jak ti u toho je?",
+          fu: [
+            "S kým se srovnáváš nejčastěji? V čem?",
+            "Jak ti je, když z toho srovnání vyjdeš hůř?",
+            "Co umíš ty a on ne? Pomůžu ti hledat."
+          ] }
+      ],
+      [ // Úplně upřímně
+        { q: "Stalo se ti ve škole (nebo v práci) něco, o čem jsi doma nikdy neřekl/a?",
+          soft: "Je nějaký den, na který nerad/a vzpomínáš? Nemusíš říkat všechno — stačí kousek.",
+          fu: [
+            "Díky, že jsi to řekl/a. Chceš mi povědět víc, nebo zatím stačí takhle?",
+            "Co jsi tehdy cítil/a — spíš strach, vztek, nebo smutek?",
+            "Chceš, abych s tím něco udělal/a — nebo jsi to chtěl/a jen říct?"
+          ] },
+        { temp: "Jak velký je ten strach?", q: "Bojíš se někdy, že někoho zklameš, když se ti něco nepovede?",
+          soft: "Co si představuješ, že by se stalo, kdybys přinesl/a špatnou známku?",
+          fu: [
+            "Koho nechceš zklamat nejvíc?",
+            "Co si představuješ, že by ten člověk udělal nebo řekl?",
+            "Mám tě rád/a, i když se něco nepovede. Co by ti pomohlo si na to vzpomenout?"
+          ] },
+        { q: "Je něco ve škole (nebo v práci), čemu by ses nejraději úplně vyhnul/a?",
+          soft: "Kdybys měl/a plášť neviditelnosti, kdy by ses do něj schoval/a?",
+          fu: [
+            "Co přesně se děje, když to přijde?",
+            "Jak moc je to zlé — trochu otrava, nebo opravdové trápení?",
+            "Chceš, abychom vymysleli plán, jak to zvládnout — nebo to zatím jen budeme sledovat spolu?"
+          ] },
+        { temp: "Jak velký ten pocit je?", q: "Cítil/a ses někdy ve škole hloupě?",
+          soft: "Měl/a jsi někdy pocit, že to všichni chápou — jen ty ne?",
+          fu: [
+            "Kdy to bylo naposledy? Co se dělo?",
+            "Řekl ti někdy někdo, že jsi hloupý/á? Kdo a jak?",
+            "Nejsi. Chceš vědět, v čem jsi chytrý/á jinak než ostatní?"
+          ] },
+        { q: "Řekl ti někdy někdo ve škole něco, co tě dodnes mrzí?",
+          soft: "Nosíš v hlavě nějakou větu, která tě tehdy zabolela?",
+          fu: [
+            "Kdo to řekl? A proč myslíš, že to udělal?",
+            "Co se v tobě stane, když si na to vzpomeneš?",
+            "Ta věta o tobě nic neříká. Vymyslíme, čím ji v hlavě přepsat?"
+          ] },
+        { temp: "Jak velký ten tlak je?", q: "Myslíš si někdy, že od tebe čekáme moc?",
+          soft: "Máš někdy pocit, že nás musíš něčím potěšit, aby bylo doma dobře?",
+          fu: [
+            "V čem to cítíš nejvíc — známky, kroužky, chování?",
+            "Co si představuješ, že by se stalo, kdybys to nezvládl/a?",
+            "Děkuju, že jsi to řekl/a. Co z toho můžeme hned teď zmenšit?"
+          ] }
+      ]
+    ]
+  },
+  {
+    id: "kamaradi", emoji: "🤝", bg: "var(--rose-soft)",
+    title: "Kamarádi",
+    tagline: "Parta, hádky, kdo s kým",
+    desc: "Kamarádi jsou půlka dětského světa. A rodiče mají kamarády taky — i o nich se dá vyprávět.",
+    questions: [
+      [
+        { q: "Kdo je teď tvůj nejlepší kamarád? A co se ti na něm líbí?",
+          soft: "S kým je největší legrace? Co spolu nejraději děláte?",
+          fu: [
+            "Jak jste se skamarádili? Pamatuješ si na to?",
+            "V čem jste stejní — a v čem úplně jiní?",
+            "Chtěl/a bys ho někdy pozvat k nám?"
+          ] },
+        { q: "Co s kamarády děláš nejraději?",
+          soft: "Jaká byla poslední chvíle s kamarády, kdy ses hodně smál/a?",
+          fu: [
+            "Vyprávěj mi o poslední chvíli, kdy to byla největší zábava.",
+            "Co je na tom to nejlepší? Proč zrovna tohle?",
+            "Co byste spolu chtěli zkusit, co jste ještě nedělali?"
+          ] },
+        { q: "Jaký má být správný kamarád?",
+          soft: "Co udělá dobrý kamarád, když je ti smutno?",
+          fu: [
+            "Který z tvých kamarádů tohle umí nejlíp?",
+            "A v čem jsi dobrý kamarád ty?",
+            "Co uděláš, když se někdo jako správný kamarád nechová?"
+          ] },
+        { q: "Koho bys pozval/a na vysněnou oslavu narozenin?",
+          soft: "Kdyby zítra byla tvoje párty, kdo na ní nesmí chybět?",
+          fu: [
+            "Proč zrovna tihle? Co je s nimi nejlepší?",
+            "Co byste na té oslavě dělali?",
+            "A koho bys pozvat nemusel/a? To je taky dobré vědět."
+          ] },
+        { q: "Co nejhezčího pro tebe kamarád kdy udělal?",
+          soft: "Kdy tě kamarád naposledy něčím potěšil?",
+          fu: [
+            "Jak to tehdy bylo? Vyprávěj.",
+            "Co sis v tu chvíli pomyslel/a?",
+            "A co nejhezčího jsi udělal/a ty pro něj?"
+          ] },
+        { q: "Kdybyste s kamarády založili tajný klub, jaký by byl?",
+          soft: "Jak by se jmenovala vaše parta, kdyby měla jméno?",
+          fu: [
+            "Co by se v klubu dělalo? Jaká by byla pravidla?",
+            "Kdo by měl jakou roli? A ty?",
+            "Vzali byste mě aspoň na návštěvu?"
+          ] }
+      ],
+      [
+        { q: "Pohádal/a ses někdy s kamarádem? Jak to dopadlo?",
+          soft: "Vzpomeneš si, kdy tě kamarád naštval? Co tehdy udělal?",
+          fu: [
+            "Co tu hádku spustilo? Co se stalo těsně předtím?",
+            "Jak ti bylo potom — vztek, smutek, nebo obojí?",
+            "Usmířili jste se? Co pomohlo — nebo co by pomohlo teď?"
+          ] },
+        { temp: "Jak velká ta samota byla?", q: "Cítil/a ses někdy mezi ostatními sám/sama?",
+          soft: "Byl někdy den, kdy sis neměl/a s kým hrát? Jaké to bylo?",
+          fu: [
+            "Kdy to bývá nejčastěji — o přestávce, na obědě, venku?",
+            "Co si v tu chvíli říkáš v hlavě?",
+            "Co by ti v tu chvíli udělalo dobře — aby někdo přišel, nebo mít klid?"
+          ] },
+        { q: "Je něco, co kamarádi smí, a ty ne? Jak ti u toho je?",
+          soft: "Co mají kamarádi dovolené a ty bys to taky chtěl/a?",
+          fu: [
+            "Co z toho ti chybí nejvíc?",
+            "Proč myslíš, že to u nás máme jinak? Chceš slyšet můj důvod?",
+            "Zkusíme se na něčem domluvit? Navrhni první ty."
+          ] },
+        { temp: "Jak moc to štíplo?", q: "Žárlil/a jsi někdy, že tvůj kamarád kamarádí i s někým jiným?",
+          soft: "Jaké to je, když si tvůj kamarád hraje s někým jiným a na tebe nezbyde?",
+          fu: [
+            "Kdy se ti to stalo? Co jsi udělal/a?",
+            "Co sis v tu chvíli říkal/a v hlavě?",
+            "Ten pocit znám taky. Chceš slyšet odkud?"
+          ] },
+        { q: "Řekl ti kamarád někdy něco, co tě zamrzelo?",
+          soft: "Vzpomeneš si, kdy tě kamarád ranil — třeba i omylem?",
+          fu: [
+            "Co řekl? A jak to bylo dál?",
+            "Řekl/a jsi mu, že tě to mrzelo, nebo sis to nechal/a v sobě?",
+            "Zkusíme spolu vymyslet, jak se to říká? Já budu ten kamarád."
+          ] },
+        { q: "Je těžké najít si nového kamaráda? Jak se to vlastně dělá?",
+          soft: "Kdyby k vám do třídy přišel někdo nový, co bys udělal/a?",
+          fu: [
+            "Jak sis našel/našla svého posledního kamaráda?",
+            "Co je na seznamování nejtěžší?",
+            "Chceš slyšet, jak se kamarádi hledají v dospělosti? Taky to není lehké."
+          ] }
+      ],
+      [
+        { q: "Ubližuje někdo tobě — nebo někomu, koho znáš?",
+          soft: "Je někdo, koho se ve škole trochu bojíš? Nemusíš říkat jméno.",
+          fu: [
+            "Děkuju, že jsi to řekl/a — to chtělo odvahu. Co se děje?",
+            "Jak dlouho to trvá? Ví o tom někdo dospělý?",
+            "Vymyslíme spolu, co dál. Nic neudělám bez tebe, slibuju. Souhlasíš?"
+          ] },
+        { q: "Udělal/a jsi někdy kamarádovi něco, co tě pak mrzelo?",
+          soft: "Vzpomeneš si, kdy jsi někoho zamrzel/a? Co se stalo?",
+          fu: [
+            "Co tě na tom mrzí nejvíc?",
+            "To se stává každému — i mně. Chceš slyšet, co jsem takhle provedl/a já?",
+            "Dá se ještě něco napravit? Co by kamarádovi udělalo radost?"
+          ] },
+        { q: "Děláš někdy něco jen proto, aby tě ostatní brali?",
+          soft: "Bál/a ses někdy, že tě kamarádi nebudou mít rádi takového/takovou, jaký/á jsi?",
+          fu: [
+            "Kdy naposledy? Co jsi udělal/a?",
+            "Jaké to je, dělat něco, co úplně nechceš?",
+            "Co je na tobě super i bez předvádění? Řeknu ti, co vidím já."
+          ] },
+        { temp: "Jak moc tě to tížilo?", q: "Svěřil ti někdy kamarád tajemství, které tě tížilo?",
+          soft: "Víš o něčem, co bys možná měl/a říct dospělému, ale slíbil/a jsi mlčet?",
+          fu: [
+            "Nemusíš říkat čí to je. Jak velké to tajemství je?",
+            "Jaké to je, nosit ho v sobě?",
+            "Domluvíme se: když jde o bezpečí, říct to není zrada. Chceš to probrat?"
+          ] },
+        { q: "Přidal/a ses někdy ke smíchu na někoho, i když jsi nechtěl/a?",
+          soft: "Smáli se někdy všichni někomu a ty ses přidal/a, abys nebyl/a divný/á?",
+          fu: [
+            "Co se tehdy dělo? Komu se smáli?",
+            "Jak ti bylo potom, když ses přidal/a?",
+            "To se stane skoro každému. Co by ti pomohlo se příště nepřidat?"
+          ] },
+        { temp: "Jak velký ten strach je?", q: "Bojíš se někdy, že o kamaráda přijdeš?",
+          soft: "Napadlo tě, co by bylo, kdyby se kamarád odstěhoval nebo našel jinou partu?",
+          fu: [
+            "Kdy tě to napadá? Co to spouští?",
+            "Co by ti nejvíc chybělo?",
+            "Chceš vědět, jak to dopadlo s mými kamarády z dětství?"
+          ] }
+      ]
+    ]
+  },
+  {
+    id: "strachy", emoji: "👻", bg: "var(--plum-soft)",
+    title: "Strachy a starosti",
+    tagline: "Čeho se bojím, co mě trápí",
+    desc: "Strach je menší, když se řekne nahlas. A děti rády slyší, že i dospělí se něčeho bojí.",
+    questions: [
+      [
+        { q: "Čeho ses bál/a, když jsi byl/a menší — a už se nebojíš?",
+          soft: "Jaký strach jsi už porazil/a? Jak se ti to povedlo?",
+          fu: [
+            "Jak se ti povedlo ho porazit? Co pomohlo?",
+            "Pomohl ti s tím někdo? Kdo?",
+            "Co bys poradil/a menším dětem, které se toho ještě bojí?"
+          ] },
+        { q: "Co ti pomáhá, když se bojíš?",
+          soft: "Co uděláš, když se v noci vzbudíš a je ti divně?",
+          fu: [
+            "Kdy naposledy jsi to použil/a? Zabralo to?",
+            "Co můžu udělat já, když uvidím, že se bojíš?",
+            "Vymyslíme ještě jednu věc do zásoby, kdyby ta první nestačila?"
+          ] },
+        { q: "Kde je tvoje nejbezpečnější místo na světě?",
+          soft: "Kde je ti nejlíp, když chceš mít klid a pohodu?",
+          fu: [
+            "Co ho dělá tak bezpečným? Co tam je?",
+            "Jak ti tam je? Co cítíš, když tam jsi?",
+            "Můžeme udělat něco, aby takových míst bylo víc?"
+          ] },
+        { q: "Kdo je nejodvážnější člověk, kterého znáš?",
+          soft: "Kdo se podle tebe nebojí skoro ničeho? Jak to dělá?",
+          fu: [
+            "Co odvážného udělal? Vyprávěj.",
+            "Myslíš, že se u toho vůbec nebál — nebo se bál a stejně to udělal?",
+            "V čem jsi odvážný/á ty? Já o něčem vím."
+          ] },
+        { q: "Co jsi udělal/a, i když ses trochu bál/a?",
+          soft: "Kdy naposledy jsi zatnul/a zuby a šel/šla do toho?",
+          fu: [
+            "Jak ses k tomu odhodlal/a? Co ti pomohlo?",
+            "Jaký byl pocit potom?",
+            "Co si z toho vzít pro příště, až se zase budeš bát?"
+          ] },
+        { q: "Kdyby tě mělo chránit jedno zvíře, které by sis vybral/a?",
+          soft: "Jaké zvíře by spalo u tvojí postele, kdyby to šlo?",
+          fu: [
+            "Před čím by tě chránilo?",
+            "Jak by se jmenovalo? Jaké by bylo?",
+            "Nakreslíme ho spolu? Může u té postele viset doopravdy."
+          ] }
+      ],
+      [
+        { temp: "Jak velký je ten strach?", q: "Čeho se teď bojíš nejvíc?",
+          soft: "Kdyby strachy byly zvířata, jaké zvíře by byl ten tvůj největší?",
+          fu: [
+            "Kdy ten strach chodí — večer, ve škole, když jsi sám/sama?",
+            "Kde ho cítíš v těle — v břiše, na hrudi, v hlavě?",
+            "Chceš, abychom na něj něco vymysleli — nebo stačilo, že jsi ho řekl/a nahlas?"
+          ] },
+        { temp: "Jak moc tě ten strach trápí?", q: "Bojíš se někdy něčeho, co ti přijde jako hloupost?",
+          soft: "Je nějaký strach, za který se trochu stydíš? Vsadím se, že hloupý není.",
+          fu: [
+            "Prozradíš mi, co to je? Slibuju, že se nebudu smát.",
+            "Víš, že dospělí mají taky takové strachy? Chceš slyšet nějaký můj?",
+            "Co kdybychom tomu strachu dali jméno? Když se dá zavolat, hned je menší."
+          ] },
+        { q: "Co se ti objevuje ve špatných snech?",
+          soft: "Vzpomeneš si na nějaký ošklivý sen? Co v něm bylo?",
+          fu: [
+            "Vyprávěj mi jeden, který si pamatuješ. Jak skončil?",
+            "Co děláš, když se z takového snu vzbudíš?",
+            "Zkusíme vymyslet, jak by ten sen mohl skončit líp? Ty jsi režisér."
+          ] },
+        { temp: "Jak velký ten strach je?", q: "Bojíš se něčeho, co ostatním nevadí?",
+          soft: "Je něco, čemu se ostatní smějí, ale tobě z toho není dobře?",
+          fu: [
+            "Co to je? U nás se strachům nesmějeme.",
+            "Jak to řešíš, když na to dojde — třeba ve škole?",
+            "Takový strach má každý. Chceš slyšet ten můj?"
+          ] },
+        { q: "Schováváš někdy strach, aby na tobě nebyl vidět?",
+          soft: "Děláš někdy hrdinu, i když se uvnitř bojíš?",
+          fu: [
+            "Před kým ho schováváš nejvíc?",
+            "Jak to děláš, aby nebyl vidět?",
+            "U mě ho schovávat nemusíš. Jak poznám, že se bojíš, i když nic neříkáš?"
+          ] },
+        { q: "Straší tě někdy něco, o čem dospělí říkají, že to nic není?",
+          soft: "Řekl ti někdy někdo „neboj, to nic není“ — a vůbec to nepomohlo?",
+          fu: [
+            "Co to bylo? Mně to říct můžeš.",
+            "Co bys potřeboval/a slyšet místo „to nic není“?",
+            "Promiň, jestli jsem to někdy řekl/a taky. Co mám příště říct místo toho?"
+          ] }
+      ],
+      [
+        { temp: "Jak těžké bylo to teď říct?", q: "Máš nějaký strach, o kterém jsi ještě nikomu neřekl/a?",
+          soft: "Je něco, co tě straší, když zhasneme? Stačí jen naznačit.",
+          fu: [
+            "Děkuju za odvahu. Chceš říct víc, nebo zatím jen takhle?",
+            "Jak dlouho ho v sobě nosíš?",
+            "Chceš, abychom s ním něco udělali spolu — nebo ho zatím prostě budeme znát oba?"
+          ] },
+        { temp: "Jak velká je ta starost?", q: "Bojíš se někdy o někoho z naší rodiny?",
+          soft: "Napadá tě někdy, že by se někomu u nás mohlo něco stát?",
+          fu: [
+            "O koho? A kdy tě to napadá?",
+            "Co si představuješ, že by se mohlo stát?",
+            "Co bys potřeboval/a slyšet, aby byl ten strach menší?"
+          ] },
+        { temp: "Jak moc tě naše hádky trápí?", q: "Co si myslíš, když se doma hádáme?",
+          soft: "Kam jdeš a co děláš, když je doma dusno?",
+          fu: [
+            "Co v tu chvíli děláš? Kam jdeš?",
+            "Bojíš se u toho něčeho? Čeho nejvíc?",
+            "Co bychom mohli udělat po hádce, aby ti bylo líp? Domluvíme si znamení?"
+          ] },
+        { temp: "Jak těžké je o tom mluvit?", q: "Bál/a ses někdy mě?",
+          soft: "Byla někdy chvíle, kdy jsi za mnou nechtěl/a přijít, protože jsi nevěděl/a, jak zareaguju?",
+          fu: [
+            "Kdy to bylo? Co jsem udělal/a?",
+            "Děkuju za odvahu. Co jsi v tu chvíli potřeboval/a?",
+            "Co můžu udělat, aby ses mě bát nemusel/a nikdy?"
+          ] },
+        { temp: "Jak velká ta starost je?", q: "Máš strach z toho, co bude, až budeš velký/á?",
+          soft: "Když si představíš sebe jako dospělého, těšíš se — nebo tě něco děsí?",
+          fu: [
+            "Co tě na dospělosti straší nejvíc?",
+            "Odkud to máš — něco jsi viděl/a nebo slyšel/a?",
+            "Chceš slyšet, čeho jsem se v dětství bál/a já — a jak to dopadlo doopravdy?"
+          ] },
+        { q: "Napadá tě někdy něco tak strašidelného, že se to bojíš říct nahlas?",
+          soft: "Jsou myšlenky, které honíš z hlavy pryč? Nemusíš říkat jaké — stačí přikývnout.",
+          fu: [
+            "Chceš zkusit říct aspoň kousek? Klidně šeptem.",
+            "Jak často taková myšlenka chodí? Večer, ve dne?",
+            "Vyslovené myšlenky ztrácejí sílu. Kdykoli budeš chtít, řekneme je spolu."
+          ] }
+      ]
+    ]
+  },
+  {
+    id: "rodina", emoji: "🏡", bg: "var(--sage-soft)",
+    title: "Naše rodina",
+    tagline: "Co je doma fajn — a co míň",
+    desc: "O vlastní rodině se mluví nejhůř právě v ní. Tady na to máte klidné hřiště.",
+    questions: [
+      [
+        { q: "Co spolu doma děláme nejraději?",
+          soft: "Jaký náš společný den byl úplně nejlepší? Co jsme dělali?",
+          fu: [
+            "Co je na tom pro tebe nejlepší?",
+            "Kdy naposledy jsme to dělali? Jaké to bylo?",
+            "Kdy si to zopakujeme? Vyberme rovnou den."
+          ] },
+        { q: "Které jídlo od nás z kuchyně by mělo dostat zlatou medaili?",
+          soft: "Co u nás doma nejlíp voní nebo chutná?",
+          fu: [
+            "Co přesně je na něm nejlepší — chuť, vůně, nebo to, kdy ho jíme?",
+            "A které jídlo bys naopak poslal/a na lavičku náhradníků?",
+            "Uvaříme ho příště spolu? Co bys u toho chtěl/a dělat ty?"
+          ] },
+        { q: "Kdybys mohl/a naplánovat rodinný víkend, co bychom dělali?",
+          soft: "Co bychom dělali o víkendu, kdybys rozhodoval/a jenom ty?",
+          fu: [
+            "Co z toho by bylo nejdůležitější nevynechat?",
+            "Koho bys vzal/a s sebou — jen nás, nebo i někoho dalšího?",
+            "Co z toho plánu zvládneme doopravdy? Vyberme jednu věc."
+          ] },
+        { q: "Kdybys naši rodinu popsal/a třemi slovy, jaká by to byla?",
+          soft: "Kdyby o nás točili pohádku, jak by se jmenovala?",
+          fu: [
+            "Proč zrovna tahle slova? Vysvětli mi je.",
+            "Jaké slovo bys chtěl/a, aby tam jednou přibylo?",
+            "A víš, jakými třemi slovy bych popsal/a tebe? Chceš to slyšet?"
+          ] },
+        { q: "Co máme u nás doma, co jinde nemají?",
+          soft: "Co bys kamarádovi ukázal/a jako první, kdyby k nám přišel poprvé?",
+          fu: [
+            "Čím to je? Kdo to tak vymyslel?",
+            "Co z toho máš nejraději?",
+            "Co dalšího takového bychom mohli zavést jen pro nás?"
+          ] },
+        { q: "Který náš společný zvyk máš nejraději? Klidně i malý.",
+          soft: "Co spolu děláme pořád dokola — a je to tak dobře?",
+          fu: [
+            "Pamatuješ, kdy vznikl?",
+            "Co by ti chybělo, kdybychom s ním přestali?",
+            "Vymyslíme ještě jeden nový? Navrhni."
+          ] }
+      ],
+      [
+        { q: "Co bys chtěl/a, abychom spolu dělali častěji?",
+          soft: "Co jsme spolu dřív dělávali a nějak se to vytratilo?",
+          fu: [
+            "Kdy jsme to dělali naposledy? Jaké to bylo?",
+            "Co nám v tom brání? Napadá tě něco?",
+            "Domluvíme se hned teď — kdy začneme?"
+          ] },
+        { q: "Kdy je ti se mnou nejlíp? A kdy tě trochu štvu?",
+          soft: "Kdy jsem nejlepší na světě — a kdy otravuju?",
+          fu: [
+            "Řekni mi o té dobré chvíli víc — co v ní dělám?",
+            "A když tě štvu — co přesně dělám? Klidně to řekni, nezlobím se.",
+            "Vyberu si jednu věc a zkusím ji dělat jinak. Kterou navrhuješ?"
+          ] },
+        { q: "Je nějaká věta, kterou doma nerad/a slyšíš?",
+          soft: "Které slovo nebo věta ti doma vždycky zkazí náladu?",
+          fu: [
+            "Co se v tobě stane, když ji uslyšíš?",
+            "Proč myslíš, že ji říkáme? Chceš slyšet, jak to myslím já?",
+            "Jakou větu bys chtěl/a slyšet místo ní?"
+          ] },
+        { temp: "Jak moc to bolí?", q: "Přijde ti někdy, že někdo u nás dostává víc pozornosti než ty?",
+          soft: "Máš někdy pocit, že na tebe zbyde míň času než na ostatní?",
+          fu: [
+            "Kdy to cítíš nejvíc?",
+            "Co v tu chvíli uděláš — řekneš si o pozornost, nebo se stáhneš?",
+            "Co kdybychom měli chvíli jen my dva? Kdy a jak by vypadala?"
+          ] },
+        { q: "Které pravidlo u nás doma ti přijde nespravedlivé?",
+          soft: "Kdybys mohl/a jedno naše pravidlo zrušit, které by to bylo?",
+          fu: [
+            "Proti čemu přesně protestuješ? Řekni to jako právník.",
+            "Chceš slyšet, proč to pravidlo máme? Třeba má slabé místo.",
+            "Navrhni lepší verzi. Když bude dobrá, zkusíme ji týden."
+          ] },
+        { q: "Za co bychom tě měli chválit častěji?",
+          soft: "Co děláš dobře a nikdo si toho nevšímá?",
+          fu: [
+            "Jak dlouho už to děláš?",
+            "Jak ti je, když si toho nikdo nevšimne?",
+            "Máš pravdu, budu si všímat. A co mám pochválit hned teď?"
+          ] }
+      ],
+      [
+        { temp: "Jak těžké je to říct?", q: "Je něco, co bys mi chtěl/a říct, ale bojíš se?",
+          soft: "Zkus začít: „Chtěl/a bych ti říct, že…“ — a dopověz jen kousek.",
+          fu: [
+            "Čeho přesně se bojíš, že by se stalo?",
+            "Pamatuješ na náš slib? Za pravdu se nezlobíme. Pomůže, když začneš jen kouskem?",
+            "Chceš to říct teď, nebo počkáme, až budeš připravený/á? Obojí je v pořádku."
+          ] },
+        { temp: "Jak velký ten smutek byl?", q: "Byl/a jsi někdy smutný/á z něčeho, co jsem udělal/a — a neřekl/a jsi mi to?",
+          soft: "Vzpomeneš si, kdy tě něco ode mě zamrzelo?",
+          fu: [
+            "Co se tehdy stalo? Vyprávěj, poslouchám.",
+            "Mrzí mě to. Co jsi v tu chvíli ode mě potřeboval/a — a nedostal/a?",
+            "Co mám udělat, kdyby se to stalo znovu? Domluvíme si to."
+          ] },
+        { q: "Můžeš doma říkat, co si opravdu myslíš?",
+          soft: "Kdy naposledy sis něco myslel/a, ale radši jsi to neřekl/a?",
+          fu: [
+            "Kdy to jde snadno — a kdy vůbec?",
+            "Co by se muselo změnit, aby to šlo vždycky?",
+            "Zkusíme to hned teď? Řekni jednu věc, kterou sis zatím nechával/a pro sebe."
+          ] },
+        { temp: "Jak velká ta starost byla?", q: "Slyšel/a jsi nás někdy mluvit o něčem, co ti dělalo starost?",
+          soft: "Zachytil/a jsi někdy kousek rozhovoru dospělých, který tě vystrašil?",
+          fu: [
+            "Co jsi slyšel/a? Povíme si, jak to bylo doopravdy.",
+            "Jak dlouho jsi to v sobě nosil/a?",
+            "Domluvíme se: když něco zaslechneš, přijď se zeptat. Vždycky ti řeknu pravdu. Platí?"
+          ] },
+        { temp: "Jak často to cítíš?", q: "Měl/a jsi někdy pocit, že na tebe nemám čas?",
+          soft: "Kdy naposledy jsi mě potřeboval/a a já měl/a něco „důležitějšího“?",
+          fu: [
+            "Kdy to bývá nejčastěji?",
+            "Co jsi v tu chvíli ode mě potřeboval/a?",
+            "Mrzí mě to. Domluvíme si znamení, kterým mi řekneš „teď tě potřebuju doopravdy“?"
+          ] },
+        { q: "Je něco, co ti u nás doma chybí?",
+          soft: "Kdybys mohl/a k nám domů jednu věc přičarovat — a nemusí to být věc — co by to bylo?",
+          fu: [
+            "Jak dlouho ti to chybí?",
+            "Co by se změnilo, kdyby to tu bylo?",
+            "Co z toho jde zařídit doopravdy? Pojďme s tím začít."
+          ] }
+      ]
+    ]
+  },
+  {
+    id: "telefon", emoji: "📱", bg: "var(--sky-soft)",
+    title: "Telefon a hry",
+    tagline: "Obrazovky, videa, hraní",
+    desc: "Místo hádek o čas u obrazovky zkuste něco jiného. Zjistěte, co toho druhého u telefonu baví — a co ho tam čeká.",
+    questions: [
+      [
+        { q: "Jaká hra nebo video tě teď nejvíc baví? Ukážeš mi to?",
+          soft: "Co bys mi ze svého telefonu nebo tabletu ukázal/a jako první?",
+          fu: [
+            "Ukaž mi, co je na tom nejlepší. Chci to vidět.",
+            "Co je v té hře nejtěžší? Jak jsi to zvládl/a?",
+            "Můžu si to s tebou někdy zahrát? Naučíš mě to?"
+          ] },
+        { q: "Jaký je při hraní nejlepší pocit?",
+          soft: "Kdy sis u hry naposledy řekl/a „jóóó!“? Co se povedlo?",
+          fu: [
+            "Kdy jsi ho zažil/a naposledy? Co se povedlo?",
+            "Kde ten pocit cítíš — v břiše, v rukách?",
+            "Zažíváš podobný pocit i jinde než ve hře? Kde?"
+          ] },
+        { q: "Kdyby ses mohl/a stát postavou ze hry, kterou by sis vybral/a?",
+          soft: "Která postava ze hry nebo z videa je nejvíc jako ty?",
+          fu: [
+            "Co bys jako ta postava udělal/a jako první?",
+            "Co na ní obdivuješ? Co umí, co ty ne?",
+            "A co umíš ty, co ona ne? Něco určitě je."
+          ] },
+        { q: "Kdybys natočil/a vlastní video, o čem by bylo?",
+          soft: "Co umíš tak dobře, že by se na to lidi koukali?",
+          fu: [
+            "Jak by začínalo? Vymysli první větu.",
+            "Kdo by se na něj měl podívat?",
+            "Natočíme ho o víkendu doopravdy? Já budu kameraman."
+          ] },
+        { q: "Co ses naučil/a z videí nebo her? Něco se určitě najde.",
+          soft: "Překvapil/a jsi někdy někoho tím, co víš z internetu?",
+          fu: [
+            "Kde jsi na to narazil/a?",
+            "Použil/a jsi to už někdy doopravdy?",
+            "Nauč mě to. Teď hned, mám čas."
+          ] },
+        { q: "Kdybychom měli rodinný herní večer, co bychom hráli?",
+          soft: "Kterou hru bys chtěl/a hrát se mnou místo sám/sama?",
+          fu: [
+            "Co bys mě musel/a naučit jako první?",
+            "Kdo z nás by byl lepší? Upřímně.",
+            "Vyberme den. Kdy hrajeme?"
+          ] }
+      ],
+      [
+        { temp: "Jak moc tě to naštve?", q: "Jaké to je, když ti řeknu „už dost, vypni to“?",
+          soft: "Co se ti honí hlavou, když musíš skončit uprostřed hry?",
+          fu: [
+            "Co je na tom nejhorší — že hra končí, nebo jak to řeknu?",
+            "Jak bych to mohl/a říct, aby se to poslouchalo líp?",
+            "Domluvíme pravidlo, které bude fér pro oba? Navrhni první ty."
+          ] },
+        { q: "Viděl/a jsi někdy na internetu něco, co ti bylo nepříjemné?",
+          soft: "Objevilo se ti někdy něco, co jsi radši rychle zavřel/a?",
+          fu: [
+            "Chceš mi říct, co to bylo? Nebudu se zlobit, slibuju.",
+            "Jak ti u toho bylo — bál/a ses, nebo to bylo spíš divné?",
+            "Domluvíme se, co uděláš, kdyby se to stalo znovu?"
+          ] },
+        { q: "Jsem já na telefonu moc? Kdy ti to vadí?",
+          soft: "Kdy bys chtěl/a, abych telefon položil/a a šel/šla za tebou?",
+          fu: [
+            "Kdy naposledy jsi mě potřeboval/a a já koukal/a do telefonu?",
+            "Jak ti v tu chvíli bylo?",
+            "Máš právo mi říct „polož telefon“. Jaké slovo si na to domluvíme?"
+          ] },
+        { q: "Kolik času u obrazovky ti přijde akorát? A kolik už je moc?",
+          soft: "Jak poznáš, že už jsi hrál/a moc dlouho?",
+          fu: [
+            "Jak ti je, když hraješ moc dlouho? Něco se změní?",
+            "Co bys dělal/a místo toho, kdyby obrazovky nebyly?",
+            "Navrhni pravidlo ty. Když bude fér, zkusíme ho týden."
+          ] },
+        { temp: "Jak velký ten vztek byl?", q: "Rozčílil/a ses někdy u hry tak, že jsi to nezvládl/a?",
+          soft: "Co dělá tvoje tělo, když se ve hře nedaří?",
+          fu: [
+            "Co se tehdy stalo? Co tě vytočilo?",
+            "Kde ten vztek cítíš? Co udělá s rukama, s pusou?",
+            "To se děje i dospělým. Vymyslíme, co dělat, když to přijde?"
+          ] },
+        { q: "Hraješ někdy dál, i když už tě to nebaví?",
+          soft: "Stalo se ti, že jsi chtěl/a přestat — a nešlo to?",
+          fu: [
+            "Co tě u toho drží? Odměny, kamarádi, nuda?",
+            "Jak ti je potom, když skončíš?",
+            "Víš, že hry jsou schválně vymyšlené tak, aby se špatně končily? Povím ti, jak to dělají."
+          ] }
+      ],
+      [
+        { q: "Psal ti někdy někdo, koho neznáš? Co ti psal?",
+          soft: "Ozval se ti někdy někdo cizí? Nemusíš říkat všechno — stačí kousek.",
+          fu: [
+            "Děkuju, že mi to říkáš. Co ti psal? Můžeš mi to ukázat?",
+            "Odpověděl/a jsi mu? Co se dělo dál?",
+            "Domluvíme se: když se ozve někdo cizí, ukážeš mi to a vyřešíme to spolu. Platí?"
+          ] },
+        { q: "Děláš na telefonu něco, o čem si myslíš, že bych to zakázal/a?",
+          soft: "Je nějaká apka nebo hra, kterou přede mnou schováváš?",
+          fu: [
+            "Díky za upřímnost — to chtělo odvahu. Co to je?",
+            "Proč myslíš, že bych to zakázal/a? A co tě na tom láká?",
+            "Zkusíme se domluvit na pravidlech, která dávají smysl nám oběma?"
+          ] },
+        { q: "Kdyby se ti na internetu stalo něco špatného, řekl/a bys mi to?",
+          soft: "Komu by ses svěřil/a, kdyby ti někdo na internetu ubližoval?",
+          fu: [
+            "Co by ti v tom bránilo — strach z trestu, stud, něco jiného?",
+            "Co bych měl/a udělat, aby se ti to říkalo snadno?",
+            "Slibuju: když mi něco takového řekneš, nebudu se zlobit a telefon ti nevezmu. Věříš mi to?"
+          ] },
+        { q: "Viděl/a jsi někdy, že si děti píšou ošklivé věci? Nebo je někdo psal tobě?",
+          soft: "Stalo se někomu, koho znáš, že mu na telefonu ubližovali?",
+          fu: [
+            "Co se tam psalo? Nemusíš říkat všechno.",
+            "Jak ti u toho bylo — i když to třeba nebylo o tobě?",
+            "Kdyby to někdy přišlo, co uděláme jako první? Domluvíme si to teď."
+          ] },
+        { q: "Poslal/a jsi někdy zprávu, kterou bys nejraději vzal/a zpátky?",
+          soft: "Napsal/a jsi někdy něco, čeho jsi pak litoval/a?",
+          fu: [
+            "Co se stalo pak?",
+            "Co bys dnes udělal/a jinak?",
+            "To zná každý — i já. Chceš slyšet o mojí nejhorší zprávě?"
+          ] },
+        { q: "Jaké to je, když je telefon vybitý — klid, nebo nervy?",
+          soft: "Co se v tobě děje, když nemáš telefon ani tablet?",
+          fu: [
+            "Kdy naposledy jsi byl/a dlouho bez obrazovky? Jaké to bylo?",
+            "Co tě napadá dělat, když není nic „na koukání“?",
+            "Zkusíme spolu půl dne bez obrazovek — oba dva? Co bychom dělali?"
+          ] }
+      ]
+    ]
+  },
+  {
+    id: "pocity", emoji: "🌈", bg: "var(--honey-soft)",
+    title: "Pocity",
+    tagline: "Radost, vztek, smutek, brek",
+    desc: "Radost, vztek, smutek — má je každý. Málokdy o nich mluvíme nahlas. Zkusme to spolu.",
+    questions: [
+      [
+        { q: "Co tě dneska rozesmálo?",
+          soft: "Kdy ses dneska nebo včera zasmál/a úplně nahlas?",
+          fu: [
+            "Vyprávěj mi to! Chci se zasmát taky.",
+            "Kdo u toho byl? Smáli jste se spolu?",
+            "Co rozesměje spolehlivě nás oba? Vymyslíme to."
+          ] },
+        { q: "Jak poznáš, že máš radost? Co dělá tvoje tělo?",
+          soft: "Kde v těle cítíš radost — v břiše, v nohách, všude?",
+          fu: [
+            "Ukaž mi to — jak vypadáš, když máš radost?",
+            "Kdy naposledy to tělo takhle dělalo?",
+            "A jak poznáš radost na mně? Co dělám já?"
+          ] },
+        { q: "Co tě vždycky spolehlivě potěší?",
+          soft: "Kdyby existoval lék na špatnou náladu, co by v něm bylo?",
+          fu: [
+            "Jak jsi přišel/přišla na to, že tohle funguje?",
+            "Kdy to potřebuješ nejčastěji?",
+            "Mám to použít, až tě uvidím smutného/smutnou — nebo se mám nejdřív zeptat?"
+          ] },
+        { q: "Kdyby tvoje dnešní nálada byla barva, jaká by byla?",
+          soft: "Jakou barvu má dnešek? A jakou mělo včerejšek?",
+          fu: [
+            "Proč zrovna tahle? Co se v ní schovává?",
+            "Jakou barvu bys chtěl/a mít zítra?",
+            "Hádej, jakou barvu mám dneska já. Pak ti to řeknu."
+          ] },
+        { q: "Kdy jsi byl/a naposledy sám/sama na sebe pyšný/á?",
+          soft: "Co se ti povedlo tak, že sis v duchu zatleskal/a?",
+          fu: [
+            "Vyprávěj mi to celé. Chci detaily.",
+            "Řekl/a jsi to někomu? Proč ano, proč ne?",
+            "Já jsem na tebe taky pyšný/á. Víš za co? Řeknu ti to."
+          ] },
+        { q: "Na co se teď nejvíc těšíš?",
+          soft: "Co hezkého tě čeká? Klidně i malinkatého.",
+          fu: [
+            "Co na tom bude nejlepší?",
+            "Jaké to je, těšit se? Kde to v těle cítíš?",
+            "Vymyslíme si něco, na co se budeme těšit spolu?"
+          ] }
+      ],
+      [
+        { temp: "Jak velký ten vztek umí být?", q: "Co děláš, když máš vztek?",
+          soft: "Kam jde tvůj vztek — do rukou, do pusy, nebo do breku?",
+          fu: [
+            "Kde ten vztek cítíš? V rukách, v puse, v břiše?",
+            "Co ho spouští nejčastěji?",
+            "Vymyslíme, co se vztekem dělat, aby nikomu neublížil — ani tobě?"
+          ] },
+        { temp: "Jak velký ten smutek byl?", q: "Kdy jsi byl/a naposledy smutný/á? Co se stalo?",
+          soft: "Vzpomeneš si na chvíli, kdy ti bylo do breku?",
+          fu: [
+            "Co bylo na tom to nejsmutnější?",
+            "Řekl/a jsi to někomu, nebo jsi to nesl/a sám/sama?",
+            "Co ti tehdy pomohlo — nebo co by pomohlo, kdyby se to stalo znovu?"
+          ] },
+        { q: "Schováváš někdy pocity, aby je nikdo neviděl?",
+          soft: "Usmíváš se někdy, i když ti vůbec není do smíchu?",
+          fu: [
+            "Které pocity schováváš nejčastěji?",
+            "Před kým je schováváš? A proč zrovna před ním?",
+            "Co by se muselo stát, aby ses u nás schovávat nemusel/a?"
+          ] },
+        { temp: "Jak horké to bylo?", q: "Kdy ses naposledy styděl/a?",
+          soft: "Stalo se ti něco, po čem jsi chtěl/a zmizet pod zem?",
+          fu: [
+            "Co se stalo? Smát se tomu budeme leda spolu.",
+            "Co dělá stud s tělem? Červenáš se, mlčíš?",
+            "Chceš slyšet můj nejtrapnější zážitek? Je fakt dobrý."
+          ] },
+        { q: "Záviděl/a jsi někdy někomu? Co?",
+          soft: "Je něco, co má někdo jiný, a ty si říkáš „to chci taky“?",
+          fu: [
+            "Komu a co závidíš nejvíc?",
+            "Jaký je to pocit? Spíš smutek, nebo vztek?",
+            "A víš, co možná někdo závidí tobě? Zkusíme to uhodnout."
+          ] },
+        { q: "Jak poznáš, že mám špatnou náladu? A co v tu chvíli děláš?",
+          soft: "Co dělám, když jsem naštvaný/á nebo smutný/á? Popiš mě.",
+          fu: [
+            "Předveď mě. Klidně přehrávej, vydržím to.",
+            "Co si v tu chvíli myslíš? Bojíš se, že za to můžeš ty?",
+            "Zapamatuj si: moje nálady nejsou tvoje vina. Jak ti to mám připomínat?"
+          ] }
+      ],
+      [
+        { temp: "Jak velké to smutno bylo?", q: "Bylo ti někdy tak smutno, že jsi nevěděl/a, co s tím?",
+          soft: "Jaké to je, když je smutek moc velký? Kde v těle to cítíš?",
+          fu: [
+            "Kdy to bylo? Co se tehdy dělo?",
+            "Kde v těle to bolelo nejvíc?",
+            "Kdyby to přišlo znovu, co uděláme? Domluvíme si to teď, dokud je klid."
+          ] },
+        { q: "Plakal/a jsi někdy potají, aby to nikdo neviděl?",
+          soft: "Kdy naposledy jsi brečel/a a nikdo o tom nevěděl?",
+          fu: [
+            "Proč potají? Co by se stalo, kdyby tě někdo viděl?",
+            "Věděl/a jsi, že někdy brečím i já? Plakat smí každý.",
+            "Co mám udělat, když tě příště uvidím plakat — obejmout, nebo nechat chvíli být?"
+          ] },
+        { q: "Co bys potřeboval/a slyšet, když je ti nejhůř?",
+          soft: "Zkus dokončit: „Když je mi zle, pomohlo by, kdyby…“",
+          fu: [
+            "Zkus to říct přesně — jaká slova by to byla?",
+            "Od koho to potřebuješ slyšet nejvíc?",
+            "Řeknu ti to teď, ať víš, jak to zní. Pak mi pověz, jestli to bylo ono."
+          ] },
+        { temp: "Jak těžké je to nést?", q: "Nosíš v sobě něco, za co se stydíš?",
+          soft: "Je něco, co jsi nikdy neřekl/a, protože je to trapné?",
+          fu: [
+            "Nemusíš říkat všechno. Stačí kousek — nebo jen jak je to velké.",
+            "Jak dlouho to nosíš?",
+            "Stud roste ve tmě a mizí na světle. Až to budeš chtít říct, budu tady."
+          ] },
+        { q: "Myslíš si někdy, že tě máme míň rádi, když zlobíš?",
+          soft: "Když se na tebe zlobím, co si myslíš, že k tobě cítím?",
+          fu: [
+            "Kdy tě to naposledy napadlo? Co se dělo?",
+            "Co bys v tu chvíli potřeboval/a slyšet?",
+            "Řeknu ti tajemství: mám tě rád/a pořád stejně, i když se zlobím. Věříš mi to?"
+          ] },
+        { temp: "Jak velká ta samota je?", q: "Cítíš se někdy sám/sama, i když jsou kolem lidi?",
+          soft: "Byl/a jsi někdy v plné třídě — a stejně ti bylo smutno?",
+          fu: [
+            "Kdy to bývá? Co se v tu chvíli děje kolem?",
+            "Co by v tu chvíli pomohlo?",
+            "Ten pocit znám taky. Domluvíme si znamení, kterým mi ho řekneš beze slov?"
+          ] }
+      ]
+    ]
+  }
+];
+
+/* Bonusové karty — vydýchání mezi vážnými otázkami: mini-úkoly a hravé otázky.
+   Losují se z osudí bez opakování, dokud se zásobník nevyčerpá. */
+const BONUS_CARDS = [
+  // úkoly
+  "Zavrč jako medvěd. Pořádně!",
+  "Udělejte na sebe navzájem nejsměšnější obličej.",
+  "10 vteřin se na sebe dívejte a nesmějte se. Kdo to nevydrží?",
+  "Předveď, jak chodí tučňák. A rodič musí za tebou.",
+  "Zkuste se oba dotknout nosu jazykem.",
+  "Vymyslete si spolu tajný pozdrav — plácnutí, ťuknutí, cokoli.",
+  "Zazpívej kousek písničky, kterou máš zrovna v hlavě.",
+  "Rodič teď musí 15 vteřin mluvit jako robot.",
+  "Udělejte spolu 5 dřepů. Teď hned!",
+  "Řekni svoje jméno pozpátku. A rodič taky.",
+  "Rodič musí 10 vteřin tancovat. Úplně bez hudby!",
+  "Rodič předvede, jak vypadá ráno, než se probudí doopravdy.",
+  "Rodič zazpívá „Skákal pes“ jako operní zpěvák.",
+  "Rodič předvede nějaké zvíře — a ty hádej, které to je.",
+  "Vymysli rodiči pět slov a on je musí říct pozpátku.",
+  // hravé otázky
+  "Kdyby ses mohl/a proměnit v jakékoli zvíře, jaké by to bylo a proč?",
+  "Co bys dělal/a, kdybys byl/a na jeden den neviditelný/á?",
+  "Kdybys vyhrál/a milion, co bys koupil/a jako první?",
+  "Jakou superschopnost by sis vybral/a — létání, neviditelnost, nebo čtení myšlenek?",
+  "Kdyby zvířata uměla mluvit, kterého by ses na co zeptal/a?",
+  "Jak by vypadal tvůj vysněný dům, kdyby mohl vypadat jakkoli?",
+  "Kdybys mohl/a mít jakéhokoli mazlíčka na světě — klidně dinosaura — koho by sis vybral/a?",
+  "Radši bys uměl/a létat, nebo dýchat pod vodou? Proč?",
+  "Kdybys byl/a jeden den ředitelem školy, co bys změnil/a jako první?",
+  "Které jídlo by mělo být zakázané zákonem?",
+  "Kdyby náš dům byl celý z jídla, z čeho by byl?",
+  "Jaké je nejlegračnější slovo, které znáš?",
+  "Kdybys objevil/a novou planetu, jak by se jmenovala a kdo by na ní bydlel?",
+  "Radši týden bez tabletu a televize, nebo týden bez sladkostí?",
+  "Kdyby ses ráno probudil/a velký/á jako rodič a rodič malý jako ty, co byste celý den dělali?",
+  "Vymysli nejhorší možnou příchuť zmrzliny.",
+  "Kdybys mohl/a jeden den dělat úplně cokoli, jak by vypadal od rána do večera?",
+  "Co umíš ty a nikdo jiný z naší rodiny to neumí?"
+];
+
+const DEPTH_NAMES = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"];
+
+/* Jedno sezení = 2 otázky vylosované ze zásoby (6 na téma a hloubku) + 1 bonusovka.
+   Přednost mají neprošlé otázky — je tak důvod se ke kombinaci vracet. */
+const SESSION_SIZE = 2;
+
+/* ================= Stav ================= */
+const state = {
+  nameParent: "Rodič",
+  nameKid: "Dítě",
+  deck: null,
+  depth: null,
+  queue: [],       // otázky, které ještě čekají v balíčku
+  current: null,   // právě vylosovaná otázka
+  total: 0,        // karet v sezení celkem = otázky + bonusovka
+  step: 0,         // hotových karet (otázky i bonusovka) — řídí postupovou lištu
+  jokerLeft: true, // karta legrace — jedna na sezení, přimíchaná ve vějíři
+  currentJoker: null, // { tag, text } právě otočeného žolíka
+  answered: 0,     // jen probrané otázky — statistika „X otázek“ na konci (bonus se nepočítá)
+  seen: new Set(), // probrané otázky téma:hloubka:index — přes sezení
+  done: new Set()  // kombinace téma:hloubka s probranými všemi otázkami
+};
+
+/* ================= Navigace ================= */
+function go(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const el = document.getElementById(id);
+  el.classList.add("active");
+  el.scrollTop = 0;
+}
+
+function goHome() {
+  releaseWakeLock(); // mimo povídání může displej normálně zhasínat
+  renderHome(); // ať tečky pokroku odpovídají aktuálnímu stavu
+  go("s-home");
+}
+
+/* ================= Wake lock =================
+   Při povídání telefon leží na stole — displej nesmí zhasnout.
+   Progressive enhancement: kde API není (starší iOS), prostě se nic neděje. */
+let wakeLock = null;
+let sessionRunning = false;
+
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    }
+  } catch (e) { /* bez povolení/podpory hra normálně běží dál */ }
+}
+
+function releaseWakeLock() {
+  sessionRunning = false;
+  try { if (wakeLock) wakeLock.release(); } catch (e) {}
+  wakeLock = null;
+}
+
+/* po návratu do appky (zámek se přepnutím appky uvolní) ho znovu vyžádat */
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && sessionRunning) requestWakeLock();
+});
+
+/* ================= Uložení do telefonu =================
+   Jen localStorage — nic neopouští zařízení. Jména + prošlé kombinace. */
+const STORE_KEY = "mezi-nami-deti";
+
+function saveStore() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      nameParent: state.nameParent,
+      nameKid: state.nameKid,
+      seen: [...state.seen],
+      done: [...state.done]
+    }));
+  } catch (e) { /* soukromý režim — hra funguje i bez ukládání */ }
+}
+
+/* ================= Průvodce při prvním spuštění =================
+   Dvě části: PROČ (motivace, před jmény) a JAK (mechanika hry, těsně
+   před hraním — ať to mají čerstvé v paměti). Mezi nimi jména. */
+const ONBOARD_WHY = [
+  { emoji: "🫶", bg: "var(--sage-soft)", title: "Rozhovory, které sbližují rodiče a děti",
+    text: "Stojí na jednoduché věci: ptát se, naslouchat a nesoudit." },
+  { emoji: "💭", bg: "var(--plum-soft)", title: "Někdy je těžké začít",
+    text: "O škole, kamarádech nebo strachu se doma nemluví vždycky snadno. Ani dětem, ani rodičům." },
+  { emoji: "✨", bg: "var(--honey-soft)", title: "Tahle hra pomůže",
+    text: "Otázka na kartě to nastartuje. Vy si pak jen povídáte — spolu, beze spěchu." }
+];
+const ONBOARD_HOW = [
+  { emoji: "🧭", bg: "var(--sage-soft)", title: "Jak to funguje",
+    text: "Hrajete oba — na každou otázku odpovídá dítě i rodič. Telefon jen rozdává karty, povídání je na vás." },
+  { emoji: "🎴", bg: "var(--plum-soft)", title: "Vytáhněte kartu",
+    text: "Dítě vytáhne kartu z balíčku. Uvnitř je společná otázka pro vás oba." },
+  { emoji: "💬", bg: "var(--sky-soft)", title: "Povídejte si",
+    text: "Otočte kartu. Na druhé straně najdete tipy, jak rozhovor přirozeně rozvinout." },
+  { emoji: "🎉", bg: "var(--honey-soft)", title: "A trocha legrace",
+    text: "V balíčku je schovaná bonusová karta — s úkolem nebo speciální otázkou." }
+];
+let onboardStage = "why"; // "why" | "how"
+let onboardIdx = 0;
+
+function currentOnboard() { return onboardStage === "why" ? ONBOARD_WHY : ONBOARD_HOW; }
+
+function startOnboard() {
+  onboardStage = "why";
+  showOnboard(0);
+  go("s-onboard");
+}
+
+function showOnboard(i) {
+  onboardIdx = i;
+  const list = currentOnboard();
+  const s = list[i];
+  const visual = document.getElementById("onboardEmoji");
+  visual.textContent = s.emoji;
+  visual.style.background = s.bg;
+  document.getElementById("onboardTitle").textContent = s.title;
+  document.getElementById("onboardText").textContent = s.text;
+  document.getElementById("onboardStep").textContent = `${i + 1}/${list.length}`;
+  document.getElementById("onboardDots").innerHTML =
+    list.map((_, d) => `<span class="${d === i ? "on" : ""}"></span>`).join("");
+  document.getElementById("onboardNextBtn").textContent =
+    i < list.length - 1 ? "Pokračovat" : onboardStage === "why" ? "Pokračovat" : "Jdeme na to";
+  // znovu přehrát animaci slidu
+  const slide = document.getElementById("onboardSlide");
+  slide.classList.remove("slide-in");
+  void slide.offsetWidth;
+  slide.classList.add("slide-in");
+}
+
+function onboardNext() {
+  const list = currentOnboard();
+  if (onboardIdx < list.length - 1) { showOnboard(onboardIdx + 1); return; }
+  if (onboardStage === "why") go("s-names");
+  else go("s-principles");
+}
+
+function onboardBack() {
+  if (onboardIdx > 0) { showOnboard(onboardIdx - 1); return; }
+  if (onboardStage === "why") go("s-welcome");
+  else go("s-names");
+}
+
+function onboardSkip() {
+  if (onboardStage === "why") go("s-names");
+  else go("s-principles");
+}
+
+/* Návraty zpět z jmen / slibů — vždy na poslední slide dané fáze */
+function goOnboardWhyEnd() {
+  onboardStage = "why";
+  showOnboard(ONBOARD_WHY.length - 1);
+  go("s-onboard");
+}
+
+function goOnboardHowEnd() {
+  onboardStage = "how";
+  showOnboard(ONBOARD_HOW.length - 1);
+  go("s-onboard");
+}
+
+/* ================= Onboarding ================= */
+function saveNames() {
+  state.nameParent = document.getElementById("nameParent").value.trim() || "Rodič";
+  state.nameKid = document.getElementById("nameKid").value.trim() || "Dítě";
+  saveStore();
+  onboardStage = "how";
+  showOnboard(0);
+  go("s-onboard");
+}
+
+/* ================= Domů ================= */
+function renderHome() {
+  const grid = document.getElementById("deckGrid");
+  grid.innerHTML = "";
+  DECKS.forEach(d => {
+    const btn = document.createElement("button");
+    btn.className = "deck-card";
+    const dots = [0, 1, 2].map(dep => {
+      const pool = d.questions[dep];
+      const seen = pool.filter((_, i) => state.seen.has(d.id + ":" + dep + ":" + i)).length;
+      const cls = seen === pool.length ? "on" : seen > 0 ? "half" : "";
+      return `<span class="${cls}"></span>`;
+    }).join("");
+    btn.innerHTML = `
+      <div class="deck-emoji" style="background:${d.bg};">${d.emoji}</div>
+      <div><h3>${d.title}</h3><p>${d.tagline}</p></div>
+      <span class="deck-progress">${dots}</span>
+      <span class="deck-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>`;
+    btn.onclick = () => openDeck(d.id);
+    grid.appendChild(btn);
+  });
+}
+
+function openDeck(id) {
+  state.deck = DECKS.find(d => d.id === id);
+  state.depth = null;
+  document.getElementById("deckIntroEmoji").textContent = state.deck.emoji;
+  document.getElementById("deckIntroEmoji").style.background = state.deck.bg;
+  document.getElementById("deckIntroTitle").textContent = state.deck.title;
+  document.getElementById("deckIntroDesc").textContent = state.deck.desc;
+  document.querySelectorAll(".depth-option").forEach(o => {
+    o.classList.remove("selected");
+    const dep = o.dataset.depth;
+    const pool = state.deck.questions[dep];
+    const seenCount = pool.filter((_, i) =>
+      state.seen.has(state.deck.id + ":" + dep + ":" + i)).length;
+    const done = seenCount === pool.length;
+    o.classList.toggle("done", done);
+    const badge = o.querySelector(".done-badge");
+    badge.hidden = seenCount === 0;
+    badge.textContent = done ? "✓ Vše prošlé" : `${seenCount}/${pool.length} otázek`;
+  });
+  document.getElementById("startSessionBtn").disabled = true;
+  go("s-deck");
+}
+
+function pickDepth(d) {
+  state.depth = d;
+  document.querySelectorAll(".depth-option").forEach(o =>
+    o.classList.toggle("selected", Number(o.dataset.depth) === d));
+  document.getElementById("startSessionBtn").disabled = false;
+}
+
+/* ================= Povídání ================= */
+function startSession() {
+  const pool = state.deck.questions[state.depth]
+    .map((q, i) => ({ ...q, key: state.deck.id + ":" + state.depth + ":" + i }));
+  const unseen = pool.filter(p => !state.seen.has(p.key)).sort(() => Math.random() - .5);
+  const seen = pool.filter(p => state.seen.has(p.key)).sort(() => Math.random() - .5);
+  state.queue = [...unseen, ...seen].slice(0, SESSION_SIZE);
+  state.total = state.queue.length + 1; // + bonusovka do celkového počtu
+  state.step = 0;
+  state.answered = 0;
+  state.jokerLeft = true;
+  sessionRunning = true;
+  requestWakeLock();
+  goDraw();
+}
+
+/* --- gejzír emoji při odhalení bonusovky --- */
+function emojiBurst() {
+  const layer = document.getElementById("confettiLayer");
+  const emojis = ["🎉", "⭐", "😜", "🎈", "✨", "🥳"];
+  for (let i = 0; i < 12; i++) {
+    const s = document.createElement("span");
+    s.className = "burst-emoji";
+    s.textContent = emojis[i % emojis.length];
+    const angle = (i / 12) * 2 * Math.PI + Math.random() * .5;
+    const dist = 90 + Math.random() * 110;
+    s.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+    s.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+    s.style.setProperty("--rr", (Math.random() * 60 - 30) + "deg");
+    s.style.animationDelay = (Math.random() * .12) + "s";
+    layer.appendChild(s);
+    setTimeout(() => s.remove(), 1300);
+  }
+}
+
+/* --- konfety --- */
+function confetti() {
+  const layer = document.getElementById("confettiLayer");
+  const colors = ["#6E3B52", "#C96F5B", "#C08A2D", "#7C8A6E", "#E8A93D"];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-piece";
+    p.style.left = Math.random() * 100 + "%";
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = (0.9 + Math.random() * 0.8) + "s";
+    p.style.animationDelay = (Math.random() * 0.25) + "s";
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 2200);
+  }
+}
+
+/* --- losování karet --- */
+let picking = false;
+
+let lastPickJoker = false;
+
+function goDraw() {
+  // zamíchat, ať stejná pozice karty neznamená stejnou otázku (i po vrácení do balíčku)
+  state.queue.sort(() => Math.random() - .5);
+  picking = false;
+  renderProgress("progressTrack0", "progressLabel0", Math.min(state.step + 1, state.total));
+  // vějíř ukazuje VŠECHNY zbývající karty (otázky + bonusovka) — každým losem
+  // viditelně jedna ubyde; která je která, se rozhodne až při otočení (pickCard)
+  const count = state.queue.length + (state.jokerLeft ? 1 : 0);
+  const lastIsReward = state.queue.length === 0 && state.jokerLeft;
+  document.getElementById("drawTitle").textContent =
+    lastIsReward ? "Ještě jedna — za odměnu!" : count > 1 ? "Vyber si kartu" : "Poslední karta!";
+  document.getElementById("drawWho").textContent = lastIsReward
+    ? `${state.nameKid}, zvládli jste všechno. Otoč si kartu na rozloučenou.`
+    : `${state.nameKid}, klepni na jednu — uvnitř se schovává otázka.`;
+  const fan = document.getElementById("cardFan");
+  fan.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const c = document.createElement("button");
+    c.className = "draw-card";
+    c.style.setProperty("--rot", ((i - (count - 1) / 2) * 8) + "deg");
+    c.textContent = "?";
+    c.onclick = () => pickCard(c);
+    fan.appendChild(c);
+  }
+  resetBigCard();
+  document.getElementById("drawPick").hidden = false;
+  document.getElementById("drawResult").hidden = true;
+  document.getElementById("drawBtnRow").hidden = true;
+  go("s-draw");
+}
+
+/* --- otočení karty: líc = otázka, rub = nápověda k rozhovoru --- */
+let flipped = false;
+
+function resetBigCard() {
+  flipped = false;
+  jokerCovered = false;
+  const big = document.getElementById("bigCard");
+  big.classList.remove("joker", "back-side", "face-down");
+  document.getElementById("jokerCover").hidden = true;
+  document.getElementById("cardFront").hidden = false;
+  document.getElementById("cardBack").hidden = true;
+  document.getElementById("flipHint").hidden = true;
+  document.getElementById("drawFinishBtn").hidden = true;
+  document.getElementById("drawGoBtn").disabled = false;
+}
+
+let jokerCovered = false; // bonusovka čeká lícem dolů na otočení
+
+function flipCard() {
+  if (lastPickJoker) {
+    if (!jokerCovered) return; // otočená bonusovka už rub nemá
+    jokerCovered = false;
+    const big = document.getElementById("bigCard");
+    big.classList.remove("face-down");
+    big.classList.add("joker");
+    document.getElementById("jokerCover").hidden = true;
+    document.getElementById("cardFront").hidden = false;
+    document.getElementById("jokerTag").hidden = false;
+    document.getElementById("flipHint").hidden = true;
+    big.classList.remove("flip-in");
+    void big.offsetWidth; // restart animace otočení
+    big.classList.add("joker-in");
+    emojiBurst();
+    document.getElementById("drawBtnRow").hidden = false;
+    return;
+  }
+  flipped = !flipped;
+  const big = document.getElementById("bigCard");
+  big.classList.toggle("back-side", flipped);
+  document.getElementById("cardFront").hidden = flipped;
+  document.getElementById("cardBack").hidden = !flipped;
+  document.getElementById("flipHint").textContent = flipped
+    ? "Klepni zpátky na otázku"
+    : "Klepni na kartu — poradíme, jak si o tom povídat";
+  big.classList.remove("flip-in");
+  void big.offsetWidth; // restart animace otočení
+  big.classList.add("flip-in");
+}
+
+let bonusBag = []; // osudí — losuje se bez opakování, po vyčerpání se znovu naplní
+
+function drawBonus() {
+  if (bonusBag.length === 0) bonusBag = [...BONUS_CARDS].sort(() => Math.random() - .5);
+  return bonusBag.pop();
+}
+
+function jokerContent(isFinal) {
+  // závěrečný žolík = vždy bonus (končíme smíchem); uprostřed občas výměna rolí
+  if (!isFinal && Math.random() < .35) return {
+    tag: "Výměna rolí",
+    text: "Teď se ptáš ty! Vymysli pro rodiče libovolnou otázku — a rodič musí upřímně odpovědět."
+  };
+  return { tag: "Bonusová otázka", text: drawBonus() };
+}
+
+function pickCard(cardEl) {
+  if (picking) return;
+  picking = true;
+  // obsah se losuje až teď — karty ve vějíři jsou jen ruby; bonusovka proto
+  // nikdy nepadne jako úplně první, aniž by to šlo poznat
+  const poolSize = state.queue.length + (state.jokerLeft ? 1 : 0);
+  const jokerAllowed = state.jokerLeft && state.answered > 0;
+  const isJoker = state.jokerLeft &&
+    (state.queue.length === 0 || (jokerAllowed && Math.random() < 1 / poolSize));
+  lastPickJoker = isJoker;
+  if (isJoker) {
+    const isFinal = state.queue.length === 0; // bonusovka jako poslední karta = vždy legrace
+    state.jokerLeft = false;
+    state.currentJoker = jokerContent(isFinal);
+  } else {
+    state.current = state.queue.splice(Math.floor(Math.random() * state.queue.length), 1)[0];
+  }
+  [...document.getElementById("cardFan").children].forEach(c =>
+    c.classList.add(c === cardEl ? "picked" : "away"));
+  setTimeout(() => {
+    document.getElementById("drawPick").hidden = true;
+    const tag = document.getElementById("jokerTag");
+    tag.hidden = true; // u bonusovky se štítek ukáže až po otočení
+    if (isJoker) tag.textContent = state.currentJoker.tag;
+    document.getElementById("drawnQuestion").textContent =
+      isJoker ? state.currentJoker.text : state.current.q;
+    const big = document.getElementById("bigCard");
+    if (isJoker) {
+      // bonusovka přijde lícem dolů — obsah se odhalí až klepnutím (flipCard)
+      jokerCovered = true;
+      document.getElementById("cardFront").hidden = true;
+      document.getElementById("jokerCover").hidden = false;
+      big.classList.add("face-down");
+      const hint = document.getElementById("flipHint");
+      hint.textContent = "Klepni na kartu a otoč si ji";
+      hint.hidden = false;
+    }
+    if (!isJoker) {
+      // připravit rub: doptávací otázky → záchrana; u „škálovacích“ se původní
+      // otázka teploměru vplete jako 2. doptávačka (prohloubit k pocitu)
+      const fu = document.getElementById("backFu");
+      fu.innerHTML = "";
+      const followups = [...state.current.fu];
+      if (state.current.temp) followups.splice(1, 0, state.current.temp);
+      followups.forEach(f => {
+        const li = document.createElement("li");
+        li.textContent = f;
+        fu.appendChild(li);
+      });
+      document.getElementById("backSoft").textContent = state.current.soft;
+      const hint = document.getElementById("flipHint");
+      hint.textContent = "Klepni na kartu — poradíme, jak si o tom povídat";
+      hint.hidden = false;
+      document.getElementById("drawFinishBtn").hidden = false;
+    }
+    big.classList.remove("flip-in", "joker-in");
+    void big.offsetWidth; // restart animace otočení
+    big.classList.add("flip-in"); // odskočení a gejzír má až otočení bonusovky
+    document.getElementById("drawGoBtn").textContent = isJoker
+      ? (state.queue.length === 0 ? "A je to! Dokončit povídání" : "Splněno! Losujeme dál")
+      : (state.queue.length === 0 && !state.jokerLeft
+          ? "🖐️ Plácněte si — a hotovo!" : "🖐️ Plácněte si a losujte dál");
+    document.getElementById("drawResult").hidden = false;
+    document.getElementById("drawBtnRow").hidden = isJoker; // u bonusovky až po otočení
+  }, 450);
+}
+
+function proceedFromDraw() {
+  if (lastPickJoker) {
+    // bonusovka splněná — počítá se do postupu, pak dál nebo konec
+    state.step++;
+    if (state.queue.length === 0) { finishSession(); return; }
+    goDraw();
+    return;
+  }
+  // otázka je probraná — plácnutí, oslava a dál
+  state.step++;
+  state.answered++;
+  state.seen.add(state.current.key);
+  document.getElementById("drawGoBtn").disabled = true; // ať plácnutí nejde odklikat dvakrát
+  confetti();
+  setTimeout(() => {
+    if (state.queue.length === 0 && !state.jokerLeft) { finishSession(); return; }
+    goDraw();
+  }, 900);
+}
+
+function renderProgress(trackId, labelId, filled) {
+  const track = document.getElementById(trackId);
+  track.innerHTML = "";
+  for (let i = 0; i < state.total; i++) {
+    const s = document.createElement("span");
+    if (i < filled) s.classList.add("done");
+    track.appendChild(s);
+  }
+  document.getElementById(labelId).textContent = `${filled}/${state.total}`;
+}
+
+/* --- konec --- */
+function finishFromTalk() {
+  state.answered++; // o téhle otázce už si povídali
+  state.seen.add(state.current.key);
+  finishSession();
+}
+
+function finishSession() {
+  releaseWakeLock();
+  // „Hotovo“ až po probrání všech otázek tématu a hloubky — klidně přes víc sezení
+  const allSeen = state.deck.questions[state.depth]
+    .every((_, i) => state.seen.has(state.deck.id + ":" + state.depth + ":" + i));
+  if (allSeen) state.done.add(state.deck.id + ":" + state.depth);
+  saveStore();
+  document.getElementById("statQuestions").textContent = state.answered;
+  document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
+  renderNextTip();
+  go("s-finish");
+}
+
+/* Most k dalšímu sezení — nabídnout náhodnou neprošlou kombinaci */
+function renderNextTip() {
+  const remaining = [];
+  DECKS.forEach(d => [0, 1, 2].forEach(dep => {
+    if (!state.done.has(d.id + ":" + dep)) remaining.push({ d, dep });
+  }));
+  const label = document.getElementById("nextTipLabel");
+  const btn = document.getElementById("nextTipBtn");
+  if (remaining.length === 0) {
+    label.textContent = "Prošli jste všechno! Klidně začněte znovu — odpovědi se mění.";
+    btn.hidden = true;
+    return;
+  }
+  const pick = remaining[Math.floor(Math.random() * remaining.length)];
+  label.textContent = "Příště zkuste";
+  btn.hidden = false;
+  btn.textContent = `${pick.d.emoji} ${pick.d.title} · ${DEPTH_NAMES[pick.dep]}`;
+  btn.onclick = () => { openDeck(pick.d.id); pickDepth(pick.dep); };
+}
+
+function confirmLeave() {
+  if (confirm("Opustit povídání a vrátit se na témata?")) goHome();
+}
+
+/* ================= Nastavení ================= */
+function openSettings() {
+  // předvyplnit jen skutečně zadaná jména, ne výchozí „Rodič“/„Dítě“
+  document.getElementById("setNameParent").value = state.nameParent === "Rodič" ? "" : state.nameParent;
+  document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
+  go("s-settings");
+}
+
+function settingsNamesChanged() {
+  state.nameParent = document.getElementById("setNameParent").value.trim() || "Rodič";
+  state.nameKid = document.getElementById("setNameKid").value.trim() || "Dítě";
+  // držet v synchronu i vstupy v úvodním průvodci
+  document.getElementById("nameParent").value = document.getElementById("setNameParent").value;
+  document.getElementById("nameKid").value = document.getElementById("setNameKid").value;
+  saveStore();
+}
+
+function resetAll() {
+  if (!confirm("Opravdu smazat jména i pokrok? Začnete úplně od začátku.")) return;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  state.nameParent = "Rodič";
+  state.nameKid = "Dítě";
+  state.seen = new Set();
+  state.done = new Set();
+  ["nameParent", "nameKid", "setNameParent", "setNameKid"].forEach(id =>
+    document.getElementById(id).value = "");
+  document.getElementById("welcomeBack").hidden = true;
+  go("s-welcome");
+}
+
+/* ================= Interakce ================= */
+document.getElementById("setNameParent").addEventListener("input", settingsNamesChanged);
+document.getElementById("setNameKid").addEventListener("input", settingsNamesChanged);
+
+/* ================= PWA =================
+   Service worker jen na http(s) — při otevření souboru napřímo se přeskočí. */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+
+/* ================= Start =================
+   Návrat: jména i pokrok čekají v telefonu — onboarding se přeskočí. */
+let saved = null;
+try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
+if (saved && saved.nameKid) {
+  state.nameParent = saved.nameParent || "Rodič";
+  state.nameKid = saved.nameKid || "Dítě";
+  state.seen = new Set(saved.seen || []);
+  // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
+  state.done = new Set(saved.seen ? saved.done || [] : []);
+  document.getElementById("nameParent").value = saved.nameParent || "";
+  document.getElementById("nameKid").value = saved.nameKid || "";
+  document.getElementById("welcomeBack").hidden = false;
+  goHome();
+} else {
+  renderHome();
+}
+</script>
+</body>
+</html>
