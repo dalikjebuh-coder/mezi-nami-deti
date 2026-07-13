@@ -919,7 +919,7 @@
     <p class="muted">Změny se ukládají samy.</p>
 
     <div class="section-label">🎮 Hra</div>
-    <button class="settings-item" onclick="startOnboard()">Znovu projít průvodce</button>
+    <button class="settings-item" onclick="startOnboard(true)">Znovu projít průvodce</button>
     <button class="settings-item" onclick="openPrinciples(true)">Tři sliby</button>
     <button class="settings-item danger" id="resetBtn" onclick="resetProgress()">Resetovat postup</button>
 
@@ -1943,8 +1943,10 @@ const ONBOARD_WHY = [
     text: "Škola. Kamarádi. Rodina. Strachy. Pocity… Vyberete si to, o čem chcete mluvit právě dnes." }
 ];
 let onboardIdx = 0;
+let onboardFromSettings = false; // z nastavení se průvodce jen prohlíží — vrací se zpět tam
 
-function startOnboard() {
+function startOnboard(fromSettings) {
+  onboardFromSettings = !!fromSettings;
   showOnboard(0);
   go("s-onboard");
 }
@@ -2016,20 +2018,21 @@ function flipDemoCard() {
 
 function onboardNext() {
   if (onboardIdx < ONBOARD_WHY.length - 1) { showOnboard(onboardIdx + 1); return; }
-  go("s-names");
+  go(onboardFromSettings ? "s-settings" : "s-names");
 }
 
 function onboardBack() {
   if (onboardIdx > 0) { showOnboard(onboardIdx - 1); return; }
-  go("s-welcome");
+  go(onboardFromSettings ? "s-settings" : "s-welcome");
 }
 
 function onboardSkip() {
-  go("s-names");
+  go(onboardFromSettings ? "s-settings" : "s-names");
 }
 
 /* Návrat zpět ze jmen — na poslední slide průvodce */
 function goOnboardWhyEnd() {
+  onboardFromSettings = false;
   showOnboard(ONBOARD_WHY.length - 1);
   go("s-onboard");
 }
@@ -2448,10 +2451,10 @@ const SETTINGS_PAGES = {
   "jak-hrat": { title: "Jak hrát", html: `
     <ol>
       <li><strong>Vyberte téma a hloubku otázek.</strong> Začněte klidně „Na rozehřátí“.</li>
-      <li><strong>Dítě si vylosuje kartu.</strong> V balíčku jsou dvě otázky a jedna bonusová karta s úkolem nebo hravou otázkou.</li>
+      <li><strong>Dítě si vylosuje kartu.</strong> Při jednom povídání na vás čekají dvě otázky a jedna bonusová karta s úkolem nebo hravou otázkou.</li>
       <li><strong>Odpovídáte oba.</strong> Dítě o škole a kamarádech, rodič o práci a svém dětství. Není to výslech — je to povídání.</li>
       <li><strong>Otočte kartu</strong> (klepnutím nebo přejetím prstem) — na rubu jsou tipy, jak rozhovor rozvinout, a jemnější varianta otázky.</li>
-      <li><strong>Po každé otázce si plácněte.</strong> A na konci sezení buďte na sebe pyšní.</li>
+      <li><strong>Po každé otázce si plácněte.</strong> A na konci povídání buďte na sebe pyšní.</li>
     </ol>
     <p>Prošlé otázky si aplikace pamatuje — při návratu ke stejnému tématu přijdou nové. Každé téma a hloubka jich má šest.</p>` },
 
@@ -2461,7 +2464,7 @@ const SETTINGS_PAGES = {
       <li><strong>Nespěchejte.</strong> Ticho je v pořádku — děti potřebují čas si odpověď poskládat.</li>
       <li><strong>Neopravujte a nehodnoťte.</strong> „Za pravdu se nezlobíme“ platí i u odpovědí, které vás zaskočí.</li>
       <li><strong>Doptávejte se z rubu karty</strong> — ale jen dokud to dítě baví. Tři otázky jsou strop, ne úkol.</li>
-      <li><strong>Krátce a častěji</strong> je lepší než dlouho a jednou. Jedno sezení = pár minut.</li>
+      <li><strong>Krátce a častěji</strong> je lepší než dlouho a jednou. Jedno povídání = pár minut.</li>
       <li><strong>Hrajte kdekoli:</strong> v autě, u večeře, před spaním. Nejlíp tam, kde se nemusíte dívat do očí — bok po boku to jde snáz.</li>
       <li><strong>„Dost“ znamená dost.</strong> Když dítě nechce pokračovat, zastavte bez vyjednávání. Příště to půjde líp.</li>
     </ul>` },
@@ -2482,7 +2485,7 @@ const SETTINGS_PAGES = {
 
   "proc": { title: "Proč vznikla", html: `
     <p>Na otázku „Jak bylo ve škole?“ se odpovídá „dobrý“. A tím to většinou končí.</p>
-    <p>Mezi námi vznikla, aby se doma mluvilo doopravdy — o radostech, strachách i o věcech, které se nahlas říkají těžko. Stojí na jednoduché věci: dobrá otázka, dva upřímní lidé a chvilka klidu.</p>
+    <p>Mezi námi vznikla, aby se doma mluvilo doopravdy — o radostech, strachu i o věcech, které se nahlas říkají těžko. Stojí na jednoduché věci: dobrá otázka, dva upřímní lidé a chvilka klidu.</p>
     <p>Otázky jsou psané s ohledem na to, jak děti mezi šesti a devíti lety přemýšlejí a mluví o pocitech: otevřít téma, pojmenovat emoci, bezpečně uzavřít. A protože upřímnost chce odvahu od obou, na každou otázku odpovídá i rodič.</p>` },
 
   "autor": { title: "Kdo ji vytvořil", html: `
@@ -2499,10 +2502,10 @@ const SETTINGS_PAGES = {
       <li><strong>Žádná analytika, žádné reklamy, žádné cookies.</strong></li>
       <li><strong>Funguje offline.</strong> Po prvním načtení nepotřebuje internet.</li>
     </ul>
-    <p>Vše smažete tlačítkem „Resetovat postup“ (a přepsáním jmen), nebo odebráním aplikace z telefonu.</p>` },
+    <p>Vše smažete tlačítkem „Resetovat postup“ (a přepsáním jmen), odebráním aplikace z telefonu — a pokud hrajete v prohlížeči, vymazáním dat webu.</p>` },
 
   "zasady": { title: "Zásady ochrany soukromí", html: `
-    <p>Aplikace Mezi námi nezpracovává žádné osobní údaje.</p>
+    <p>Aplikace Mezi námi nesbírá ani nikam neodesílá žádné osobní údaje.</p>
     <p>Jména zadaná ve hře se ukládají výhradně do místní paměti vašeho zařízení (localStorage) a nikdy ho neopouštějí. Aplikace neobsahuje analytické ani reklamní nástroje třetích stran a nepoužívá cookies.</p>
     <p>Aplikaci hostuje služba GitHub Pages, která může — jako každý web — krátkodobě zaznamenat technické údaje o přístupu (např. IP adresu) ve svých serverových protokolech. Aplikace k nim nemá přístup a nijak s nimi nepracuje.</p>
     <p>Dotazy k soukromí můžete položit přes <a href="${GITHUB_URL}/issues" target="_blank" rel="noopener">GitHub</a>.</p>` },
@@ -2523,7 +2526,7 @@ const SETTINGS_PAGES = {
     <div class="contact">
       <strong>Rodičovská linka — poradna pro rodiče</strong>
       <a href="tel:606021021">606 021 021</a>
-      <span>Provozuje Linka bezpečí, funguje i e-mailem</span>
+      <span>Provozuje Linka bezpečí. Běžný tarif, jen v provozní době — časy na rodicovskalinka.cz</span>
     </div>
     <div class="contact">
       <strong>Linka první psychické pomoci</strong>
@@ -2532,8 +2535,8 @@ const SETTINGS_PAGES = {
     </div>
     <div class="contact">
       <strong>Bezprostřední ohrožení</strong>
-      <a href="tel:158">158</a>
-      <span>Policie ČR · záchranná služba 155 · tísňová linka 112</span>
+      <a href="tel:158">158</a> · <a href="tel:155">155</a> · <a href="tel:112">112</a>
+      <span>Policie · záchranná služba · tísňová linka</span>
     </div>` },
 
   "podminky": { title: "Podmínky používání", html: `
