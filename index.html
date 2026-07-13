@@ -490,6 +490,64 @@
     font-family: var(--font-display); font-size: 54px; font-weight: 600; line-height: 1;
   }
 
+  /* ===== Nastavení — menu a podstránky ===== */
+  .settings-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    width: 100%;
+    background: var(--card);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 15px 16px;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow-card);
+    font-family: var(--font-body); font-size: 15px; font-weight: 600;
+    color: var(--ink);
+    text-align: left; text-decoration: none;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .15s ease;
+  }
+  .settings-item:active { transform: scale(.97); }
+  .settings-item::after {
+    content: ""; width: 18px; height: 18px; flex: none;
+    background: currentColor; opacity: .4;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  /* externí odkaz (GitHub) má šipku ven místo šipky dál */
+  .settings-item.ext::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
+  }
+  .settings-item.danger { color: var(--rose); }
+  .settings-item.danger::after { display: none; }
+  .settings-item.static { cursor: default; }
+  .settings-item.static:active { transform: none; }
+  .settings-item.static::after { display: none; }
+  .settings-item .item-note { font-weight: 500; font-size: 14px; color: var(--ink-faint); }
+
+  .settings-page-body { padding-bottom: 12px; }
+  .settings-page-body p { margin-bottom: 12px; }
+  .settings-page-body h3 { margin: 22px 0 10px; }
+  .settings-page-body ul, .settings-page-body ol { padding-left: 20px; margin-bottom: 14px; }
+  .settings-page-body li { font-size: 15px; line-height: 1.5; color: var(--ink-soft); margin-bottom: 9px; }
+  .settings-page-body li strong, .settings-page-body p strong { color: var(--ink); }
+  .settings-page-body a { color: var(--ink); font-weight: 600; }
+  .faq-q { font-weight: 700; color: var(--ink); font-size: 15px; margin: 18px 0 3px; }
+  .settings-page-body .faq-q:first-child { margin-top: 0; }
+
+  /* kontaktní karta s telefonním číslem (odborná pomoc) */
+  .contact {
+    background: var(--card); border-radius: var(--radius-md);
+    padding: 14px 16px; margin-bottom: 10px;
+    box-shadow: var(--shadow-card);
+  }
+  .contact strong { display: block; font-size: 14.5px; margin-bottom: 2px; }
+  .contact a {
+    font-family: var(--font-display); font-size: 24px; font-weight: 600;
+    color: var(--plum); text-decoration: none; display: inline-block; margin: 2px 0;
+  }
+  .contact span { display: block; font-size: 13px; color: var(--ink-faint); }
+
   /* ===== Konfety ===== */
   #confettiLayer {
     position: absolute; inset: 0;
@@ -703,7 +761,7 @@
   <!-- ===== 3. Zásady ===== -->
   <section class="screen" id="s-principles">
     <div class="topbar">
-      <button class="back-btn" onclick="go('s-names')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <button class="back-btn" id="principlesBack" onclick="go('s-names')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
     </div>
     <h2>Domluvme se<br>na třech věcech</h2>
     <p style="margin:10px 0 24px;">Přečtěte si je společně nahlas a plácněte si.</p>
@@ -730,7 +788,7 @@
       </div>
     </div>
 
-    <div class="btn-row">
+    <div class="btn-row" id="pledgeRow">
       <button class="btn btn-primary" onclick="goHome()">Slibujeme oba</button>
     </div>
   </section>
@@ -847,25 +905,57 @@
     <div class="topbar">
       <button class="back-btn" onclick="goHome()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
     </div>
-    <h2>Nastavení</h2>
+    <h2 style="margin-bottom:20px;">Nastavení</h2>
 
-    <div class="section-label">Jak vám říkáme</div>
+    <div class="section-label">👤 Rodina</div>
     <div class="field">
-      <label for="setNameParent">Rodič</label>
+      <label for="setNameParent">Jméno rodiče</label>
       <input id="setNameParent" type="text" placeholder="např. máma, táta" autocomplete="off">
     </div>
     <div class="field">
-      <label for="setNameKid">Dítě</label>
+      <label for="setNameKid">Jméno dítěte</label>
       <input id="setNameKid" type="text" placeholder="např. Kuba" autocomplete="off">
     </div>
     <p class="muted">Změny se ukládají samy.</p>
 
-    <div class="section-label">Hra</div>
-    <button class="btn btn-secondary" onclick="startOnboard()">Znovu projít průvodce</button>
+    <div class="section-label">🎮 Hra</div>
+    <button class="settings-item" onclick="startOnboard()">Znovu projít průvodce</button>
+    <button class="settings-item" onclick="openPrinciples(true)">Tři sliby</button>
+    <button class="settings-item danger" id="resetBtn" onclick="resetProgress()">Resetovat postup</button>
 
-    <div class="section-label">Data</div>
-    <button class="btn btn-secondary" style="color:var(--rose); border-color:rgba(201,111,91,.4);" onclick="resetAll()">Smazat jména a pokrok</button>
-    <p class="muted" style="margin-top:14px;">Vše zůstává jen ve vašem telefonu — nikam se nic neposílá.</p>
+    <div class="section-label">💡 Jak aplikaci používat</div>
+    <button class="settings-item" onclick="openSettingsPage('jak-hrat')">Jak hrát</button>
+    <button class="settings-item" onclick="openSettingsPage('tipy')">Tipy pro rozhovory</button>
+    <button class="settings-item" onclick="openSettingsPage('faq')">Nejčastější otázky</button>
+
+    <div class="section-label">❤️ O aplikaci</div>
+    <button class="settings-item" onclick="openSettingsPage('proc')">Proč vznikla</button>
+    <button class="settings-item" onclick="openSettingsPage('autor')">Kdo ji vytvořil</button>
+
+    <div class="section-label">🔒 Soukromí</div>
+    <button class="settings-item" onclick="openSettingsPage('data')">Jak chráníme vaše data</button>
+    <button class="settings-item" onclick="openSettingsPage('zasady')">Zásady ochrany soukromí</button>
+
+    <div class="section-label">🛟 Pomoc</div>
+    <button class="settings-item" onclick="openSettingsPage('sos')">Linka bezpečí a další odborná pomoc</button>
+    <a class="settings-item ext" href="https://github.com/dalikjebuh-coder/mezi-nami-deti/issues/new?title=Chyba%3A%20" target="_blank" rel="noopener">Nahlásit problém</a>
+    <a class="settings-item ext" href="https://github.com/dalikjebuh-coder/mezi-nami-deti/issues/new?title=N%C3%A1pad%3A%20" target="_blank" rel="noopener">Poslat nápad</a>
+
+    <div class="section-label">ℹ️ O aplikaci</div>
+    <div class="settings-item static">Verze aplikace <span class="item-note" id="appVersion"></span></div>
+    <button class="settings-item" onclick="openSettingsPage('podminky')">Podmínky používání</button>
+    <button class="settings-item" onclick="openSettingsPage('licence')">Licence</button>
+
+    <p class="muted" style="margin-top:18px;">Vše zůstává jen ve vašem telefonu — nikam se nic neposílá.</p>
+  </section>
+
+  <!-- ===== 9b. Podstránka nastavení (sdílená, plní se obsahem) ===== -->
+  <section class="screen" id="s-settings-page">
+    <div class="topbar">
+      <button class="back-btn" onclick="go('s-settings')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <h2 id="settingsPageTitle" style="margin-bottom:16px;"></h2>
+    <div class="settings-page-body" id="settingsPageBody"></div>
   </section>
 
   <div id="confettiLayer"></div>
@@ -1949,7 +2039,7 @@ function saveNames() {
   state.nameParent = document.getElementById("nameParent").value.trim() || "Rodič";
   state.nameKid = document.getElementById("nameKid").value.trim() || "Dítě";
   saveStore();
-  go("s-principles");
+  openPrinciples(false);
 }
 
 /* ================= Domů ================= */
@@ -2332,17 +2422,139 @@ function settingsNamesChanged() {
   saveStore();
 }
 
-function resetAll() {
-  if (!confirm("Opravdu smazat jména i pokrok? Začnete úplně od začátku.")) return;
-  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-  state.nameParent = "Rodič";
-  state.nameKid = "Dítě";
+/* Reset maže jen postup (prošlé otázky) — jména mají vlastní sekci Rodina */
+function resetProgress() {
+  if (!confirm("Opravdu resetovat postup? Prošlé otázky se začnou počítat od začátku. Jména zůstanou.")) return;
   state.seen = new Set();
   state.done = new Set();
-  ["nameParent", "nameKid", "setNameParent", "setNameKid"].forEach(id =>
-    document.getElementById(id).value = "");
-  document.getElementById("welcomeBack").hidden = true;
-  go("s-welcome");
+  saveStore();
+  const b = document.getElementById("resetBtn");
+  b.textContent = "✓ Postup resetován";
+  setTimeout(() => { b.textContent = "Resetovat postup"; }, 2000);
+}
+
+/* Sliby: z onboardingu (s tlačítkem slibu) i z nastavení (jen ke čtení) */
+function openPrinciples(fromSettings) {
+  document.getElementById("principlesBack").onclick = () => go(fromSettings ? "s-settings" : "s-names");
+  document.getElementById("pledgeRow").hidden = fromSettings;
+  go("s-principles");
+}
+
+/* ---- podstránky nastavení ---- */
+const APP_VERSION = "1.0"; // zvedat při větších změnách
+const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
+
+const SETTINGS_PAGES = {
+  "jak-hrat": { title: "Jak hrát", html: `
+    <ol>
+      <li><strong>Vyberte téma a hloubku otázek.</strong> Začněte klidně „Na rozehřátí“.</li>
+      <li><strong>Dítě si vylosuje kartu.</strong> V balíčku jsou dvě otázky a jedna bonusová karta s úkolem nebo hravou otázkou.</li>
+      <li><strong>Odpovídáte oba.</strong> Dítě o škole a kamarádech, rodič o práci a svém dětství. Není to výslech — je to povídání.</li>
+      <li><strong>Otočte kartu</strong> (klepnutím nebo přejetím prstem) — na rubu jsou tipy, jak rozhovor rozvinout, a jemnější varianta otázky.</li>
+      <li><strong>Po každé otázce si plácněte.</strong> A na konci sezení buďte na sebe pyšní.</li>
+    </ol>
+    <p>Prošlé otázky si aplikace pamatuje — při návratu ke stejnému tématu přijdou nové. Každé téma a hloubka jich má šest.</p>` },
+
+  "tipy": { title: "Tipy pro rozhovory", html: `
+    <ul>
+      <li><strong>Odpovídejte taky.</strong> Dítě se otevře, když se otevřete vy. Klidně začněte svou odpovědí.</li>
+      <li><strong>Nespěchejte.</strong> Ticho je v pořádku — děti potřebují čas si odpověď poskládat.</li>
+      <li><strong>Neopravujte a nehodnoťte.</strong> „Za pravdu se nezlobíme“ platí i u odpovědí, které vás zaskočí.</li>
+      <li><strong>Doptávejte se z rubu karty</strong> — ale jen dokud to dítě baví. Tři otázky jsou strop, ne úkol.</li>
+      <li><strong>Krátce a častěji</strong> je lepší než dlouho a jednou. Jedno sezení = pár minut.</li>
+      <li><strong>Hrajte kdekoli:</strong> v autě, u večeře, před spaním. Nejlíp tam, kde se nemusíte dívat do očí — bok po boku to jde snáz.</li>
+      <li><strong>„Dost“ znamená dost.</strong> Když dítě nechce pokračovat, zastavte bez vyjednávání. Příště to půjde líp.</li>
+    </ul>` },
+
+  "faq": { title: "Nejčastější otázky", html: `
+    <p class="faq-q">Pro jaký věk je hra určená?</p>
+    <p>Otázky jsou psané pro děti zhruba od 6 do 9 let. Hranice ale nejsou pevné — zkuste a uvidíte.</p>
+    <p class="faq-q">Musíme odpovídat oba?</p>
+    <p>Ano, to je jádro hry. Otázka platí vždy pro dítě i pro rodiče.</p>
+    <p class="faq-q">Co když dítě nechce odpovědět?</p>
+    <p>Nenuťte. Zkuste jemnější variantu z rubu karty, odpovězte první vy — nebo kartu nechte být a klepněte na „Pro dnešek stačí“.</p>
+    <p class="faq-q">Ukládají se někam odpovědi?</p>
+    <p>Ne. Mluví se nahlas, nic se nezapisuje ani neodesílá. V telefonu zůstávají jen jména a to, které otázky jste už prošli.</p>
+    <p class="faq-q">Můžeme hrát stejné téma víckrát?</p>
+    <p>Ano. Otázky se střídají — každé téma a hloubka jich má šest. A odpovědi se časem mění, i stejná otázka je za měsíc jiný rozhovor.</p>
+    <p class="faq-q">Může hrát i druhý rodič nebo sourozenec?</p>
+    <p>Klidně. Jména jdou kdykoli změnit v sekci Rodina.</p>` },
+
+  "proc": { title: "Proč vznikla", html: `
+    <p>Na otázku „Jak bylo ve škole?“ se odpovídá „dobrý“. A tím to většinou končí.</p>
+    <p>Mezi námi vznikla, aby se doma mluvilo doopravdy — o radostech, strachách i o věcech, které se nahlas říkají těžko. Stojí na jednoduché věci: dobrá otázka, dva upřímní lidé a chvilka klidu.</p>
+    <p>Otázky jsou psané s ohledem na to, jak děti mezi šesti a devíti lety přemýšlejí a mluví o pocitech: otevřít téma, pojmenovat emoci, bezpečně uzavřít. A protože upřímnost chce odvahu od obou, na každou otázku odpovídá i rodič.</p>` },
+
+  "autor": { title: "Kdo ji vytvořil", html: `
+    <p>Mezi námi je osobní projekt jednoho táty, který si chtěl se svými dětmi povídat o víc věcech než o známkách.</p>
+    <p>Není za ní žádná firma ani byznys — je zdarma, bez reklam a bez sběru dat.</p>
+    <p>Zdrojový kód je veřejný na <a href="${GITHUB_URL}" target="_blank" rel="noopener">GitHubu</a>.</p>` },
+
+  "data": { title: "Jak chráníme vaše data", html: `
+    <p>Nejlepší ochrana dat je žádná nesbírat. Přesně tak to tady je:</p>
+    <ul>
+      <li><strong>Žádné účty ani registrace.</strong> Aplikaci otevřete a hrajete.</li>
+      <li><strong>Nic se neodesílá.</strong> Jména a postup hry zůstávají jen v paměti vašeho telefonu.</li>
+      <li><strong>Odpovědi se nikam nezapisují.</strong> Mluví se nahlas — v aplikaci po nich nezůstává žádná stopa.</li>
+      <li><strong>Žádná analytika, žádné reklamy, žádné cookies.</strong></li>
+      <li><strong>Funguje offline.</strong> Po prvním načtení nepotřebuje internet.</li>
+    </ul>
+    <p>Vše smažete tlačítkem „Resetovat postup“ (a přepsáním jmen), nebo odebráním aplikace z telefonu.</p>` },
+
+  "zasady": { title: "Zásady ochrany soukromí", html: `
+    <p>Aplikace Mezi námi nezpracovává žádné osobní údaje.</p>
+    <p>Jména zadaná ve hře se ukládají výhradně do místní paměti vašeho zařízení (localStorage) a nikdy ho neopouštějí. Aplikace neobsahuje analytické ani reklamní nástroje třetích stran a nepoužívá cookies.</p>
+    <p>Aplikaci hostuje služba GitHub Pages, která může — jako každý web — krátkodobě zaznamenat technické údaje o přístupu (např. IP adresu) ve svých serverových protokolech. Aplikace k nim nemá přístup a nijak s nimi nepracuje.</p>
+    <p>Dotazy k soukromí můžete položit přes <a href="${GITHUB_URL}/issues" target="_blank" rel="noopener">GitHub</a>.</p>` },
+
+  "sos": { title: "Když jde o hodně", html: `
+    <p>Některé otázky můžou otevřít vážné věci — ubližování, strach, něco z internetu. Když se dozvíte něco, co vás zaskočí:</p>
+    <ul>
+      <li><strong>Zůstaňte klidní a poděkujte za důvěru.</strong> Říct to chtělo odvahu.</li>
+      <li><strong>Nevyslýchejte.</strong> Nechte dítě říct jen tolik, kolik samo chce.</li>
+      <li><strong>Neslibujte „nikomu to neřeknu“.</strong> Slibte, že nic neuděláte bez něj.</li>
+    </ul>
+    <h3>Nemusíte na to být sami</h3>
+    <div class="contact">
+      <strong>Linka bezpečí — pro děti a mladé</strong>
+      <a href="tel:116111">116 111</a>
+      <span>Zdarma a nonstop. Chat a e-mail na linkabezpeci.cz</span>
+    </div>
+    <div class="contact">
+      <strong>Rodičovská linka — poradna pro rodiče</strong>
+      <a href="tel:606021021">606 021 021</a>
+      <span>Provozuje Linka bezpečí, funguje i e-mailem</span>
+    </div>
+    <div class="contact">
+      <strong>Linka první psychické pomoci</strong>
+      <a href="tel:116123">116 123</a>
+      <span>Zdarma a nonstop, pro dospělé</span>
+    </div>
+    <div class="contact">
+      <strong>Bezprostřední ohrožení</strong>
+      <a href="tel:158">158</a>
+      <span>Policie ČR · záchranná služba 155 · tísňová linka 112</span>
+    </div>` },
+
+  "podminky": { title: "Podmínky používání", html: `
+    <ul>
+      <li>Aplikace je zdarma a je určená pro osobní, nekomerční použití.</li>
+      <li>Je to pomocník pro společné povídání — <strong>nenahrazuje odbornou psychologickou, terapeutickou ani lékařskou péči</strong>. Pokud máte o dítě vážnou starost, obraťte se na odborníky (kontakty najdete v sekci Pomoc).</li>
+      <li>Aplikace je poskytována „tak, jak je“, bez záruk. Používáte ji na vlastní odpovědnost.</li>
+      <li>Obsah a funkce se můžou průběžně měnit a vylepšovat.</li>
+    </ul>` },
+
+  "licence": { title: "Licence", html: `
+    <p>© 2026 autor aplikace Mezi námi. Texty otázek, průvodce i podoba aplikace jsou chráněny autorským právem.</p>
+    <p>Zdrojový kód je veřejně k nahlédnutí na <a href="${GITHUB_URL}" target="_blank" rel="noopener">GitHubu</a>.</p>
+    <p>Aplikace nepoužívá žádné externí knihovny. Emoji a písma jsou systémová — jsou součástí vašeho zařízení.</p>` }
+};
+
+function openSettingsPage(key) {
+  const page = SETTINGS_PAGES[key];
+  document.getElementById("settingsPageTitle").textContent = page.title;
+  document.getElementById("settingsPageBody").innerHTML = page.html;
+  go("s-settings-page");
 }
 
 /* ================= Interakce ================= */
@@ -2375,6 +2587,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 /* ================= Start =================
    Návrat: jména i pokrok čekají v telefonu — onboarding se přeskočí. */
+document.getElementById("appVersion").textContent = APP_VERSION;
 let saved = null;
 try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
 if (saved && saved.nameKid) {
