@@ -254,23 +254,6 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 48px;
   }
-  /* ukázková karta v průvodci — menší verze herní karty */
-  .onboard-demo { margin-top: 18px; }
-  .question-card.demo-card {
-    min-height: 330px;
-    padding: 34px 30px 28px;
-    margin-bottom: 14px;
-    cursor: pointer;
-    text-align: center;
-  }
-  .demo-card h2 { font-size: 20px; }
-  .question-card.demo-card.back-side { padding-top: 40px; }
-  .demo-hint {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--rose);
-  }
-
   .onboard-dots { display: flex; justify-content: center; gap: 7px; margin-top: 28px; }
   .onboard-dots span {
     width: 8px; height: 8px; border-radius: 50%;
@@ -727,23 +710,6 @@
       <div class="onboard-visual" id="onboardEmoji"></div>
       <h2 id="onboardTitle"></h2>
       <p id="onboardText" style="margin-top:12px; max-width:290px; margin-left:auto; margin-right:auto;"></p>
-      <!-- ukázková karta — skutečná otázka z balíčku Naše rodina, jde otočit -->
-      <div class="onboard-demo" id="onboardDemo" hidden>
-        <div class="question-card demo-card" id="demoCard" onclick="flipDemoCard()">
-          <div id="demoFront">
-            <h2>Kdy je ti se mnou nejlíp? A kdy tě trochu štvu?</h2>
-          </div>
-          <div class="card-back" id="demoBack" hidden>
-            <p class="back-title">Pro hlubší rozhovor</p>
-            <ol class="back-fu">
-              <li>Řekni mi o té dobré chvíli víc — co v ní dělám?</li>
-              <li>A když tě štvu — co přesně dělám? Klidně to řekni, nezlobím se.</li>
-              <li>Vyberu si jednu věc a zkusím ji dělat jinak. Kterou navrhuješ?</li>
-            </ol>
-          </div>
-        </div>
-        <p class="demo-hint" id="demoHint">Klepněte na kartu a získejte tipy, jak rozhovor rozvinout</p>
-      </div>
       <div class="onboard-dots" id="onboardDots"></div>
     </div>
     <div class="btn-row">
@@ -755,9 +721,10 @@
   <!-- ===== 2. Jména ===== -->
   <section class="screen" id="s-names">
     <div class="topbar">
-      <button class="back-btn" onclick="goOnboardWhyEnd()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <button class="back-btn" onclick="goOnboardEnd()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
     </div>
-    <h2 style="margin-bottom:26px;">Kdo si bude povídat?</h2>
+    <h2>Kdo si bude povídat?</h2>
+    <p class="muted" style="margin:10px 0 26px;">Jména jdou kdykoli změnit v nastavení.</p>
     <div class="field">
       <label for="nameParent">Rodič</label>
       <input id="nameParent" type="text" placeholder="např. máma, táta" autocomplete="off">
@@ -774,8 +741,9 @@
   <!-- ===== 3. Zásady ===== -->
   <section class="screen" id="s-principles">
     <div class="topbar">
-      <button class="back-btn" id="principlesBack" onclick="go('s-names')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <button class="back-btn" id="principlesBack"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
     </div>
+    <div class="section-label" id="pledgeEyebrow" style="margin:0 0 10px;">Ještě než začnete</div>
     <h2>Domluvme se<br>na třech věcech</h2>
     <p style="margin:10px 0 24px;">Přečtěte si je společně nahlas a plácněte si.</p>
 
@@ -802,7 +770,7 @@
     </div>
 
     <div class="btn-row" id="pledgeRow">
-      <button class="btn btn-primary" onclick="goHome()">Slibujeme oba</button>
+      <button class="btn btn-primary" onclick="pledgeDone()">Slibujeme oba</button>
     </div>
   </section>
 
@@ -937,7 +905,7 @@
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
         <span class="item-label">Znovu projít průvodce</span>
       </button>
-      <button class="settings-item" onclick="openPrinciples(true)">
+      <button class="settings-item" onclick="openPrinciples('settings')">
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg></span>
         <span class="item-label">Tři sliby</span>
       </button>
@@ -1946,6 +1914,7 @@ const state = {
   jokerLeft: true, // karta legrace — jedna na sezení, přimíchaná ve vějíři
   currentJoker: null, // { tag, text } právě otočeného žolíka
   answered: 0,     // jen probrané otázky — statistika „X otázek“ na konci (bonus se nepočítá)
+  pledged: false,  // tři sliby složené — ukazují se jen před úplně prvním povídáním
   seen: new Set(), // probrané otázky téma:hloubka:index — přes sezení
   done: new Set()  // kombinace téma:hloubka s probranými všemi otázkami
 };
@@ -1999,6 +1968,7 @@ function saveStore() {
     localStorage.setItem(STORE_KEY, JSON.stringify({
       nameParent: state.nameParent,
       nameKid: state.nameKid,
+      pledged: state.pledged,
       seen: [...state.seen],
       done: [...state.done]
     }));
@@ -2006,15 +1976,15 @@ function saveStore() {
 }
 
 /* ================= Průvodce při prvním spuštění =================
-   Tři slidy PROČ (motivace + ukázková karta) → jména → sliby.
-   Mechaniku hry ukáže sama ukázková karta, zvláštní krok nemá. */
-const ONBOARD_WHY = [
-  { emoji: "🫶", bg: "var(--sage-soft)", title: "Rozhovory, které sbližují rodiče a děti",
-    text: "Někdy není těžké odpovědět. Nejtěžší je položit první otázku. Jedna otázka často stačí, aby vznikl upřímný rozhovor." },
-  { emoji: "💭", bg: "var(--plum-soft)", title: "Třeba taková otázka…" },
-  { demo: true, title: "" },
-  { emoji: "💬", bg: "var(--sky-soft)", title: "Každý balíček otevírá jiné téma",
-    text: "Škola. Kamarádi. Rodina. Strachy. Pocity… Vyberete si to, o čem chcete mluvit právě dnes." }
+   Tři slidy (proč → co uvnitř → pravidla) → jména → domů.
+   Tři sliby se skládají až před úplně prvním povídáním (startSession). */
+const ONBOARD_SLIDES = [
+  { emoji: "🫶", bg: "var(--sage-soft)", title: "Pojďte si spolu upřímně popovídat",
+    text: "Někdy je těžké začít mluvit o jiných tématech než o tom „Jak bylo ve škole?“. Aplikace „Mezi námi“ vám pomůže otevřít hlubší otázky a zjistit o sobě víc." },
+  { emoji: "💬", bg: "var(--sky-soft)", title: "Otázky, které sbližují rodiče a děti",
+    text: "Najdete tu témata o rodině, pocitech i starostech přizpůsobená dětem od 6 do 9 let. Poradíme, jak povídání přirozeně rozvinout, a přidáme i zábavné výzvy pro odlehčení." },
+  { emoji: "🎴", bg: "var(--plum-soft)", title: "Jednoduchá pravidla pro oba",
+    text: "Stačí vylosovat kartu a začít si společně povídat. Nic se nepíše, neodesílá ani neukládá. Hrát můžete pár minut kdekoli, třeba v autě nebo před spaním." }
 ];
 let onboardIdx = 0;
 let onboardFromSettings = false; // z nastavení se průvodce jen prohlíží — vrací se zpět tam
@@ -2027,28 +1997,15 @@ function startOnboard(fromSettings) {
 
 function showOnboard(i) {
   onboardIdx = i;
-  const list = ONBOARD_WHY;
-  const s = list[i];
-  const isDemo = !!s.demo; // slide s ukázkovou kartou místo emoji a textu
+  const s = ONBOARD_SLIDES[i];
   const visual = document.getElementById("onboardEmoji");
-  visual.hidden = isDemo;
-  if (!isDemo) {
-    visual.textContent = s.emoji;
-    visual.style.background = s.bg;
-  }
-  const title = document.getElementById("onboardTitle");
-  title.hidden = !s.title;
-  title.textContent = s.title || "";
-  const text = document.getElementById("onboardText");
-  text.hidden = isDemo || !s.text;
-  text.textContent = s.text || "";
-  document.getElementById("onboardDemo").hidden = !isDemo;
-  if (isDemo) resetDemoCard();
-  // u jednoslidové fáze nemá počítadlo ani tečky smysl
-  document.getElementById("onboardStep").textContent = list.length > 1 ? `${i + 1}/${list.length}` : "";
-  document.getElementById("onboardDots").innerHTML = list.length > 1
-    ? list.map((_, d) => `<span class="${d === i ? "on" : ""}"></span>`).join("")
-    : "";
+  visual.textContent = s.emoji;
+  visual.style.background = s.bg;
+  document.getElementById("onboardTitle").textContent = s.title;
+  document.getElementById("onboardText").textContent = s.text;
+  document.getElementById("onboardStep").textContent = `${i + 1}/${ONBOARD_SLIDES.length}`;
+  document.getElementById("onboardDots").innerHTML =
+    ONBOARD_SLIDES.map((_, d) => `<span class="${d === i ? "on" : ""}"></span>`).join("");
   // znovu přehrát animaci slidu
   const slide = document.getElementById("onboardSlide");
   slide.classList.remove("slide-in");
@@ -2056,42 +2013,9 @@ function showOnboard(i) {
   slide.classList.add("slide-in");
 }
 
-/* ukázková karta v průvodci — stejné dvoufázové otočení jako ve hře */
-let demoFlipped = false, demoFlipping = false;
-
-function resetDemoCard() {
-  demoFlipped = false;
-  demoFlipping = false;
-  const c = document.getElementById("demoCard");
-  c.classList.remove("back-side", "flip-out", "flip-in");
-  document.getElementById("demoFront").hidden = false;
-  document.getElementById("demoBack").hidden = true;
-  document.getElementById("demoHint").textContent = "Klepněte na kartu a získejte tipy, jak rozhovor rozvinout";
-}
-
-function flipDemoCard() {
-  if (demoFlipping) return;
-  demoFlipping = true;
-  const c = document.getElementById("demoCard");
-  c.classList.remove("flip-in");
-  c.classList.add("flip-out");
-  setTimeout(() => {
-    demoFlipped = !demoFlipped;
-    c.classList.remove("flip-out");
-    c.classList.toggle("back-side", demoFlipped);
-    document.getElementById("demoFront").hidden = demoFlipped;
-    document.getElementById("demoBack").hidden = !demoFlipped;
-    document.getElementById("demoHint").textContent = demoFlipped
-      ? "A klepnutím se vrátíte na otázku"
-      : "Klepněte na kartu a získejte tipy, jak rozhovor rozvinout";
-    void c.offsetWidth;
-    c.classList.add("flip-in");
-    demoFlipping = false;
-  }, 170);
-}
 
 function onboardNext() {
-  if (onboardIdx < ONBOARD_WHY.length - 1) { showOnboard(onboardIdx + 1); return; }
+  if (onboardIdx < ONBOARD_SLIDES.length - 1) { showOnboard(onboardIdx + 1); return; }
   go(onboardFromSettings ? "s-settings" : "s-names");
 }
 
@@ -2105,9 +2029,9 @@ function onboardSkip() {
 }
 
 /* Návrat zpět ze jmen — na poslední slide průvodce */
-function goOnboardWhyEnd() {
+function goOnboardEnd() {
   onboardFromSettings = false;
-  showOnboard(ONBOARD_WHY.length - 1);
+  showOnboard(ONBOARD_SLIDES.length - 1);
   go("s-onboard");
 }
 
@@ -2116,7 +2040,7 @@ function saveNames() {
   state.nameParent = document.getElementById("nameParent").value.trim() || "Rodič";
   state.nameKid = document.getElementById("nameKid").value.trim() || "Dítě";
   saveStore();
-  openPrinciples(false);
+  goHome();
 }
 
 /* ================= Domů ================= */
@@ -2174,6 +2098,12 @@ function pickDepth(d) {
 
 /* ================= Povídání ================= */
 function startSession() {
+  // před úplně prvním povídáním se skládají tři sliby — pak už se pamatují
+  if (!state.pledged) { openPrinciples("game"); return; }
+  beginSession();
+}
+
+function beginSession() {
   const pool = state.deck.questions[state.depth]
     .map((q, i) => ({ ...q, key: state.deck.id + ":" + state.depth + ":" + i }));
   const unseen = pool.filter(p => !state.seen.has(p.key)).sort(() => Math.random() - .5);
@@ -2510,15 +2440,24 @@ function resetProgress() {
   setTimeout(() => { label.textContent = "Resetovat postup"; }, 2000);
 }
 
-/* Sliby: z onboardingu (s tlačítkem slibu) i z nastavení (jen ke čtení) */
-function openPrinciples(fromSettings) {
-  document.getElementById("principlesBack").onclick = () => go(fromSettings ? "s-settings" : "s-names");
+/* Sliby: před prvním povídáním (mode "game", se slibovacím tlačítkem)
+   a z nastavení (mode "settings", jen ke čtení) */
+function openPrinciples(mode) {
+  const fromSettings = mode === "settings";
+  document.getElementById("principlesBack").onclick = () => go(fromSettings ? "s-settings" : "s-deck");
+  document.getElementById("pledgeEyebrow").hidden = fromSettings;
   document.getElementById("pledgeRow").hidden = fromSettings;
   go("s-principles");
 }
 
+function pledgeDone() {
+  state.pledged = true;
+  saveStore();
+  beginSession();
+}
+
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.0"; // zvedat při větších změnách
+const APP_VERSION = "1.1"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 
 const SETTINGS_PAGES = {
@@ -2652,7 +2591,6 @@ function addFlipSwipe(el, flip) {
   }, { passive: true });
 }
 addFlipSwipe(document.getElementById("bigCard"), flipCard);
-addFlipSwipe(document.getElementById("demoCard"), flipDemoCard);
 
 /* ================= PWA =================
    Service worker jen na http(s) — při otevření souboru napřímo se přeskočí. */
@@ -2670,12 +2608,14 @@ try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
 if (saved && saved.nameKid) {
   state.nameParent = saved.nameParent || "Rodič";
   state.nameKid = saved.nameKid || "Dítě";
+  state.pledged = !!saved.pledged;
   state.seen = new Set(saved.seen || []);
   // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
   state.done = new Set(saved.seen ? saved.done || [] : []);
   document.getElementById("nameParent").value = saved.nameParent || "";
   document.getElementById("nameKid").value = saved.nameKid || "";
-  document.getElementById("welcomeBack").hidden = false;
+  // věta o slibech jen pro ty, kdo je už opravdu složili
+  if (state.pledged) document.getElementById("welcomeBack").hidden = false;
   goHome();
 } else {
   renderHome();
