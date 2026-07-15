@@ -473,6 +473,21 @@
     font-family: var(--font-display); font-size: 54px; font-weight: 600; line-height: 1;
   }
 
+  /* ===== Bleskovky ===== */
+  /* dlaždice na domovské obrazovce — medová, ať je vidět na první pohled */
+  .deck-card.blesk-card { background: var(--honey-soft); margin-bottom: 12px; }
+  .blesk-card .deck-emoji { background: var(--card); }
+  .blesk-min {
+    flex: none; margin-left: auto;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+    color: var(--honey); background: rgba(255,255,255,.7);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  /* karta bleskovky — bez ozdobné uvozovky, líc má velkou ikonu */
+  .question-card.blesk-question::before { display: none; }
+  .blesk-icon { font-size: 52px; line-height: 1; margin-bottom: 14px; }
+  .blesk-text { text-align: left; font-size: 15.5px; line-height: 1.6; color: var(--ink); }
+
   /* ===== Nastavení — menu a podstránky =====
      Skupiny po vzoru iOS: sekce = jeden zaoblený celek, položky uvnitř
      oddělené vlasovou linkou, vlevo ikonka (Lucide) v barevném čipu. */
@@ -783,8 +798,70 @@
 
     <p class="muted" id="welcomeBack" hidden style="margin:-6px 0 6px;">✋ Vítejte zpátky. Sliby platí dál.</p>
 
+    <div class="section-label">Když je málo času</div>
+    <button class="deck-card blesk-card" onclick="openBleskovky()">
+      <div class="deck-emoji">⚡</div>
+      <div><h3>Bleskovky</h3><p>Rychlé hry a chvilky bez přípravy</p></div>
+      <span class="blesk-min">7 minut</span>
+      <span class="deck-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+    </button>
+
     <div class="section-label">O čem si dnes budete povídat?</div>
     <div class="deck-grid" id="deckGrid"></div>
+  </section>
+
+  <!-- ===== 4b. Bleskovky — rozcestník denní doby ===== -->
+  <section class="screen" id="s-blesk-time">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <div class="deck-emoji" style="width:64px;height:64px;font-size:32px;border-radius:18px;margin-bottom:16px;background:var(--honey-soft);">⚡</div>
+    <h2>Bleskovky</h2>
+    <p style="margin:10px 0 26px;">Dítěti stačí pár minut stoprocentní pozornosti. Bez přípravy, bez psaní — jen vy dva.</p>
+
+    <div class="section-label" style="margin-top:0;">Kdy si těch pár minut dáte?</div>
+    <div class="deck-grid">
+      <button class="deck-card" onclick="openBleskCategory('rano')">
+        <div class="deck-emoji" style="background:var(--honey-soft);">🌅</div>
+        <div><h3>Ranní start</h3><p>Naladit se na den a ulehčit ranní loučení</p></div>
+        <span class="deck-arrow" style="margin-left:auto;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+      <button class="deck-card" onclick="openBleskCategory('odpoledne')">
+        <div class="deck-emoji" style="background:var(--sky-soft);">☀️</div>
+        <div><h3>Odpolední klídek</h3><p>Setřást napětí ze školy — vybít energii, nebo zvolnit</p></div>
+        <span class="deck-arrow" style="margin-left:auto;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+      <button class="deck-card" onclick="openBleskCategory('vecer')">
+        <div class="deck-emoji" style="background:var(--plum-soft);">🌙</div>
+        <div><h3>Večerní zklidnění</h3><p>Uzavřít den v klidu a připravit hlavu na spaní</p></div>
+        <span class="deck-arrow" style="margin-left:auto;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== 4c. Bleskovky — karta ===== -->
+  <section class="screen" id="s-blesk">
+    <div class="topbar">
+      <button class="back-btn" onclick="leaveBleskovka()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+      <span class="muted" id="bleskCatLabel"></span>
+    </div>
+    <div class="center-col">
+      <div class="question-card blesk-question" id="bleskCard" style="margin-bottom:0;" onclick="flipBleskovka()">
+        <div id="bleskFront">
+          <div class="blesk-icon" id="bleskEmoji"></div>
+          <h2 id="bleskTitle"></h2>
+        </div>
+        <div id="bleskBack" hidden>
+          <p class="back-title" id="bleskBackTitle"></p>
+          <p class="blesk-text" id="bleskText"></p>
+        </div>
+      </div>
+      <p class="muted flip-hint" id="bleskHint">Otoč a zjisti víc</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="bleskDoneBtn" onclick="finishBleskovka()">Splněno, dokázali jsme to!</button>
+      <button class="btn btn-secondary" onclick="drawBleskovka()">Navrhnout jinou</button>
+    </div>
   </section>
 
   <!-- ===== 5. Detail balíčku + hloubka ===== -->
@@ -865,13 +942,13 @@
         <div class="c2" style="width:40px;height:40px;top:34px;"></div>
       </div>
       <h2>Dokázali jste to.</h2>
-      <p style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
+      <p id="finishText" style="margin-top:12px; max-width:280px; margin-left:auto; margin-right:auto;">
         Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.
       </p>
       <div class="finish-stats">
-        <div class="stat"><div class="num" id="statQuestions">0</div><div class="lbl">otázek</div></div>
+        <div class="stat"><div class="num" id="statQuestions">0</div><div class="lbl" id="statQuestionsLbl">otázek</div></div>
         <div class="stat"><div class="num">2</div><div class="lbl">odvážlivci</div></div>
-        <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl">hloubka</div></div>
+        <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl" id="statDepthLbl">hloubka</div></div>
       </div>
     </div>
     <div class="btn-row">
@@ -1895,6 +1972,127 @@ const BONUS_CARDS = [
   "Co umíš ty a nikdo jiný z naší rodiny to neumí?"
 ];
 
+/* ================= Bleskovky =================
+   Rychlé hry na pár minut stoprocentní pozornosti, filtrované podle denní
+   doby. Guilt-free: nic se nepočítá, neukládá ani nehodnotí. */
+const BLESKOVKY = {
+  rano: {
+    title: "Ranní start", emoji: "🌅",
+    items: [
+      { emoji: "✊", title: "Tajný kód do dlaně",
+        text: "Vymyslete si tajný kód, který si před školou stisknete do dlaně — třeba jedno dlouhé stisknutí, dvě rychlá a jedno pohlazení. Znamená to: „Myslím na tebe, zvládneš to.“ Kód si vyměňte hned teď a zkuste ho použít ještě jednou těsně před rozloučením." },
+      { emoji: "🎛️", title: "Přepínač nálady",
+        text: "Představte si, že máte na břiše neviditelný otočný knoflík, kterým si nastavíte ranní energii. Na kolik procent ji máte teď? A na kolik byste ji chtěli mít, až vejdete do školy? Otočte knoflíkem, udělejte zvuk „bzzzt“ a zkuste se tak na chvíli zatvářit a postavit." },
+      { emoji: "🔍", title: "Detektiv na cestě",
+        text: "Cestou do školy máte tajné poslání. Musíte najít a jeden druhému ukázat: 1) něco úplně kulatého, 2) něco zářivě žlutého, 3) něco, co vypadá jako obličej — třeba světla auta nebo okna domu. Kdo to zvládne první?" },
+      { emoji: "🦜", title: "Hra na ozvěnu",
+        text: "Jeden z vás udělá divný, vtipný zvuk (třeba jako opice, startující raketa nebo pískající konvice) a k tomu nějaký pohyb. Druhý ho musí jako přesná ozvěna zopakovat. Pak se vystřídejte. Udělejte to třikrát po sobě!" },
+      { emoji: "🦁", title: "Zvířecí budíček",
+        text: "Dnes se neprobouzíte jako lidé, ale jako ospalá lvíčata (nebo koťata). Jak dělá lvíče, když se poprvé ráno protahuje a zívá? Protáhněte se na posteli nebo na koberci a pořádně si spolu zařvěte!" },
+      { emoji: "🙈", title: "Snídaně poslepu",
+        text: "Zavřete u snídaně na chvíli oči. Nechte dítě, ať vám dá ochutnat kousek jídla — třeba kousek jablka nebo lžičku jogurtu — a hádejte, co to je. Pak se vystřídejte." },
+      { emoji: "🤖", title: "Robo-snídaně",
+        text: "Rodič se promění v dálkově ovládaného robota a dítě ho musí slovně navigovat, jak si vzít sousto snídaně („Ruko dopředu, sevřít prsty, zvednout k puse“). Pak se vyměňte." },
+      { emoji: "🪞", title: "Zrcadlový tanec",
+        text: "Pusťte si k rannímu oblékání jednu oblíbenou písničku. Jeden z vás dělá taneční pohyby a druhý ho musí přesně kopírovat jako zrcadlo. Po minutě se vyměňte." },
+      { emoji: "🕵️", title: "Tajný agent na cestě",
+        text: "Při cestě autem nebo busem pozorujte lidi kolem. Vyberte jednoho kolemjdoucího a vymyslete o něm rychlý příběh — na jakou tajnou misi zrovna jde a co má schované v batohu?" },
+      { emoji: "👏", title: "Ranní tleskaná",
+        text: "Postavte se proti sobě a zhasněte slova. Vymyslete si rytmus — tlesknout, plácnout pravou rukou o pravou ruku toho druhého, tlesknout, plácnout levou. Zrychlujte, dokud se jeden z vás nesplete." },
+      { emoji: "🚗", title: "Hledači SPZ",
+        text: "Cestou venku hledejte čísla na poznávacích značkách aut. Kdo první uvidí auto, které má na značce číslo tvého věku — nebo tvoje oblíbené číslo?" },
+      { emoji: "⚽", title: "Slovní fotbal naruby",
+        text: "Zahrajte si slovní fotbal, ale slova se nenapojují na poslední písmeno, nýbrž na poslední slabiku (třeba kolo → lopata → tabule). Jak dlouhý řetězec udržíte?" },
+      { emoji: "🌦️", title: "Předpověď počasí",
+        text: "Kdybys měl předpovědět náladu na dnešní den ve škole jako meteorolog v televizi, co nás čeká? Slunečno s občasnými úsměvy, nebo hrozí mraky v matematice?" },
+      { emoji: "🦶", title: "Super-chůze",
+        text: "Cestou do školy měňte styl chůze podle povelů. Rodič zavelí: „Obří kroky!“, „Chůze po Měsíci!“ (zpomaleně) nebo „Robotí chůze!“. Po minutě velí dítě." },
+      { emoji: "🏗️", title: "Snídaňový architekt",
+        text: "Udělejte si ze snídaně stavbu. Kdo dokáže z kousků chleba, sýra nebo ovoce postavit na talíři nejvyšší věž, která nespadne, než napočítáte do deseti?" },
+      { emoji: "✨", title: "Přání do kapsy",
+        text: "Představte si, že máte v dlani neviditelný kouzelný prach. Foukněte ho jeden druhému do kapsy u bundy — to je štěstí a klid na dnešní den. Kdykoli ti bude ve škole těžko, sáhni si do kapsy." }
+    ]
+  },
+  odpoledne: {
+    title: "Odpolední klídek", emoji: "☀️",
+    items: [
+      { emoji: "🎈", title: "Vypouštění ventilu",
+        text: "Ve škole se člověk musí hrozně ovládat — teď je čas to ze sebe setřást. Postavte se, začněte třepat pravou rukou, pak levou, pak nohama a nakonec celým tělem, a u toho dělejte zvuk padajícího kamene („áááá-buch“). Udělejte to dvakrát a na konci se úplně uvolněte a vydechněte." },
+      { emoji: "🍩", title: "Kdyby byl dnešek jídlo…",
+        text: "Kdyby byl tvůj dnešní den ve škole jídlo, co by to bylo? Sladký koblížek s čokoládou, pálivá chilli paprička, kyselá okurka, nebo nudná suchá rýže? A proč zrovna tohle?" },
+      { emoji: "🤐", title: "Telepatická svačina",
+        text: "Dejte si kousek svačiny do pusy, zavřete oči a žvýkejte úplně potichu. Zkuste se soustředit jen na to, jak jídlo chutná, když ho neslyšíte. Jakmile spolknete, zvedněte ruku. Kdo vydrží žvýkat nejdéle a nejtišeji?" },
+      { emoji: "👽", title: "Ufonův první den na Zemi",
+        text: "Rodič se na tři minuty promění v ufonka, který právě přistál na Zemi a vůbec ničemu nerozumí. Dítě mu musí vysvětlit jednu úplně obyčejnou věc — třeba jak funguje splachování záchodu, proč se nosí boty nebo co je to učebnice. Ufonek se ptá na divné otázky!" },
+      { emoji: "🌤️", title: "Třídírna emocí",
+        text: "Kdyby byl tvůj dnešní den počasí, jaké počasí by to bylo? Bouřka, sluníčko, nebo zataženo s přeháňkami? A proč?" },
+      { emoji: "🍌", title: "Bláznivá sváča",
+        text: "Svačina naruby! Dneska ji snězte netradičně — třeba pod stolem, na dece na zemi jako na pikniku, nebo s rukama za zády (kdo dřív sní kousek banánu?)." },
+      { emoji: "🎤", title: "Reportér z budoucnosti",
+        text: "Zahrajte si na televizní reportáž. Vezměte si do ruky jako mikrofon vařečku nebo fixu a udělejte s dítětem rozhovor o tom, co zajímavého dnes zažilo. Nezapomeňte na vážný novinářský tón!" },
+      { emoji: "🛋️", title: "Společné nicnedělání",
+        text: "Dejte si pět minut na gauči, kdy se k sobě jen přitulíte a nesmíte vůbec nic dělat, ani mluvit. Kdo první promluví nebo se pohne, prohrál. Užijte si to ticho." },
+      { emoji: "⏱️", title: "Vteřinový král",
+        text: "Zavřete oba oči. Úkolem je říct „Teď!“ přesně ve chvíli, kdy si myslíte, že uplynula jedna minuta (60 vteřin). Rodič stopuje na telefonu. Kdo byl blíž?" },
+      { emoji: "🎭", title: "Pravda a lež",
+        text: "Každý řekne o svém dnešním dni dvě pravdivé věci a jednu vymyšlenou lež („K obědu byla rajská, dostal jsem jedničku a paní učitelka měla na hlavě korunu“). Druhý hádá, co je lež." },
+      { emoji: "🌋", title: "Láva na podlaze",
+        text: "Podlaha v obýváku se proměnila v žhavou lávu! Máte tři minuty na to, abyste se dostali z jedné strany pokoje na druhou, aniž byste stoupli na zem. Využijte polštáře, gauč, židle." },
+      { emoji: "😜", title: "Rozesmívaná",
+        text: "Jeden se nesmí za žádnou cenu usmát ani zasmát. Druhý dělá obličeje, zvuky a vtipné pohyby a snaží se ho rozesmát. Na dotýkání zapomeňte! Kdo vydrží déle?" },
+      { emoji: "👂", title: "Zvukový radar",
+        text: "Posaďte se na minutu do úplného ticha a zavřete oči. Kdo z vás napočítá víc různých zvuků zvenku nebo z vedlejšího pokoje? Šumění auta, lednice, tikot hodin…" },
+      { emoji: "🧐", title: "Co se změnilo?",
+        text: "Dítě si pořádně prohlédne rodiče. Pak rodič odejde na chodbu a změní na sobě jednu drobnost — vyhrne si rukáv, sundá ponožku, dá si prstýnek na jiný prst. Uhodne dítě, co je jinak?" },
+      { emoji: "5️⃣", title: "Pětisekundová výzva",
+        text: "Rodič dává rychlé otázky a dítě musí do pěti vteřin vyjmenovat tři věci („Vyjmenuj tři věci, co jsou zelené“, „tři věci, co se dají jíst“, „tři superhrdiny“). Pak se role otočí." },
+      { emoji: "🏰", title: "Gaučová pevnost",
+        text: "Postavte si superrychlý úkryt: dvě židle, deka a polštáře z gauče. Zalezte si na tři minuty dovnitř a povídejte si o tom, jaké by to bylo mít tam tajnou základnu." },
+      { emoji: "🎬", title: "Archivář zážitků",
+        text: "Kdybys měl dnešní den natočit jako film, jak by se jmenoval? Byla by to akční jízda, komedie, nebo sci-fi? A kdo by byl hlavní záporák dnešního dne?" },
+      { emoji: "🏋️", title: "Těžká váha",
+        text: "Představte si, že každá vaše bota váží padesát kilo. Zkuste přejít z předsíně do kuchyně — nohy musíte zvedat strašně ztěžka a u toho funět. Kdo dojde s větší námahou?" }
+    ]
+  },
+  vecer: {
+    title: "Večerní zklidnění", emoji: "🌙",
+    items: [
+      { emoji: "🎨", title: "Kreslení na záda",
+        text: "Dítě si lehne na bříško. Prstem mu na záda jemně nakreslete jedno zvířátko nebo jednoduchý tvar — domeček, sluníčko, srdíčko. Dítě se zavřenýma očima hádá. Pak si role vyměňte — schválně, jestli uhodnete, co nakreslí ono vám!" },
+      { emoji: "📔", title: "Tajný deník v hlavě",
+        text: "Zavřete na chvíli oči. Každý si v hlavě promítněte dnešní den jako film a najděte v něm jeden moment, který byl nejlepší a který si chcete uložit do své „krabičky paměti“. Pak si ho navzájem řekněte." },
+      { emoji: "📻", title: "Šeptací rádio",
+        text: "Zhasněte světlo a povídejte si jen šeptem. Představte si, že jste moderátoři nočního rádia pro unavené skřítky. Řekněte si šeptem tři největší nesmysly, které vás napadnou — nebo co byste chtěli, aby se vám dnes zdálo." },
+      { emoji: "📖", title: "Příběh o třech slovech",
+        text: "Dítě vybere tři úplně náhodná slova (třeba ponožka, raketa, pes). Úkolem rodiče je vymyslet superkrátkou, klidnou pohádku na dobrou noc, ve které se všechna tři slova objeví. Pohádka končí tím, že hlavní hrdina jde spát." },
+      { emoji: "🛸", title: "Létající vysavač",
+        text: "Dnes nečtěte knížku. Vymyslete si společný příběh o dítěti a létajícím vysavači (nebo mluvícím polštáři). Rodič řekne první větu, dítě naváže druhou — a takhle se střídejte, dokud se příběh nezklidní k spánku." },
+      { emoji: "✍️", title: "Záhadný dotek",
+        text: "Pod peřinou chytněte dítě za ruku a prstem mu do dlaně „napište“ jednoduchý tvar — kolečko, srdíčko, křížek — nebo písmenko. Uhodne se zavřenýma očima, co to bylo?" },
+      { emoji: "💗", title: "Laskavé kreslení",
+        text: "Napište nebo nakreslete dítěti prstem na záda jedno slovo, které ho pohladí po duši — třeba „LÁSKA“, „ŠIKULA“ nebo srdíčko. Nechte ho hádat, co to bylo." },
+      { emoji: "🌀", title: "Myšlenkový vysavač",
+        text: "Před spaním má člověk v hlavě spoustu myšlenek. Vezměte pomyslný vysavač myšlenek — přiložte ruku k uchu dítěte a udělejte „bzzzz“ — a vysajte všechny starosti a úkoly dne, aby se krásně spalo." },
+      { emoji: "🤫", title: "Co slyší peřina",
+        text: "Lehněte si, přetáhněte si peřinu až k nosu a mluvte do ní. Peřina tlumí hlas. Zkuste si říct jedno tajemství nebo přání, které nesmí slyšet nikdo jiný v domě — jen vaše peřina." },
+      { emoji: "🧸", title: "Dýchání s plyšákem",
+        text: "Dítě si položí na břicho oblíbeného plyšáka. Zhasněte. Úkolem je dýchat tak zhluboka, aby se plyšák zvedal nahoru a dolů jako na mořských vlnách. Sledujte ho spolu potichu dvě minuty." },
+      { emoji: "🧠", title: "Hra na paměť",
+        text: "Zavřete oči a zkuste zpaměti popsat pokoj, ve kterém ležíte. Kolik je v něm oken? Jakou barvu má skříň? Co přesně leží na nočním stolku? Kdo si pamatuje víc detailů?" },
+      { emoji: "🚂", title: "Cesta do Snolandu",
+        text: "Představte si, že večer nastupujete do expresního vlaku, který jede do země snů. Jak vypadá tvoje kupé? Kdo tam jede s tebou a co si vezeš s sebou jako tajnou svačinu?" },
+      { emoji: "👍", title: "Palcový zápas na dobrou noc",
+        text: "Chytněte se za ruce a zaklesněte prsty — kromě palců. Udělejte pomalý, líný zápas palců pod peřinou. Kdo dokáže přitisknout palec toho druhého na tři vteřiny?" },
+      { emoji: "🙏", title: "Vděčníček",
+        text: "Najděte tři věci z dnešního dne, za které můžete poděkovat. Klidně úplné drobnosti — dobrý oběd, legrační pes na ulici, nebo že odpoledne svítilo sluníčko." },
+      { emoji: "🧊", title: "Rozpouštění svalů",
+        text: "Zatněte na pět vteřin všechny svaly v těle — ruce v pěst, obličej jako po kyselém citronu, pokrčené nohy. A na povel „teď“ všechno povolte, jako když se kostka ledu rozpouští v teplé vodě." },
+      { emoji: "💌", title: "Tichá pošta v posteli",
+        text: "Zašeptejte dítěti do ucha jedno slovo. Ono ho zašeptá zpátky vám, ale o trochu tišeji. Takhle si slovo předávejte dokola, dokud z něj nezbude jen tiché vydechnutí." }
+    ]
+  }
+};
+
 const DEPTH_NAMES = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"];
 
 /* Jedno sezení = 2 otázky vylosované ze zásoby (6 na téma a hloubku) + 1 bonusovka.
@@ -2382,8 +2580,12 @@ function finishSession() {
     .every((_, i) => state.seen.has(state.deck.id + ":" + state.depth + ":" + i));
   if (allSeen) state.done.add(state.deck.id + ":" + state.depth);
   saveStore();
+  document.getElementById("finishText").textContent =
+    "Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.";
   document.getElementById("statQuestions").textContent = state.answered;
+  document.getElementById("statQuestionsLbl").textContent = "otázek";
   document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
+  document.getElementById("statDepthLbl").textContent = "hloubka"; // závěr sdílí i bleskovka
   renderNextTip();
   go("s-finish");
 }
@@ -2410,6 +2612,120 @@ function renderNextTip() {
 
 function confirmLeave() {
   if (confirm("Opustit povídání a vrátit se na témata?")) goHome();
+}
+
+/* ================= Bleskovky ================= */
+let bleskTime = null;      // klíč denní doby (rano/odpoledne/vecer)
+let bleskUsed = new Set(); // indexy už nabídnutých — v rámci návštěvy se neopakují
+let bleskCurrent = null;
+let bleskFlipped = false, bleskFlipping = false;
+
+function openBleskovky() {
+  go("s-blesk-time");
+}
+
+function leaveBleskovka() {
+  releaseWakeLock(); // odchod bez dokončení — displej může zase zhasínat
+  go("s-blesk-time");
+}
+
+function openBleskCategory(key) {
+  bleskTime = key;
+  bleskUsed = new Set();
+  bleskCurrent = null;
+  document.getElementById("bleskCatLabel").textContent = BLESKOVKY[key].title;
+  sessionRunning = true;
+  requestWakeLock(); // při hře displej nezhasíná, stejně jako u povídání
+  drawBleskovka(true);
+  go("s-blesk");
+}
+
+function pickBleskIndex() {
+  const items = BLESKOVKY[bleskTime].items;
+  let pool = items.map((_, i) => i).filter(i => !bleskUsed.has(i));
+  if (!pool.length) {
+    // všechny prošly — osudí se naplní znovu, jen bez právě zobrazené
+    bleskUsed = new Set();
+    pool = items.map((_, i) => i).filter(i => items[i] !== bleskCurrent);
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function renderBleskovka() {
+  bleskFlipped = false;
+  const card = document.getElementById("bleskCard");
+  card.classList.remove("back-side");
+  document.getElementById("bleskFront").hidden = false;
+  document.getElementById("bleskBack").hidden = true;
+  document.getElementById("bleskEmoji").textContent = bleskCurrent.emoji;
+  document.getElementById("bleskTitle").textContent = bleskCurrent.title;
+  document.getElementById("bleskBackTitle").textContent = bleskCurrent.title;
+  document.getElementById("bleskText").textContent = bleskCurrent.text;
+  document.getElementById("bleskHint").textContent = "Otoč a zjisti víc";
+}
+
+function drawBleskovka(first) {
+  if (bleskFlipping) return;
+  const idx = pickBleskIndex();
+  bleskUsed.add(idx);
+  bleskCurrent = BLESKOVKY[bleskTime].items[idx];
+  const card = document.getElementById("bleskCard");
+  if (first === true) {
+    renderBleskovka();
+    card.classList.remove("flip-in", "flip-out");
+    void card.offsetWidth;
+    card.classList.add("flip-in");
+    return;
+  }
+  // výměna karty stejným dvoufázovým otočením jako ve hře
+  bleskFlipping = true;
+  card.classList.remove("flip-in");
+  card.classList.add("flip-out");
+  setTimeout(() => {
+    card.classList.remove("flip-out");
+    renderBleskovka();
+    void card.offsetWidth;
+    card.classList.add("flip-in");
+    bleskFlipping = false;
+  }, 170);
+}
+
+function flipBleskovka() {
+  if (bleskFlipping) return;
+  bleskFlipping = true;
+  const card = document.getElementById("bleskCard");
+  card.classList.remove("flip-in");
+  card.classList.add("flip-out");
+  setTimeout(() => {
+    bleskFlipped = !bleskFlipped;
+    card.classList.remove("flip-out");
+    card.classList.toggle("back-side", bleskFlipped);
+    document.getElementById("bleskFront").hidden = bleskFlipped;
+    document.getElementById("bleskBack").hidden = !bleskFlipped;
+    document.getElementById("bleskHint").textContent = bleskFlipped
+      ? "Klepni zpátky na název"
+      : "Otoč a zjisti víc";
+    void card.offsetWidth;
+    card.classList.add("flip-in");
+    bleskFlipping = false;
+  }, 170);
+}
+
+function finishBleskovka() {
+  releaseWakeLock();
+  document.getElementById("bleskDoneBtn").disabled = true;
+  confetti();
+  setTimeout(() => {
+    document.getElementById("bleskDoneBtn").disabled = false;
+    document.getElementById("finishText").textContent =
+      "Pár minut naplno jen pro vás dva — a ty se počítají nejvíc.";
+    document.getElementById("statQuestions").textContent = "1";
+    document.getElementById("statQuestionsLbl").textContent = "bleskovka";
+    document.getElementById("statDepth").textContent = BLESKOVKY[bleskTime].title;
+    document.getElementById("statDepthLbl").textContent = "denní doba";
+    renderNextTip();
+    go("s-finish");
+  }, 900);
 }
 
 /* ================= Nastavení ================= */
@@ -2457,7 +2773,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.1"; // zvedat při větších změnách
+const APP_VERSION = "1.2"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 
 const SETTINGS_PAGES = {
@@ -2469,7 +2785,8 @@ const SETTINGS_PAGES = {
       <li><strong>Otočte kartu</strong> (klepnutím nebo přejetím prstem) — na rubu jsou tipy, jak rozhovor rozvinout, a jemnější varianta otázky.</li>
       <li><strong>Po každé otázce si plácněte.</strong> A na konci povídání buďte na sebe pyšní.</li>
     </ol>
-    <p>Prošlé otázky si aplikace pamatuje — při návratu ke stejnému tématu přijdou nové. Každé téma a hloubka jich má šest.</p>` },
+    <p>Prošlé otázky si aplikace pamatuje — při návratu ke stejnému tématu přijdou nové. Každé téma a hloubka jich má šest.</p>
+    <p>A když je času málo, sáhněte po <strong>Bleskovkách</strong> — rychlých hrách na pár minut pro ráno, odpoledne i večer. Nic se u nich nepočítá, prostě si je užijte.</p>` },
 
   "tipy": { title: "Tipy pro rozhovory", html: `
     <ul>
@@ -2591,6 +2908,7 @@ function addFlipSwipe(el, flip) {
   }, { passive: true });
 }
 addFlipSwipe(document.getElementById("bigCard"), flipCard);
+addFlipSwipe(document.getElementById("bleskCard"), flipBleskovka);
 
 /* ================= PWA =================
    Service worker jen na http(s) — při otevření souboru napřímo se přeskočí. */
