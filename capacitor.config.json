@@ -1,0 +1,9 @@
+{
+  "appId": "com.dalikjebuh.mezinami",
+  "appName": "Mezi námi",
+  "webDir": "www",
+  "backgroundColor": "#FAF4EC",
+  "ios": {
+    "contentInset": "automatic"
+  }
+}
