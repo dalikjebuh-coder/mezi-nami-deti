@@ -2241,10 +2241,14 @@ const WEEKLY_NOTIFS = [
 ];
 
 /* Plugin je jen v nativní appce; na webu zůstane null a všechno kolem
-   notifikací se tiše přeskočí. */
-const notifPlugin = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
-  ? window.Capacitor.registerPlugin("LocalNotifications")
-  : null;
+   notifikací se tiše přeskočí. Try/catch je nutný: kdyby plugin v buildu
+   chyběl, výjimka by zabila celý skript — appka se bez notifikací obejde,
+   bez tlačítek ne. */
+let notifPlugin = null;
+try {
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+    notifPlugin = window.Capacitor.registerPlugin("LocalNotifications");
+} catch (e) { notifPlugin = null; }
 const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
 
 /* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
@@ -3256,18 +3260,20 @@ if (saved && saved.nameKid) {
    Jen v nativní appce: ukázat sekci v nastavení, chytat klepnutí na
    notifikaci a při každém startu posunout naplánované okno 12 nedělí. */
 if (notifPlugin) {
-  document.getElementById("notifLabel").hidden = false;
-  document.getElementById("notifGroup").hidden = false;
-  notifPlugin.addListener("localNotificationActionPerformed", (ev) => {
-    const card = ev && ev.notification && ev.notification.extra && ev.notification.extra.card;
-    if (card) openWeeklyCard(card);
-  });
-  if (state.notifOn) {
-    scheduleWeeklyNotifs().then((ok) => {
-      // uživatel mezitím zakázal oznámení v systému → přepínač nelhat
-      if (!ok) { state.notifOn = false; saveStore(); }
+  try {
+    document.getElementById("notifLabel").hidden = false;
+    document.getElementById("notifGroup").hidden = false;
+    notifPlugin.addListener("localNotificationActionPerformed", (ev) => {
+      const card = ev && ev.notification && ev.notification.extra && ev.notification.extra.card;
+      if (card) openWeeklyCard(card);
     });
-  }
+    if (state.notifOn) {
+      scheduleWeeklyNotifs().then((ok) => {
+        // uživatel mezitím zakázal oznámení v systému → přepínač nelhat
+        if (!ok) { state.notifOn = false; saveStore(); }
+      });
+    }
+  } catch (e) { /* bez notifikací se appka obejde */ }
 }
 </script>
 </body>
