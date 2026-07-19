@@ -563,6 +563,52 @@
   .faq-q { font-weight: 700; color: var(--ink); font-size: 15px; margin: 18px 0 3px; }
   .settings-page-body .faq-q:first-child { margin-top: 0; }
 
+  /* přepínač v nastavení (Nedělní inspirace) */
+  .switch {
+    width: 50px; height: 30px; border-radius: 15px; border: none;
+    background: rgba(51,38,31,.18); position: relative; cursor: pointer;
+    transition: background .25s ease; flex-shrink: 0; padding: 0;
+  }
+  .switch .knob {
+    position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 4px rgba(51,38,31,.25);
+    transition: transform .32s cubic-bezier(.34,1.4,.64,1); /* dojezd s malým přesahem */
+  }
+  .switch[aria-checked="true"] { background: var(--sage); }
+  .switch[aria-checked="true"] .knob { transform: translateX(20px); }
+  .switch:active .knob { transform: scale(.92); }
+  .switch[aria-checked="true"]:active .knob { transform: translateX(20px) scale(.92); }
+
+  /* ===== Nedělní inspirace — karta otevřená z notifikace ===== */
+  .weekly-card {
+    background: var(--card); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card); padding: 30px 24px 28px;
+    text-align: center; margin-bottom: 20px;
+  }
+  .weekly-emoji {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; margin: 0 auto 14px; background: var(--paper-soft);
+  }
+  .weekly-tag {
+    display: inline-block; font-size: 12px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 10px;
+  }
+  .weekly-q {
+    font-family: var(--font-display); font-size: 24px; font-weight: 600;
+    line-height: 1.3; color: var(--ink);
+  }
+  .weekly-fu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .weekly-fu-list li {
+    background: var(--card); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card); padding: 12px 14px;
+    font-size: 15px; line-height: 1.45; color: var(--ink-soft);
+    display: flex; gap: 10px; align-items: baseline;
+  }
+  .weekly-fu-list li::before { content: "💬"; font-size: 13px; }
+
   /* kontaktní karta s telefonním číslem (odborná pomoc) */
   .contact {
     background: var(--card); border-radius: var(--radius-md);
@@ -815,16 +861,16 @@
 
     <p class="muted" id="welcomeBack" hidden style="margin:-6px 0 6px;">✋ Vítejte zpátky. Sliby platí dál.</p>
 
-    <div class="section-label">Když je málo času</div>
+    <div class="section-label">O čem si dnes budete povídat?</div>
+    <div class="deck-grid" id="deckGrid"></div>
+
+    <div class="section-label" style="margin-top:22px;">Když je málo času</div>
     <button class="deck-card blesk-card" onclick="openBleskovky()">
       <div class="deck-emoji">⚡</div>
       <div><h3>Bleskovky</h3><p>Rychlé hry a výzvy</p></div>
       <span class="blesk-min">5 minut</span>
       <span class="deck-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
     </button>
-
-    <div class="section-label">O čem si dnes budete povídat?</div>
-    <div class="deck-grid" id="deckGrid"></div>
   </section>
 
   <!-- ===== 4b. Bleskovky — rozcestník denní doby ===== -->
@@ -834,7 +880,7 @@
     </div>
     <div class="deck-emoji" style="width:64px;height:64px;font-size:32px;border-radius:18px;margin-bottom:16px;background:var(--honey-soft);">⚡</div>
     <h2>Bleskovky</h2>
-    <p style="margin:10px 0 26px;">Děti ocení i pár minut stoprocentní pozornosti. Bez přípravy, bez psaní — jen vy dva.</p>
+    <p style="margin:10px 0 26px;">Zkuste si zahrát rychlé hry a zábavné výzvy podle denní doby nebo třeba při čekání na autobus.</p>
 
     <div class="section-label" style="margin-top:0;">Kdy si těch pár minut dáte?</div>
     <div class="deck-grid">
@@ -1013,6 +1059,17 @@
       </button>
     </div>
 
+    <!-- Nedělní inspirace — ukazuje se jen v nativní appce (web plánované notifikace neumí) -->
+    <div class="section-label" id="notifLabel" hidden>Nedělní inspirace</div>
+    <div class="settings-group" id="notifGroup" hidden>
+      <div class="settings-item static">
+        <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+        <span class="item-label">Jeden tip týdně<br><span class="item-note">V neděli večer — otázka, nebo malé povzbuzení</span></span>
+        <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Nedělní inspirace" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
+      </div>
+    </div>
+    <p class="muted" id="notifDeniedNote" hidden>Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení&nbsp;→ Mezi&nbsp;námi&nbsp;→ Oznámení.</p>
+
     <div class="section-label">Jak aplikaci používat</div>
     <div class="settings-group">
       <button class="settings-item" onclick="openSettingsPage('jak-hrat')">
@@ -1096,6 +1153,31 @@
     </div>
     <h2 id="settingsPageTitle" style="margin-bottom:16px;"></h2>
     <div class="settings-page-body" id="settingsPageBody"></div>
+  </section>
+
+  <!-- ===== 10. Nedělní inspirace — karta otevřená klepnutím na notifikaci ===== -->
+  <section class="screen" id="s-weekly">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Zpět</button>
+    </div>
+    <h2 style="margin-bottom:6px;">Nedělní inspirace</h2>
+    <p class="muted" style="margin-bottom:20px;">Otázka na tenhle týden — klidně jen tak, u večeře nebo v autě.</p>
+
+    <div class="weekly-card">
+      <div class="weekly-emoji" id="weeklyEmoji">💬</div>
+      <span class="weekly-tag" id="weeklyTag"></span>
+      <p class="weekly-q" id="weeklyQ"></p>
+    </div>
+
+    <div id="weeklyFuBox">
+      <div class="section-label" style="margin-top:0;">Jak si o tom povídat</div>
+      <ul class="weekly-fu-list" id="weeklyFu"></ul>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="weeklyDeckBtn">Otevřít celé téma</button>
+      <button class="btn btn-ghost" onclick="goHome()">Zpět domů</button>
+    </div>
   </section>
 
   <div id="confettiLayer"></div>
@@ -2116,6 +2198,164 @@ const BLESKOVKY = {
 
 const DEPTH_NAMES = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"];
 
+/* ================= Nedělní inspirace =================
+   Jednou týdně (neděle 18:00) přijde tichá notifikace. Střídají se dva druhy:
+   otázka ze hry (klepnutí ji rovnou otevře i s doptávačkami) a uvolňující
+   vzkaz pro rodiče bez úkolu (klepnutí jen otevře appku). 12 zpráv = čtvrtletí,
+   pak se cyklus točí znovu. Funguje jen v nativní appce — web plánované
+   notifikace neumí, sekce v nastavení se tam vůbec neukáže.
+   POZOR: card odkazuje na pořadí v DECKS/BONUS_CARDS — při přeskupení otázek
+   zkontrolovat i tady. soft:true = notifikace cituje jemnější znění otázky. */
+const WEEKLY_NOTIFS = [
+  { title: "Tip na tento týden",
+    body: "Zkuste se dětí v autě nebo u večeře jen tak zeptat: „Na co se teď nejvíc těšíš?“ Schválně, co společně vymyslíte.",
+    card: { deck: "pocity", depth: 0, idx: 5 } },
+  { title: "Byl to náročný týden?",
+    body: "To je v pořádku. Nemusíte pro děti vymýšlet velký program. Někdy stačí pár minut, kdy odložíte telefon a prostě jen jste spolu. Děti tu plnou přítomnost bezpečně poznají. ❤️" },
+  { title: "Otázka pro tento týden",
+    body: "„Kdy tě naposledy někdo pochválil? Za co to bylo?“ 💬 Zkuste si o tom popovídat a klidně se s dětmi podělte i o svůj dospělácký příběh.",
+    card: { deck: "skola", depth: 0, idx: 1, soft: true } },
+  { title: "Drobný rituál na tento týden",
+    body: "Až budete spolu sedět v klidu, dejte si 3 minuty společného ticha a počítejte, kolik různých zvuků kolem sebe uslyšíte. 🤫 Žádný spěch." },
+  { title: "Jedna hravá z kapsy",
+    body: "„Kdyby ses mohl/a proměnit v jakékoli zvíře, jaké by to bylo a proč?“ 🦁 Schválně, co vymyslí děti — a co vy.",
+    card: { bonus: 15 } },
+  { title: "Klidný start do týdne",
+    body: "Svět se nezboří, když nebudete každý den stoprocentně edukativní rodič. Někdy je nejlepším kontaktem obyčejné dlouhé objetí před spaním. ✨" },
+  { title: "Inspirace na tento týden",
+    body: "Zkuste s dětmi otevřít téma strachu: „Co ti pomáhá, když se bojíš?“ Někdy stačí jen poslouchat, nesoudit a obejmout.",
+    card: { deck: "strachy", depth: 0, idx: 1 } },
+  { title: "Schválně, co vyberou děti",
+    body: "„Jakou superschopnost by sis vybral/a — létání, neviditelnost, nebo čtení myšlenek?“ 🦸 Zeptejte se, až bude v týdnu volná chvíle.",
+    card: { bonus: 18 } },
+  { title: "Nový týden před námi",
+    body: "Pro hluboký vztah s dětmi nepotřebujeme hodiny času. Stačí pár chvil, kdy jsme mentálně stoprocentně s nimi — bez pípání mobilu a myšlenek na práci. 🌾" },
+  { title: "Otázka pro společný moment",
+    body: "„Kdo je teď tvůj nejlepší kamarád? A co se ti na něm líbí?“ 🤝 Nechte děti vyprávět a schválně se doptejte na detaily.",
+    card: { deck: "kamaradi", depth: 0, idx: 0 } },
+  { title: "Tip na dnešní večer",
+    body: "„Co bys dělal/a, kdybys byl/a na jeden den neviditelný/á?“ 🔍 Užijte si společné vymýšlení plné fantazie.",
+    card: { bonus: 16 } },
+  { title: "Ať přinese týden cokoli",
+    body: "Pro své dítě jste celým světem. Drobné rituály a chvilky upřímného zájmu se do vašeho vztahu propíší dřív, než si myslíte. Hezký týden. 🤍" }
+];
+
+/* Plugin je jen v nativní appce; na webu zůstane null a všechno kolem
+   notifikací se tiše přeskočí. */
+const notifPlugin = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+  ? window.Capacitor.registerPlugin("LocalNotifications")
+  : null;
+const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
+
+/* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
+function nextSundays(count) {
+  const d = new Date();
+  d.setHours(18, 0, 0, 0);
+  d.setDate(d.getDate() + ((7 - d.getDay()) % 7));
+  if (d <= new Date()) d.setDate(d.getDate() + 7);
+  const out = [];
+  for (let i = 0; i < count; i++) { out.push(new Date(d)); d.setDate(d.getDate() + 7); }
+  return out;
+}
+
+/* Naplánuje 12 nedělí dopředu; okno se posouvá při každém startu appky.
+   Pořadí zpráv drží notifStart (první naplánovaná neděle) — cyklus tak
+   pokračuje tam, kde má, i po přeinstalaci okna. */
+async function scheduleWeeklyNotifs() {
+  if (!notifPlugin) return false;
+  try {
+    const perm = await notifPlugin.requestPermissions();
+    if (perm.display !== "granted") return false;
+    await cancelWeeklyNotifs();
+    const sundays = nextSundays(WEEKLY_NOTIFS.length);
+    if (!state.notifStart) state.notifStart = sundays[0].getTime();
+    const startIdx = Math.max(0, Math.round((sundays[0].getTime() - state.notifStart) / 6048e5));
+    await notifPlugin.schedule({
+      notifications: sundays.map((at, i) => {
+        const which = (startIdx + i) % WEEKLY_NOTIFS.length;
+        const n = WEEKLY_NOTIFS[which];
+        return {
+          id: NOTIF_ID_BASE + which,
+          title: n.title,
+          body: n.body,
+          schedule: { at, allowWhileIdle: true },
+          extra: n.card ? { card: n.card } : null
+        };
+      })
+    });
+    return true;
+  } catch (e) { return false; }
+}
+
+async function cancelWeeklyNotifs() {
+  if (!notifPlugin) return;
+  try {
+    const pending = await notifPlugin.getPending();
+    const ours = (pending.notifications || []).filter(n => n.id >= NOTIF_ID_BASE && n.id < NOTIF_ID_BASE + 100);
+    if (ours.length) await notifPlugin.cancel({ notifications: ours.map(n => ({ id: n.id })) });
+  } catch (e) {}
+}
+
+async function toggleWeeklyNotifs() {
+  const deniedNote = document.getElementById("notifDeniedNote");
+  if (state.notifOn) {
+    state.notifOn = false;
+    renderNotifSwitch();
+    saveStore();
+    await cancelWeeklyNotifs();
+    return;
+  }
+  const ok = await scheduleWeeklyNotifs();
+  state.notifOn = ok;
+  deniedNote.hidden = ok; // nešlo to = oznámení jsou zakázaná v systému
+  renderNotifSwitch();
+  saveStore();
+}
+
+function renderNotifSwitch() {
+  document.getElementById("notifSwitch").setAttribute("aria-checked", state.notifOn ? "true" : "false");
+}
+
+/* Klepnutí na notifikaci s otázkou → rovnou karta s doptávačkami */
+function openWeeklyCard(card) {
+  const tag = document.getElementById("weeklyTag");
+  const emoji = document.getElementById("weeklyEmoji");
+  const q = document.getElementById("weeklyQ");
+  const fuBox = document.getElementById("weeklyFuBox");
+  const deckBtn = document.getElementById("weeklyDeckBtn");
+  if (card.bonus != null) {
+    if (!BONUS_CARDS[card.bonus]) return; // odkaz už neplatí — nechat appku doma
+    tag.textContent = "Bonusová otázka";
+    emoji.textContent = "🎁";
+    emoji.style.background = "var(--honey-soft)";
+    q.textContent = BONUS_CARDS[card.bonus];
+    fuBox.hidden = true;
+    deckBtn.hidden = true;
+  } else {
+    const deck = DECKS.find(d => d.id === card.deck);
+    const question = deck && deck.questions[card.depth] && deck.questions[card.depth][card.idx];
+    if (!question) return;
+    tag.textContent = deck.title;
+    emoji.textContent = deck.emoji;
+    emoji.style.background = deck.bg;
+    q.textContent = card.soft ? question.soft : question.q;
+    const fu = document.getElementById("weeklyFu");
+    fu.innerHTML = "";
+    const followups = [...question.fu];
+    if (question.temp) followups.splice(1, 0, question.temp);
+    followups.forEach(f => {
+      const li = document.createElement("li");
+      li.textContent = f;
+      fu.appendChild(li);
+    });
+    fuBox.hidden = false;
+    deckBtn.hidden = false;
+    deckBtn.textContent = `Otevřít téma ${deck.title}`;
+    deckBtn.onclick = () => openDeck(deck.id);
+  }
+  go("s-weekly");
+}
+
 /* Jedno sezení = 2 otázky vylosované ze zásoby (6 na téma a hloubku) + 1 bonusovka.
    Přednost mají neprošlé otázky — je tak důvod se ke kombinaci vracet. */
 const SESSION_SIZE = 2;
@@ -2135,7 +2375,9 @@ const state = {
   answered: 0,     // jen probrané otázky — statistika „X otázek“ na konci (bonus se nepočítá)
   pledged: false,  // tři sliby složené — ukazují se jen před úplně prvním povídáním
   seen: new Set(), // probrané otázky téma:hloubka:index — přes sezení
-  done: new Set()  // kombinace téma:hloubka s probranými všemi otázkami
+  done: new Set(), // kombinace téma:hloubka s probranými všemi otázkami
+  notifOn: false,  // nedělní inspirace zapnutá (jen nativní appka)
+  notifStart: null // první naplánovaná neděle (ms) — drží pořadí zpráv v cyklu
 };
 
 /* ================= Navigace ================= */
@@ -2189,7 +2431,9 @@ function saveStore() {
       nameKid: state.nameKid,
       pledged: state.pledged,
       seen: [...state.seen],
-      done: [...state.done]
+      done: [...state.done],
+      notifOn: state.notifOn,
+      notifStart: state.notifStart
     }));
   } catch (e) { /* soukromý režim — hra funguje i bez ukládání */ }
 }
@@ -2756,6 +3000,7 @@ function openSettings() {
   // předvyplnit jen skutečně zadaná jména, ne výchozí „Rodič“/„Dítě“
   document.getElementById("setNameParent").value = state.nameParent === "Rodič" ? "" : state.nameParent;
   document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
+  renderNotifSwitch();
   go("s-settings");
 }
 
@@ -2796,7 +3041,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.2"; // zvedat při větších změnách
+const APP_VERSION = "1.3"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 
 const SETTINGS_PAGES = {
@@ -2993,6 +3238,8 @@ if (saved && saved.nameKid) {
   state.nameParent = saved.nameParent || "Rodič";
   state.nameKid = saved.nameKid || "Dítě";
   state.pledged = !!saved.pledged;
+  state.notifOn = !!saved.notifOn;
+  state.notifStart = saved.notifStart || null;
   state.seen = new Set(saved.seen || []);
   // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
   state.done = new Set(saved.seen ? saved.done || [] : []);
@@ -3003,6 +3250,24 @@ if (saved && saved.nameKid) {
   goHome();
 } else {
   renderHome();
+}
+
+/* ================= Nedělní inspirace — start =================
+   Jen v nativní appce: ukázat sekci v nastavení, chytat klepnutí na
+   notifikaci a při každém startu posunout naplánované okno 12 nedělí. */
+if (notifPlugin) {
+  document.getElementById("notifLabel").hidden = false;
+  document.getElementById("notifGroup").hidden = false;
+  notifPlugin.addListener("localNotificationActionPerformed", (ev) => {
+    const card = ev && ev.notification && ev.notification.extra && ev.notification.extra.card;
+    if (card) openWeeklyCard(card);
+  });
+  if (state.notifOn) {
+    scheduleWeeklyNotifs().then((ok) => {
+      // uživatel mezitím zakázal oznámení v systému → přepínač nelhat
+      if (!ok) { state.notifOn = false; saveStore(); }
+    });
+  }
 }
 </script>
 </body>
