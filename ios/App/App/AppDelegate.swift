@@ -1,31 +1,32 @@
 import UIKit
 import Capacitor
 
-// Appka má pevný layout (obrazovky scrollují uvnitř), samotný webview se nesmí
-// houpat ani posouvat — jinak jde obsah odtáhnout a odhalí se prázdné pozadí.
-// Webview je navíc ukotvený do safe area (standardní iOS rozvržení): obsah
-// začíná pod status barem a končí nad home indikátorem; pruhy za nimi kryje
-// nativní pozadí v barvě papíru, takže plocha působí celistvě.
+// Standardní iOS rozvržení: obsah začíná pod status barem a končí nad home
+// indikátorem. POZOR: Capacitor dělá `view = webView` (webview JE kořenový
+// pohled), takže ho tady vyjmeme, obalíme kontejnerem v barvě papíru a
+// ukotvíme do jeho safe area — kotvit webview k vlastnímu safe area nefunguje.
 class BounceFreeViewController: CAPBridgeViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        webView?.scrollView.bounces = false
-        webView?.scrollView.alwaysBounceVertical = false
-        webView?.scrollView.alwaysBounceHorizontal = false
-        webView?.scrollView.showsVerticalScrollIndicator = false
-        webView?.scrollView.showsHorizontalScrollIndicator = false
-        webView?.scrollView.contentInsetAdjustmentBehavior = .never
+        guard let wv = webView else { return }
 
-        view.backgroundColor = UIColor(red: 0.980, green: 0.957, blue: 0.925, alpha: 1) // --paper #FAF4EC
-        if let wv = webView {
-            wv.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                wv.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                wv.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-                wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                wv.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            ])
-        }
+        let container = UIView(frame: UIScreen.main.bounds)
+        container.backgroundColor = UIColor(red: 0.980, green: 0.957, blue: 0.925, alpha: 1) // --paper #FAF4EC
+        view = container
+        container.addSubview(wv)
+        wv.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            wv.topAnchor.constraint(equalTo: container.safeAreaLayoutGuide.topAnchor),
+            wv.bottomAnchor.constraint(equalTo: container.safeAreaLayoutGuide.bottomAnchor),
+            wv.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            wv.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+        ])
+
+        // pojistky proti houpání a bočnímu tahání (bounces řeší už Capacitor)
+        wv.scrollView.alwaysBounceVertical = false
+        wv.scrollView.alwaysBounceHorizontal = false
+        wv.scrollView.showsVerticalScrollIndicator = false
+        wv.scrollView.showsHorizontalScrollIndicator = false
     }
 }
 
