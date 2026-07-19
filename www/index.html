@@ -52,6 +52,11 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   [hidden] { display: none !important; }
 
+  /* Stránka samotná se nikdy nehýbe — scrolluje se jen uvnitř obrazovek (.screen).
+     Bez tohohle jde v nativní appce i PWA houpat celou stránkou nahoru/dolů
+     (odhalí se prázdné pozadí) a tahat ji do stran. */
+  html, body { overflow: hidden; overscroll-behavior: none; }
+
   /* ===== Chování na dotykové obrazovce (iOS) =====
      Bez šedého záblesku při tapnutí, bez výběru textu a lupy při dlouhém
      podržení karty, bez zoomu na dvojklep. Vstupy zůstávají normální. */
@@ -103,6 +108,7 @@
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* obsah přesahující do šířky (vějíř karet apod.) nesmí obrazovku roztáhnout */
     overscroll-behavior-y: contain; /* žádné gumování celé stránky na iOS */
     padding: 28px 26px 32px;
     animation: fadeIn .25s ease both;

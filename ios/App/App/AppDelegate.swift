@@ -1,6 +1,20 @@
 import UIKit
 import Capacitor
 
+// Appka má pevný layout (obrazovky scrollují uvnitř), samotný webview se nesmí
+// houpat ani posouvat — jinak jde obsah odtáhnout a odhalí se prázdné pozadí.
+class BounceFreeViewController: CAPBridgeViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        webView?.scrollView.bounces = false
+        webView?.scrollView.alwaysBounceVertical = false
+        webView?.scrollView.alwaysBounceHorizontal = false
+        webView?.scrollView.showsVerticalScrollIndicator = false
+        webView?.scrollView.showsHorizontalScrollIndicator = false
+        webView?.scrollView.contentInsetAdjustmentBehavior = .never
+    }
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
