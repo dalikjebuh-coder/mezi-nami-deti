@@ -99,13 +99,12 @@
     html, body { background: var(--paper); }
     body { padding: 0; }
     .phone { max-width: none; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
-    /* Standardní iOS safe-area (dle HIG): obsah začíná těsně pod status barem.
-       Kanonický vzor calc(env() + konstanta) — složitější formy (max, fallback
-       argument env() v calc) umí iOS WebKit potichu zahodit, proto jednoduše. */
-    .screen { padding-top: 20px; padding-bottom: 16px; }
+    /* V nativní appce je webview ukotvený do safe area (env() = 0), v PWA/Safari
+       env() dodá výřez a home indikátor. V obou případech: obsah + 12px dech. */
+    .screen { padding-top: 12px; padding-bottom: 12px; }
     @supports (padding-top: env(safe-area-inset-top)) {
       .screen {
-        padding-top: calc(env(safe-area-inset-top) + 8px);
+        padding-top: calc(env(safe-area-inset-top) + 12px);
         padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
       }
     }

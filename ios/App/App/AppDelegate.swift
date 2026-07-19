@@ -3,6 +3,9 @@ import Capacitor
 
 // Appka má pevný layout (obrazovky scrollují uvnitř), samotný webview se nesmí
 // houpat ani posouvat — jinak jde obsah odtáhnout a odhalí se prázdné pozadí.
+// Webview je navíc ukotvený do safe area (standardní iOS rozvržení): obsah
+// začíná pod status barem a končí nad home indikátorem; pruhy za nimi kryje
+// nativní pozadí v barvě papíru, takže plocha působí celistvě.
 class BounceFreeViewController: CAPBridgeViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -12,6 +15,17 @@ class BounceFreeViewController: CAPBridgeViewController {
         webView?.scrollView.showsVerticalScrollIndicator = false
         webView?.scrollView.showsHorizontalScrollIndicator = false
         webView?.scrollView.contentInsetAdjustmentBehavior = .never
+
+        view.backgroundColor = UIColor(red: 0.980, green: 0.957, blue: 0.925, alpha: 1) // --paper #FAF4EC
+        if let wv = webView {
+            wv.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                wv.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                wv.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+                wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                wv.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            ])
+        }
     }
 }
 
