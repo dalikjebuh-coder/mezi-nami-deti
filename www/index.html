@@ -269,12 +269,42 @@
   }
   .onboard-dots { display: flex; justify-content: center; gap: 7px; margin-top: 28px; }
   .onboard-dots span {
-    width: 8px; height: 8px; border-radius: 50%;
+    width: 8px; height: 8px; border-radius: 4px;
     background: rgba(51,38,31,.14);
-    transition: background .25s ease;
+    /* aktivní tečka se protáhne do proužku — pohyb místo pouhé změny barvy */
+    transition: width .34s cubic-bezier(.34,1.3,.64,1), background .25s ease;
   }
-  .onboard-dots span.on { background: var(--plum); }
-  .slide-in { animation: screenIn .3s ease both; }
+  .onboard-dots span.on { width: 22px; background: var(--plum); }
+
+  /* ===== Nástup obsahu slidu =====
+     Ilustrace, titulek, text a tečky nastupují jedna po druhé a přilétají
+     ze strany, odkud uživatel „přišel“ — dopředu zprava, zpět zleva. */
+  .slide-in > * { animation: slideRise .44s cubic-bezier(.22,.85,.3,1) both; }
+  .slide-in > *:nth-child(1) { animation-delay: .02s; }
+  .slide-in > *:nth-child(2) { animation-delay: .1s; }
+  .slide-in > *:nth-child(3) { animation-delay: .18s; }
+  .slide-in > *:nth-child(4) { animation-delay: .26s; }
+  /* ilustrace nepřilétá, ale odskočí — dává slidu tempo */
+  .slide-in > .onboard-visual { animation-name: onboardPop; animation-duration: .55s;
+    animation-timing-function: cubic-bezier(.34,1.5,.64,1); }
+  .slide-in.from-left > *:not(.onboard-visual) { animation-name: slideRiseBack; }
+  @keyframes slideRise     { from { opacity: 0; transform: translate(22px, 6px); } }
+  @keyframes slideRiseBack { from { opacity: 0; transform: translate(-22px, 6px); } }
+  @keyframes onboardPop {
+    0%   { opacity: 0; transform: scale(.55) rotate(-10deg); }
+    55%  { opacity: 1; transform: scale(1.09) rotate(4deg); }
+    100% { transform: none; }
+  }
+
+  /* Úvodní obrazovka: logo odskočí, zbytek textu nastoupí po částech
+     (jinak by celý blok v .center-col naskočil naráz). */
+  #s-welcome.active .center-col > * { animation: rise .44s cubic-bezier(.22,.85,.3,1) both; }
+  #s-welcome.active .center-col > .hero-mark {
+    animation: onboardPop .62s cubic-bezier(.34,1.5,.64,1) .04s both;
+  }
+  #s-welcome.active .center-col > *:nth-child(2) { animation-delay: .18s; }
+  #s-welcome.active .center-col > *:nth-child(3) { animation-delay: .27s; }
+  #s-welcome.active .center-col > *:nth-child(4) { animation-delay: .36s; }
 
   /* ===== Vstupy ===== */
   .field { margin-bottom: 16px; text-align: left; }
@@ -2537,7 +2567,8 @@ function startOnboard(fromSettings) {
   go("s-onboard");
 }
 
-function showOnboard(i) {
+/* dir === "back" → obsah přilétá zleva, jinak zprava */
+function showOnboard(i, dir) {
   onboardIdx = i;
   const s = ONBOARD_SLIDES[i];
   const visual = document.getElementById("onboardEmoji");
@@ -2548,11 +2579,12 @@ function showOnboard(i) {
   document.getElementById("onboardStep").textContent = `${i + 1}/${ONBOARD_SLIDES.length}`;
   document.getElementById("onboardDots").innerHTML =
     ONBOARD_SLIDES.map((_, d) => `<span class="${d === i ? "on" : ""}"></span>`).join("");
-  // znovu přehrát animaci slidu
+  // znovu přehrát nástup slidu — sekce se poskládají jedna po druhé
   const slide = document.getElementById("onboardSlide");
-  slide.classList.remove("slide-in");
+  slide.classList.remove("slide-in", "from-left");
   void slide.offsetWidth;
   slide.classList.add("slide-in");
+  if (dir === "back") slide.classList.add("from-left");
 }
 
 
@@ -2562,7 +2594,7 @@ function onboardNext() {
 }
 
 function onboardBack() {
-  if (onboardIdx > 0) { showOnboard(onboardIdx - 1); return; }
+  if (onboardIdx > 0) { showOnboard(onboardIdx - 1, "back"); return; }
   go(onboardFromSettings ? "s-settings" : "s-welcome");
 }
 
@@ -2573,7 +2605,7 @@ function onboardSkip() {
 /* Návrat zpět ze jmen — na poslední slide průvodce */
 function goOnboardEnd() {
   onboardFromSettings = false;
-  showOnboard(ONBOARD_SLIDES.length - 1);
+  showOnboard(ONBOARD_SLIDES.length - 1, "back"); // vracíme se ze jmen
   go("s-onboard");
 }
 
@@ -3199,7 +3231,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.3"; // zvedat při větších změnách
+const APP_VERSION = "1.4"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
