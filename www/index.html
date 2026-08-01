@@ -667,6 +667,37 @@
   .switch:active .knob { transform: scale(.92); }
   .switch[aria-checked="true"]:active .knob { transform: translateX(20px) scale(.92); }
 
+  /* ===== Nabídka nedělní inspirace na závěrečné obrazovce ===== */
+  .notif-offer {
+    background: var(--card); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card); padding: 20px 20px 18px;
+    margin-top: 20px; flex: none;
+    animation: rise .45s ease .7s both; /* naskočí až po statistikách */
+  }
+  .notif-offer h3 { margin-bottom: 4px; }
+  .notif-offer p { font-size: 14.5px; }
+  .notif-offer-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .notif-offer-actions .btn { padding: 13px 20px; }
+  /* maketa skutečné notifikace — ukazuje, co přijde, ne co si má představit */
+  .notif-preview {
+    background: var(--paper-soft); border-radius: 16px;
+    padding: 12px 14px; margin-top: 14px;
+    display: flex; gap: 11px; align-items: flex-start;
+  }
+  .notif-preview .app-icon {
+    width: 36px; height: 36px; border-radius: 9px; flex: none;
+    background: var(--paper); position: relative; overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(51,38,31,.08);
+  }
+  .notif-preview .app-icon i { position: absolute; border-radius: 50%; mix-blend-mode: multiply; }
+  .notif-preview .app-icon i:first-child { width: 19px; height: 19px; background: var(--plum); opacity: .85; left: 3px; top: 7px; }
+  .notif-preview .app-icon i:last-child { width: 12px; height: 12px; background: var(--honey); opacity: .9; right: 4px; top: 14px; }
+  .notif-preview .nt-body { flex: 1; min-width: 0; }
+  .notif-preview .nt-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .notif-preview .nt-title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .notif-preview .nt-time { font-size: 12px; color: var(--ink-faint); flex: none; }
+  .notif-preview .nt-text { font-size: 13px; line-height: 1.4; color: var(--ink-soft); margin-top: 2px; }
+
   /* ===== Nedělní inspirace — karta otevřená z notifikace ===== */
   .weekly-card {
     background: var(--card); border-radius: var(--radius-lg);
@@ -1123,6 +1154,25 @@
         <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl" id="statDepthLbl">hloubka</div></div>
       </div>
     </div>
+    <!-- Nabídka nedělní inspirace: ukáže se jednou, až po prvním dokončeném
+         povídání — tedy ve chvíli, kdy je hodnota appky zažitá. Jen v nativní
+         appce a jen když iOS dotaz ještě neukázal. -->
+    <div class="notif-offer" id="notifOffer" hidden>
+      <h3>Ať to nezapadne</h3>
+      <p>Jednou týdně pošleme jednu otázku nebo malé povzbuzení. Žádné upomínky, žádné počítání.</p>
+      <div class="notif-preview">
+        <div class="app-icon"><i></i><i></i></div>
+        <div class="nt-body">
+          <div class="nt-head"><span class="nt-title">Mezi námi</span><span class="nt-time">ned 18:00</span></div>
+          <p class="nt-text" id="notifPreviewText"></p>
+        </div>
+      </div>
+      <div class="notif-offer-actions">
+        <button class="btn btn-primary" onclick="acceptNotifOffer()">Ano, posílejte</button>
+        <button class="btn btn-ghost" onclick="declineNotifOffer()">Teď ne</button>
+      </div>
+    </div>
+
     <div class="btn-row">
       <p class="muted" id="nextTipLabel" style="text-align:center;">Příště zkuste</p>
       <button class="btn btn-secondary" id="nextTipBtn"></button>
@@ -2386,11 +2436,28 @@ function nextSundays(count) {
 /* Naplánuje 12 nedělí dopředu; okno se posouvá při každém startu appky.
    Pořadí zpráv drží notifStart (první naplánovaná neděle) — cyklus tak
    pokračuje tam, kde má, i po přeinstalaci okna. */
+/* Zjistí stav povolení, aniž by cokoli vyskočilo: "granted" | "denied" |
+   "prompt" (systémový dotaz ještě nebyl). Rozlišení potřebujeme kvůli tomu,
+   že iOS ukáže dotaz jen jednou — po odmítnutí už requestPermissions()
+   tiše vrací denied a uživateli bychom lhali přepínačem. */
+async function notifPermission() {
+  if (!notifPlugin) return "denied";
+  try {
+    const { display } = await notifPlugin.checkPermissions();
+    return display || "prompt";
+  } catch (e) { return "prompt"; }
+}
+
 async function scheduleWeeklyNotifs() {
   if (!notifPlugin) return false;
   try {
-    const perm = await notifPlugin.requestPermissions();
-    if (perm.display !== "granted") return false;
+    let state0 = await notifPermission();
+    // dotaz se smí ukázat jen když ho iOS ještě neukázal a jde o gesto uživatele
+    if (state0 === "prompt") {
+      const perm = await notifPlugin.requestPermissions();
+      state0 = perm.display;
+    }
+    if (state0 !== "granted") return false;
     await cancelWeeklyNotifs();
     const sundays = nextSundays(WEEKLY_NOTIFS.length);
     if (!state.notifStart) state.notifStart = sundays[0].getTime();
@@ -2432,9 +2499,23 @@ async function toggleWeeklyNotifs() {
   }
   const ok = await scheduleWeeklyNotifs();
   state.notifOn = ok;
+  state.notifAsked = true; // ať se na to appka po sezení už neptá podruhé
   deniedNote.hidden = ok; // nešlo to = oznámení jsou zakázaná v systému
   renderNotifSwitch();
   saveStore();
+}
+
+/* Přepínač v nastavení nemá nic slibovat, když jsou oznámení zakázaná
+   v iOS — v tom případě rovnou ukážeme, kde se to zapíná. */
+async function refreshNotifPermissionNote() {
+  if (!notifPlugin) return;
+  const denied = (await notifPermission()) === "denied";
+  document.getElementById("notifDeniedNote").hidden = !denied;
+  if (denied && state.notifOn) { // zakázáno mimo appku — nedělat, že to běží
+    state.notifOn = false;
+    renderNotifSwitch();
+    saveStore();
+  }
 }
 
 function renderNotifSwitch() {
@@ -2502,7 +2583,8 @@ const state = {
   seen: new Set(), // probrané otázky téma:hloubka:index — přes sezení
   done: new Set(), // kombinace téma:hloubka s probranými všemi otázkami
   notifOn: false,  // nedělní inspirace zapnutá (jen nativní appka)
-  notifStart: null // první naplánovaná neděle (ms) — drží pořadí zpráv v cyklu
+  notifStart: null, // první naplánovaná neděle (ms) — drží pořadí zpráv v cyklu
+  notifAsked: false // na nedělní inspiraci jsme se po povídání už zeptali
 };
 
 /* ================= Navigace ================= */
@@ -2558,7 +2640,8 @@ function saveStore() {
       seen: [...state.seen],
       done: [...state.done],
       notifOn: state.notifOn,
-      notifStart: state.notifStart
+      notifStart: state.notifStart,
+      notifAsked: state.notifAsked
     }));
   } catch (e) { /* soukromý režim — hra funguje i bez ukládání */ }
 }
@@ -3074,7 +3157,38 @@ function finishSession() {
   document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
   document.getElementById("statDepthLbl").textContent = "hloubka"; // závěr sdílí i bleskovka
   renderNextTip();
+  maybeOfferNotifs();
   go("s-finish");
+}
+
+/* ===== Nabídka nedělní inspirace =====
+   Ptáme se až po dokončeném povídání, ne v úvodním průvodci: tam by dotaz
+   přišel dřív, než rodič vůbec ví, co mu appka dá. Jen v nativní appce
+   (web plánované notifikace neumí), jen jednou a jen když iOS systémový
+   dotaz ještě neukázal — po odmítnutí už appka nemá co nabízet. */
+async function maybeOfferNotifs() {
+  const box = document.getElementById("notifOffer");
+  box.hidden = true;
+  if (!notifPlugin || state.notifOn || state.notifAsked) return;
+  if (await notifPermission() !== "prompt") return;
+  // ukázat text, který doopravdy přijde jako první
+  document.getElementById("notifPreviewText").textContent = WEEKLY_NOTIFS[0].body;
+  box.hidden = false;
+}
+
+async function acceptNotifOffer() {
+  document.getElementById("notifOffer").hidden = true;
+  const ok = await scheduleWeeklyNotifs();   // tady teprve vyskočí systémový dotaz
+  state.notifOn = ok;
+  state.notifAsked = true;
+  renderNotifSwitch();
+  saveStore();
+}
+
+function declineNotifOffer() {
+  document.getElementById("notifOffer").hidden = true;
+  state.notifAsked = true; // podruhé už neotravovat, zůstává přepínač v nastavení
+  saveStore();
 }
 
 /* Most k dalšímu sezení — nabídnout náhodnou neprošlou kombinaci */
@@ -3212,6 +3326,7 @@ function finishBleskovka() {
     document.getElementById("statDepth").textContent = BLESKOVKY[bleskTime].title;
     document.getElementById("statDepthLbl").textContent = "denní doba";
     renderNextTip();
+    maybeOfferNotifs();
     go("s-finish");
   }, 900);
 }
@@ -3222,6 +3337,7 @@ function openSettings() {
   document.getElementById("setNameParent").value = state.nameParent === "Rodič" ? "" : state.nameParent;
   document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
   renderNotifSwitch();
+  refreshNotifPermissionNote();
   go("s-settings");
 }
 
@@ -3464,6 +3580,7 @@ if (saved && saved.nameKid) {
   state.pledged = !!saved.pledged;
   state.notifOn = !!saved.notifOn;
   state.notifStart = saved.notifStart || null;
+  state.notifAsked = !!saved.notifAsked;
   state.seen = new Set(saved.seen || []);
   // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
   state.done = new Set(saved.seen ? saved.done || [] : []);
