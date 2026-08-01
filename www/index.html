@@ -419,8 +419,14 @@
 
   /* ===== Losování karet ===== */
   .card-fan {
-    /* jedno místo, kde se šířka karty ladí */
-    --card-w: min(63mm, 62vw);
+    /* Jedno místo, kde se vějíř ladí. Rozpětí vějíře je naměřených
+       2,42 × šířka karty (dané překryvem a úhlem FAN_ANGLE), takže se
+       karta odvozuje z dostupné šířky. Vějíř se tak vejde do obsahu
+       obrazovky a od okraje displeje zůstane bezpečná mezera ~30 px.
+       Překryv 22 % je strop: při větším se „?“ překryté karty schová pod
+       sousední kartu. Strop 63 mm = skutečná hrací karta. */
+    --overlap: .22;
+    --card-w: min(63mm, calc((100% - 6px) / 2.42));
     display: flex; justify-content: center; align-items: flex-start;
     margin-top: 24px;
   }
@@ -429,7 +435,7 @@
        zmenší podle šířky, ať zůstane hratelná. Krajní karty schválně
        vylézají z obrazovky (.screen má overflow-x: hidden, tak se ořežou). */
     width: var(--card-w); aspect-ratio: 63 / 88; height: auto; flex: none;
-    margin: 0 calc(var(--card-w) * -0.24);
+    margin: 0 calc(var(--card-w) * -1 * var(--overlap));
     border: none; cursor: pointer;
     border-radius: 18px;
     background:
@@ -440,7 +446,7 @@
     font-family: var(--font-display); font-size: 58px; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
     /* vějíř se rozevírá od bodu pod kartami, jako když je držíte v ruce */
-    transform-origin: 50% 112%;
+    transform-origin: 50% 104%;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px)) scale(var(--scale, 1));
     transition: transform .3s ease, opacity .35s ease;
   }
@@ -2752,6 +2758,9 @@ function confetti() {
 }
 
 /* --- losování karet --- */
+/* Rozevření vějíře. Menší úhel = větší karta se vejde na obrazovku,
+   protože rotace roztahuje vějíř do šířky. Drží se s --overlap v CSS. */
+const FAN_ANGLE = 6;
 let picking = false;
 
 let lastPickJoker = false;
@@ -2775,7 +2784,7 @@ function goDraw() {
   for (let i = 0; i < count; i++) {
     const c = document.createElement("button");
     c.className = "draw-card";
-    c.style.setProperty("--rot", ((i - (count - 1) / 2) * 8) + "deg");
+    c.style.setProperty("--rot", ((i - (count - 1) / 2) * FAN_ANGLE) + "deg");
     c.textContent = "?";
     c.onclick = () => pickCard(c);
     fan.appendChild(c);
