@@ -419,12 +419,17 @@
 
   /* ===== Losování karet ===== */
   .card-fan {
+    /* jedno místo, kde se šířka karty ladí */
+    --card-w: min(63mm, 62vw);
     display: flex; justify-content: center; align-items: flex-start;
-    margin-top: 30px; min-height: 185px;
+    margin-top: 24px;
   }
   .draw-card {
-    width: 112px; height: 168px; flex: none;
-    margin: 0 -12px;
+    /* Skutečná velikost hrací karty — 63 × 88 mm. Na úzkých displejích se
+       zmenší podle šířky, ať zůstane hratelná. Krajní karty schválně
+       vylézají z obrazovky (.screen má overflow-x: hidden, tak se ořežou). */
+    width: var(--card-w); aspect-ratio: 63 / 88; height: auto; flex: none;
+    margin: 0 calc(var(--card-w) * -0.24);
     border: none; cursor: pointer;
     border-radius: 18px;
     background:
@@ -432,8 +437,10 @@
       linear-gradient(150deg, var(--plum) 0%, var(--plum-deep) 100%);
     box-shadow: var(--shadow-card), inset 0 0 0 5px rgba(250,244,236,.22);
     color: var(--honey-soft);
-    font-family: var(--font-display); font-size: 44px; font-weight: 600;
+    font-family: var(--font-display); font-size: 58px; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
+    /* vějíř se rozevírá od bodu pod kartami, jako když je držíte v ruce */
+    transform-origin: 50% 112%;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px)) scale(var(--scale, 1));
     transition: transform .3s ease, opacity .35s ease;
   }
