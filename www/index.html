@@ -415,7 +415,47 @@
     from { opacity: 0; transform: rotate(var(--rot, 0deg)) translateY(46px) scale(.82); }
   }
   .draw-card.picked { --lift: -16px; --scale: 1.06; z-index: 2; }
-  .draw-card.away { opacity: 0; --lift: 46px; pointer-events: none; }
+  /* nevybrané karty zmizí rychleji, ať nezdržují nástup vylosované */
+  .draw-card.away { opacity: 0; --lift: 46px; pointer-events: none; transition: transform .3s ease, opacity .2s ease; }
+
+  /* ===== Vylosovaná karta: jeden plynulý pohyb z vějíře =====
+     Dvojník rubu startuje přesně na místě vybrané karty, plynule se zvětší
+     do rozměru velké karty a zároveň se dotočí na hranu (rotateY 90°). Tam
+     má nulovou šířku, takže výměna za skutečnou kartu není vidět a rotace
+     pokračuje stejným směrem (.flip-in jde z -90° do 0°).
+     Karta je kvádr o tloušťce 1 mm: líc, rub a dva svislé boky. Otáčí se jen
+     kolem osy Y, takže horní a spodní hrana nejsou nikdy vidět. */
+  .card-flyer {
+    position: fixed; z-index: 80; pointer-events: none;
+    --t: 1mm;
+    transform-style: preserve-3d;
+    color: var(--honey-soft);
+    font-family: var(--font-display); font-weight: 600; line-height: 1;
+  }
+  .cf-face {
+    position: absolute; inset: 0; border-radius: inherit;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
+      linear-gradient(150deg, var(--plum) 0%, var(--plum-deep) 100%);
+    box-shadow: inset 0 0 0 5px rgba(250,244,236,.22);
+    backface-visibility: hidden;
+  }
+  .cf-face.front { transform: translateZ(calc(var(--t) / 2)); }
+  /* vnější stín nese rub, aby nepřekrýval bližší bok karty */
+  .cf-face.back {
+    transform: translateZ(calc(var(--t) / -2)) rotateY(180deg);
+    box-shadow: var(--shadow-float), inset 0 0 0 5px rgba(250,244,236,.22);
+  }
+  /* bok karty = řez papírem: světlé jádro, na koncích tmavší (spoj s lícem) */
+  .card-edge {
+    position: absolute; top: 2px; bottom: 2px; width: var(--t);
+    background: linear-gradient(90deg, #BEAB96 0%, #FDFAF4 38%, #FBF5EC 62%, #B7A48F 100%);
+  }
+  /* Každý bok se sklápí do hloubky kolem své krajní hrany. Znaménka rotace
+     musí být opačná, jinak jeden bok kvádr neuzavře a vystrkuje se před líc. */
+  .card-edge.l { left: 0;  transform-origin: left center;  transform: translateZ(calc(var(--t) / 2)) rotateY(90deg); }
+  .card-edge.r { right: 0; transform-origin: right center; transform: translateZ(calc(var(--t) / 2)) rotateY(-90deg); }
 
   /* Otočení karty ve dvou fázích: flip-out dotočí kartu na hranu,
      v tu chvíli se vymění obsah a flip-in ji dotočí z druhé strany —
@@ -660,6 +700,21 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    /* aby boky karty (.card-edge) žily ve stejném 3D prostoru jako karta */
+    transform-style: preserve-3d;
+    --t: 1mm;
+  }
+  /* boky velké karty jdou od líce dozadu; proti světlému líci musí být
+     o odstín tmavší než u tmavého rubu, jinak nejsou vidět */
+  .question-card > .card-edge {
+    background: linear-gradient(90deg, #D9C9B7 0%, #EFE5D9 45%, #D2C1AE 100%);
+  }
+  .question-card > .card-edge.l { transform-origin: left center;  transform: rotateY(90deg); }
+  .question-card > .card-edge.r { transform-origin: right center; transform: rotateY(-90deg); }
+  /* u rubu bonusovky a lícem dolů je karta tmavá — bok pak světlejší */
+  .question-card.face-down > .card-edge,
+  .question-card.joker > .card-edge {
+    background: linear-gradient(90deg, #BEAB96 0%, #FDFAF4 38%, #FBF5EC 62%, #B7A48F 100%);
   }
   /* rub s tipy plyne odshora, ať se číslovaný seznam čte přirozeně
      (horní odsazení je u ostatních back-side pravidel níž) */
@@ -911,6 +966,8 @@
     <div class="center-col">
       <div class="tilt" id="tiltBlesk">
       <div class="question-card blesk-question" id="bleskCard" style="margin-bottom:0;" onclick="flipBleskovka()">
+        <div class="card-edge l"></div>
+        <div class="card-edge r"></div>
         <div id="bleskFront">
           <div class="blesk-icon" id="bleskEmoji"></div>
           <h2 id="bleskTitle"></h2>
@@ -977,6 +1034,8 @@
     <div class="center-col" id="drawResult" hidden>
       <div class="tilt" id="tiltDraw">
       <div class="question-card" id="bigCard" style="margin-bottom:0;" onclick="flipCard()">
+        <div class="card-edge l"></div>
+        <div class="card-edge r"></div>
         <div id="jokerCover" hidden>
           <div class="cover-mark">?</div>
           Bonusová karta
@@ -2666,6 +2725,7 @@ function resetBigCard() {
   flipping = false;
   jokerCovered = false;
   const big = document.getElementById("bigCard");
+  big.style.visibility = "";
   big.classList.remove("joker", "back-side", "face-down", "flip-out");
   document.getElementById("jokerCover").hidden = true;
   document.getElementById("cardFront").hidden = false;
@@ -2755,54 +2815,132 @@ function pickCard(cardEl) {
   } else {
     state.current = state.queue.splice(Math.floor(Math.random() * state.queue.length), 1)[0];
   }
-  [...document.getElementById("cardFan").children].forEach(c =>
-    c.classList.add(c === cardEl ? "picked" : "away"));
-  setTimeout(() => {
-    document.getElementById("drawPick").hidden = true;
-    const tag = document.getElementById("jokerTag");
-    tag.hidden = true; // u bonusovky se štítek ukáže až po otočení
-    if (isJoker) tag.textContent = state.currentJoker.tag;
-    document.getElementById("drawnQuestion").textContent =
-      isJoker ? state.currentJoker.text : state.current.q;
-    const big = document.getElementById("bigCard");
+  // Ostatní karty odletí zpátky do balíčku. Vylosovaná se schválně nezvedá —
+  // roste přímo z místa, kde na ni dítě kleplo, aby to byl jeden pohyb.
+  [...document.getElementById("cardFan").children].forEach(c => {
+    if (c !== cardEl) c.classList.add("away");
+  });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    fillPickedCard(isJoker);
+    revealPickedCard(isJoker, true);
+    return;
+  }
+  setTimeout(() => growPickedCard(cardEl, isJoker), 160);
+}
+
+/* Naplnit velkou kartu obsahem — ještě než se ukáže, aby se dala změřit. */
+function fillPickedCard(isJoker) {
+  const tag = document.getElementById("jokerTag");
+  tag.hidden = true; // u bonusovky se štítek ukáže až po otočení
+  if (isJoker) tag.textContent = state.currentJoker.tag;
+  document.getElementById("drawnQuestion").textContent =
+    isJoker ? state.currentJoker.text : state.current.q;
+  const big = document.getElementById("bigCard");
+  if (isJoker) {
+    // bonusovka přijde lícem dolů — obsah se odhalí až klepnutím (flipCard)
+    jokerCovered = true;
+    document.getElementById("cardFront").hidden = true;
+    document.getElementById("jokerCover").hidden = false;
+    big.classList.add("face-down");
+    // hint zůstává skrytý — odhalí ho revealPickedCard, ať pod letící kartou
+    // nenaskakuje text (má vlastní animaci screenIn)
+    document.getElementById("flipHint").textContent = "Klepni na kartu a otoč si ji";
+  } else {
+    // připravit rub: doptávací otázky → záchrana; u „škálovacích“ se původní
+    // otázka teploměru vplete jako 2. doptávačka (prohloubit k pocitu)
+    const fu = document.getElementById("backFu");
+    fu.innerHTML = "";
+    const followups = [...state.current.fu];
+    if (state.current.temp) followups.splice(1, 0, state.current.temp);
+    followups.forEach(f => {
+      const li = document.createElement("li");
+      li.textContent = f;
+      fu.appendChild(li);
+    });
+    document.getElementById("backSoft").textContent = state.current.soft;
+    document.getElementById("flipHint").textContent =
+      "Klepni na kartu — poradíme, jak si o tom povídat";
+    document.getElementById("drawFinishBtn").hidden = false;
+  }
+  document.getElementById("drawGoBtn").textContent = isJoker
+    ? (state.queue.length === 0 ? "A je to! Dokončit povídání" : "Splněno! Losujeme dál")
+    : (state.queue.length === 0 && !state.jokerLeft
+        ? "🖐️ Plácněte si — a hotovo!" : "🖐️ Plácněte si a losujte dál");
+}
+
+/* Odhalení velké karty. Otázka se dotočí lícem k dítěti, bonusovka zůstane
+   lícem dolů (jen se prolne, ať štítek „Bonusová karta“ nenaskočí naráz). */
+function revealPickedCard(isJoker, instant) {
+  const big = document.getElementById("bigCard");
+  document.getElementById("drawPick").hidden = true;
+  document.getElementById("drawResult").hidden = false;
+  big.style.visibility = "";
+  if (!instant) {
     if (isJoker) {
-      // bonusovka přijde lícem dolů — obsah se odhalí až klepnutím (flipCard)
-      jokerCovered = true;
-      document.getElementById("cardFront").hidden = true;
-      document.getElementById("jokerCover").hidden = false;
-      big.classList.add("face-down");
-      const hint = document.getElementById("flipHint");
-      hint.textContent = "Klepni na kartu a otoč si ji";
-      hint.hidden = false;
+      big.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease" });
+    } else {
+      big.classList.remove("flip-in", "joker-in");
+      void big.offsetWidth; // restart animace otočení
+      big.classList.add("flip-in");
     }
-    if (!isJoker) {
-      // připravit rub: doptávací otázky → záchrana; u „škálovacích“ se původní
-      // otázka teploměru vplete jako 2. doptávačka (prohloubit k pocitu)
-      const fu = document.getElementById("backFu");
-      fu.innerHTML = "";
-      const followups = [...state.current.fu];
-      if (state.current.temp) followups.splice(1, 0, state.current.temp);
-      followups.forEach(f => {
-        const li = document.createElement("li");
-        li.textContent = f;
-        fu.appendChild(li);
-      });
-      document.getElementById("backSoft").textContent = state.current.soft;
-      const hint = document.getElementById("flipHint");
-      hint.textContent = "Klepni na kartu — poradíme, jak si o tom povídat";
-      hint.hidden = false;
-      document.getElementById("drawFinishBtn").hidden = false;
-    }
-    big.classList.remove("flip-in", "joker-in");
-    void big.offsetWidth; // restart animace otočení
-    big.classList.add("flip-in"); // odskočení a gejzír má až otočení bonusovky
-    document.getElementById("drawGoBtn").textContent = isJoker
-      ? (state.queue.length === 0 ? "A je to! Dokončit povídání" : "Splněno! Losujeme dál")
-      : (state.queue.length === 0 && !state.jokerLeft
-          ? "🖐️ Plácněte si — a hotovo!" : "🖐️ Plácněte si a losujte dál");
-    document.getElementById("drawResult").hidden = false;
-    document.getElementById("drawBtnRow").hidden = isJoker; // u bonusovky až po otočení
-  }, 450);
+  }
+  document.getElementById("flipHint").hidden = false; // teď naskočí i hint
+  document.getElementById("drawBtnRow").hidden = isJoker; // u bonusovky až po otočení
+}
+
+/* Nakloněná karta má opsaný obdélník větší než sama sebe, proto se měří
+   středem a rozměry se berou z offsetWidth/offsetHeight — jinak by dvojník
+   na startu o několik pixelů poskočil. */
+function boxOf(el) {
+  const r = el.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  return { left: r.left + r.width / 2 - w / 2, top: r.top + r.height / 2 - h / 2, w, h };
+}
+
+function growPickedCard(cardEl, isJoker) {
+  const from = boxOf(cardEl);
+  const rot = parseFloat(getComputedStyle(cardEl).getPropertyValue("--rot")) || 0;
+  const big = document.getElementById("bigCard");
+
+  fillPickedCard(isJoker);
+  // Cílovou geometrii je třeba měřit v konečném rozvržení, proto velkou kartu
+  // odhalíme neviditelnou. Prohlížeč uvnitř jednoho ticku nepřekresluje,
+  // takže nic ani na okamžik neposkočí.
+  document.getElementById("drawPick").hidden = true;
+  document.getElementById("drawResult").hidden = false;
+  big.style.visibility = "hidden";
+  const to = boxOf(big);
+
+  const flyer = document.createElement("div");
+  flyer.className = "card-flyer";
+  flyer.innerHTML =
+    `<div class="cf-face front">?</div>` +
+    `<div class="card-edge l"></div>` +
+    `<div class="card-edge r"></div>` +
+    `<div class="cf-face back"></div>`;
+  document.body.appendChild(flyer);
+
+  // otázka se cestou dotočí na hranu, bonusovka zůstává lícem dolů
+  const mid = isJoker ? 0 : 46;
+  const end = isJoker ? 0 : 90;
+
+  const anim = flyer.animate([
+    { left: from.left + "px", top: from.top + "px",
+      width: from.w + "px", height: from.h + "px",
+      borderRadius: "18px", fontSize: "44px",
+      transform: `perspective(900px) rotate(${rot}deg) rotateY(0deg)` },
+    // v polovině cesty je karta zpola natočená a náklon z vějíře se srovnává
+    { offset: .5, transform: `perspective(900px) rotate(${rot / 2}deg) rotateY(${mid}deg)` },
+    { left: to.left + "px", top: to.top + "px",
+      width: to.w + "px", height: to.h + "px",
+      borderRadius: "24px", fontSize: "54px",
+      transform: `perspective(900px) rotate(0deg) rotateY(${end}deg)` }
+  ], { duration: 430, easing: "cubic-bezier(.32,.06,.4,1)", fill: "forwards" });
+
+  anim.onfinish = () => {
+    flyer.remove();
+    revealPickedCard(isJoker); // pokračuje z -90° do 0°, stejným směrem otáčení
+  };
 }
 
 function proceedFromDraw() {
