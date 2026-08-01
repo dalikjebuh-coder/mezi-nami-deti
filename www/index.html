@@ -1157,6 +1157,20 @@
       </button>
     </div>
 
+    <!-- Kontakt přímo na autora — bez firmy uprostřed -->
+    <div class="section-label">Napište mi</div>
+    <div class="settings-group">
+      <a class="settings-item ext" href="mailto:font@email.cz?subject=Mezi%20n%C3%A1mi">
+        <span class="item-icon" style="background:var(--rose-soft); color:var(--rose);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+        <span class="item-label">Napsat mi e-mail<br><span class="item-note">font@email.cz</span></span>
+      </a>
+      <a class="settings-item ext" href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">
+        <span class="item-icon" style="background:var(--rose-soft); color:var(--rose);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></span>
+        <span class="item-label">Ozvat se na LinkedInu</span>
+      </a>
+    </div>
+    <p class="muted">Za appkou stojí jeden táta, ne firma. Napište mi cokoli — co vám v ní chybí, co vám doma zafungovalo, i co je špatně.</p>
+
     <div class="section-label">Soukromí</div>
     <div class="settings-group">
       <button class="settings-item" onclick="openSettingsPage('data')">
@@ -1175,11 +1189,13 @@
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" x2="9.17" y1="4.93" y2="9.17"/><line x1="14.83" x2="19.07" y1="14.83" y2="19.07"/><line x1="14.83" x2="19.07" y1="9.17" y2="4.93"/><line x1="4.93" x2="9.17" y1="19.07" y2="14.83"/></svg></span>
         <span class="item-label">Linka bezpečí a další odborná pomoc</span>
       </button>
-      <a class="settings-item ext" href="https://github.com/dalikjebuh-coder/mezi-nami-deti/issues/new?title=Chyba%3A%20" target="_blank" rel="noopener">
+      <!-- dřív odkazy na GitHub issues — rodič se tam nedostane, teď e-mail
+           s předvyplněným předmětem, ať vím, o co jde -->
+      <a class="settings-item ext" href="mailto:font@email.cz?subject=Mezi%20n%C3%A1mi%20%E2%80%94%20chyba">
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>
         <span class="item-label">Nahlásit problém</span>
       </a>
-      <a class="settings-item ext" href="https://github.com/dalikjebuh-coder/mezi-nami-deti/issues/new?title=N%C3%A1pad%3A%20" target="_blank" rel="noopener">
+      <a class="settings-item ext" href="mailto:font@email.cz?subject=Mezi%20n%C3%A1mi%20%E2%80%94%20n%C3%A1pad">
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
         <span class="item-label">Poslat nápad</span>
       </a>
@@ -3185,6 +3201,8 @@ function pledgeDone() {
 /* ---- podstránky nastavení ---- */
 const APP_VERSION = "1.3"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
+const CONTACT_EMAIL = "font@email.cz";
+const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
 
 const SETTINGS_PAGES = {
   "jak-hrat": { title: "Jak hrát", html: `
@@ -3231,6 +3249,7 @@ const SETTINGS_PAGES = {
   "autor": { title: "Kdo ji vytvořil", html: `
     <p>Mezi námi je osobní projekt jednoho táty, který si chtěl se svými dětmi povídat o víc věcech než o známkách.</p>
     <p>Není za ní žádná firma ani byznys — je zdarma, bez reklam a bez sběru dat.</p>
+    <p>Když budete chtít cokoli napsat — nápad, co vám chybí, nebo jak vám hra doma fungovala — ozvěte se mi přímo na <a href="mailto:${CONTACT_EMAIL}?subject=Mezi%20n%C3%A1mi">${CONTACT_EMAIL}</a> nebo na <a href="${LINKEDIN_URL}" target="_blank" rel="noopener">LinkedInu</a>. Čte to jeden člověk, ne podpora.</p>
     <p>Zdrojový kód je veřejný na <a href="${GITHUB_URL}" target="_blank" rel="noopener">GitHubu</a>.</p>` },
 
   "data": { title: "Jak chráníme vaše data", html: `
@@ -3248,7 +3267,7 @@ const SETTINGS_PAGES = {
     <p>Aplikace Mezi námi nesbírá ani nikam neodesílá žádné osobní údaje.</p>
     <p>Jména zadaná ve hře se ukládají výhradně do místní paměti vašeho zařízení (localStorage) a nikdy ho neopouštějí. Aplikace neobsahuje analytické ani reklamní nástroje třetích stran a nepoužívá cookies.</p>
     <p>Aplikaci hostuje služba GitHub Pages, která může — jako každý web — krátkodobě zaznamenat technické údaje o přístupu (např. IP adresu) ve svých serverových protokolech. Aplikace k nim nemá přístup a nijak s nimi nepracuje.</p>
-    <p>Dotazy k soukromí můžete položit přes <a href="${GITHUB_URL}/issues" target="_blank" rel="noopener">GitHub</a>.</p>` },
+    <p>Dotazy k soukromí pište přímo autorovi na <a href="mailto:${CONTACT_EMAIL}?subject=Mezi%20n%C3%A1mi%20%E2%80%94%20soukrom%C3%AD">${CONTACT_EMAIL}</a>, případně na <a href="${LINKEDIN_URL}" target="_blank" rel="noopener">LinkedInu</a>.</p>` },
 
   "sos": { title: "Když jde o hodně", html: `
     <p>Některé otázky můžou otevřít vážné věci — ubližování, strach, něco z internetu. Když se dozvíte něco, co vás zaskočí:</p>
