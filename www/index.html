@@ -405,8 +405,12 @@
   .depth-dots span.on { background: var(--honey); }
   .depth-option h3 { font-size: 15.5px; }
   .depth-option p { font-size: 13px; margin-top: 2px; }
+  /* text uprostřed nabere zbylé místo, štítek a šipka drží u pravého okraje */
+  .depth-option > div:not(.depth-dots) { flex: 1; }
+  .depth-arrow { color: var(--ink-faint); flex: none; }
+  .depth-arrow .ic { width: 19px; height: 19px; }
   .depth-option .done-badge {
-    margin-left: auto; flex: none;
+    flex: none;
     font-size: 11px; font-weight: 700; letter-spacing: .04em;
     color: var(--sage); background: var(--sage-soft);
     padding: 4px 10px; border-radius: 999px;
@@ -1030,21 +1034,21 @@
       <div class="depth-dots"><span class="on"></span><span></span><span></span></div>
       <div><h3>Na rozehřátí</h3><p>Otázky jen tak pro radost. Žádné chytáky.</p></div>
       <span class="done-badge" hidden>✓ Hotovo</span>
+      <span class="depth-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
     </button>
     <button class="depth-option" data-depth="1" onclick="pickDepth(1)">
       <div class="depth-dots"><span class="on"></span><span class="on"></span><span></span></div>
       <div><h3>S kouskem odvahy</h3><p>Už se ptáme i na to, co trochu zebe.</p></div>
       <span class="done-badge" hidden>✓ Hotovo</span>
+      <span class="depth-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
     </button>
     <button class="depth-option" data-depth="2" onclick="pickDepth(2)">
       <div class="depth-dots"><span class="on"></span><span class="on"></span><span class="on"></span></div>
       <div><h3>Úplně upřímně</h3><p>Ty největší věci. Jen když se oba cítíte v bezpečí.</p></div>
       <span class="done-badge" hidden>✓ Hotovo</span>
+      <span class="depth-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
     </button>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" id="startSessionBtn" onclick="startSession()" disabled>Začít povídání</button>
-    </div>
+    <p class="muted" style="margin-top:2px;">Klepnutím rovnou začnete. Hloubku můžete kdykoli změnit.</p>
   </section>
 
   <!-- ===== 6. Losování otázky ===== -->
@@ -2658,16 +2662,28 @@ function openDeck(id) {
     const badge = o.querySelector(".done-badge");
     badge.hidden = seenCount === 0;
     badge.textContent = done ? "✓ Vše prošlé" : `${seenCount}/${pool.length} otázek`;
+    // v pravém slotu vždy jen jedno — štítek nese víc než šipka, tak má přednost
+    o.querySelector(".depth-arrow").hidden = seenCount > 0;
   });
-  document.getElementById("startSessionBtn").disabled = true;
+  depthPicking = false;
+  document.querySelectorAll(".depth-option").forEach(o => o.classList.remove("selected"));
   go("s-deck");
 }
 
+/* Výběr hloubky se nepotvrzuje tlačítkem — klepnutí rovnou začíná povídání.
+   Krátká pauza je tu jen proto, aby bylo vidět, co si uživatel vybral. */
+let depthPicking = false;
+
 function pickDepth(d) {
+  if (depthPicking) return;
+  depthPicking = true;
   state.depth = d;
   document.querySelectorAll(".depth-option").forEach(o =>
     o.classList.toggle("selected", Number(o.dataset.depth) === d));
-  document.getElementById("startSessionBtn").disabled = false;
+  setTimeout(() => {
+    depthPicking = false;
+    startSession();
+  }, 220);
 }
 
 /* ================= Povídání ================= */
