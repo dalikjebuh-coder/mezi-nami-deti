@@ -667,17 +667,39 @@
   .switch:active .knob { transform: scale(.92); }
   .switch[aria-checked="true"]:active .knob { transform: translateX(20px) scale(.92); }
 
-  /* ===== Nabídka nedělní inspirace na závěrečné obrazovce ===== */
-  .notif-offer {
-    background: var(--card); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card); padding: 20px 20px 18px;
-    margin-top: 20px; flex: none;
-    animation: rise .45s ease .7s both; /* naskočí až po statistikách */
+  /* ===== Vysouvací okno zespodu (bottom sheet) =====
+     Leží uvnitř .phone, takže se vysouvá v rámu appky a nepřekryje ji celou. */
+  .sheet-backdrop {
+    position: absolute; inset: 0; z-index: 60;
+    background: rgba(51,38,31,.4);
+    animation: fadeIn .28s ease both;
   }
-  .notif-offer h3 { margin-bottom: 4px; }
-  .notif-offer p { font-size: 14.5px; }
-  .notif-offer-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
-  .notif-offer-actions .btn { padding: 13px 20px; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 61;
+    background: var(--card);
+    border-radius: 26px 26px 0 0;
+    box-shadow: 0 -8px 40px rgba(51,38,31,.20);
+    padding: 12px 24px 24px;
+    animation: sheetUp .44s cubic-bezier(.22,.9,.28,1) both;
+    touch-action: none; /* tažení dolů zavírá, ne scrolluje */
+  }
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .sheet { padding-bottom: calc(env(safe-area-inset-bottom) + 24px); }
+  }
+  @keyframes sheetUp { from { transform: translateY(102%); } }
+  .sheet.closing { animation: sheetDown .3s ease both; }
+  .sheet-backdrop.closing { animation: fadeOut .3s ease both; }
+  @keyframes sheetDown { to { transform: translateY(102%); } }
+  @keyframes fadeOut { to { opacity: 0; } }
+  /* úchyt — napovídá, že okno jde stáhnout dolů */
+  .sheet-grabber {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: rgba(51,38,31,.16); margin: 0 auto 16px;
+  }
+  .sheet h3 { margin-bottom: 5px; }
+  .sheet p { font-size: 14.5px; }
+  .sheet-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; }
+  .sheet-actions .btn { padding: 15px 20px; }
   /* maketa skutečné notifikace — ukazuje, co přijde, ne co si má představit */
   .notif-preview {
     background: var(--paper-soft); border-radius: 16px;
@@ -1154,29 +1176,8 @@
         <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl" id="statDepthLbl">hloubka</div></div>
       </div>
     </div>
-    <!-- Nabídka nedělní inspirace: ukáže se jednou, až po prvním dokončeném
-         povídání — tedy ve chvíli, kdy je hodnota appky zažitá. Jen v nativní
-         appce a jen když iOS dotaz ještě neukázal. -->
-    <div class="notif-offer" id="notifOffer" hidden>
-      <h3>Ať to nezapadne</h3>
-      <p>Jednou týdně pošleme jednu otázku nebo malé povzbuzení. Žádné upomínky, žádné počítání.</p>
-      <div class="notif-preview">
-        <div class="app-icon"><i></i><i></i></div>
-        <div class="nt-body">
-          <div class="nt-head"><span class="nt-title">Mezi námi</span><span class="nt-time">ned 18:00</span></div>
-          <p class="nt-text" id="notifPreviewText"></p>
-        </div>
-      </div>
-      <div class="notif-offer-actions">
-        <button class="btn btn-primary" onclick="acceptNotifOffer()">Ano, posílejte</button>
-        <button class="btn btn-ghost" onclick="declineNotifOffer()">Teď ne</button>
-      </div>
-    </div>
-
     <div class="btn-row">
-      <p class="muted" id="nextTipLabel" style="text-align:center;">Příště zkuste</p>
-      <button class="btn btn-secondary" id="nextTipBtn"></button>
-      <button class="btn btn-primary" onclick="goHome()">Zpět na témata</button>
+      <button class="btn btn-primary" onclick="leaveFinish()">Zpět na témata</button>
     </div>
   </section>
 
@@ -1348,6 +1349,27 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="weeklyDeckBtn">Otevřít celé téma</button>
       <button class="btn btn-ghost" onclick="goHome()">Zpět domů</button>
+    </div>
+  </section>
+
+  <!-- ===== Vysouvací okno: nabídka nedělní inspirace =====
+       Vyjede zespodu po návratu na témata, až po dokončeném povídání — tedy
+       když už rodič ví, co mu appka dá. Jen v nativní appce, jen jednou. -->
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden onclick="declineNotifOffer()"></div>
+  <section class="sheet" id="notifSheet" hidden aria-label="Nedělní inspirace">
+    <div class="sheet-grabber"></div>
+    <h3>Ať to nezapadne</h3>
+    <p>Jednou týdně pošleme jednu otázku nebo malé povzbuzení. Žádné upomínky, žádné počítání.</p>
+    <div class="notif-preview">
+      <div class="app-icon"><i></i><i></i></div>
+      <div class="nt-body">
+        <div class="nt-head"><span class="nt-title">Mezi námi</span><span class="nt-time">ned 18:00</span></div>
+        <p class="nt-text" id="notifPreviewText"></p>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" onclick="acceptNotifOffer()">Ano, posílejte</button>
+      <button class="btn btn-ghost" onclick="declineNotifOffer()">Teď ne</button>
     </div>
   </section>
 
@@ -3156,8 +3178,7 @@ function finishSession() {
   document.getElementById("statQuestionsLbl").textContent = "otázek";
   document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
   document.getElementById("statDepthLbl").textContent = "hloubka"; // závěr sdílí i bleskovka
-  renderNextTip();
-  maybeOfferNotifs();
+
   go("s-finish");
 }
 
@@ -3167,17 +3188,34 @@ function finishSession() {
    (web plánované notifikace neumí), jen jednou a jen když iOS systémový
    dotaz ještě neukázal — po odmítnutí už appka nemá co nabízet. */
 async function maybeOfferNotifs() {
-  const box = document.getElementById("notifOffer");
-  box.hidden = true;
   if (!notifPlugin || state.notifOn || state.notifAsked) return;
   if (await notifPermission() !== "prompt") return;
-  // ukázat text, který doopravdy přijde jako první
+  // v náhledu je text, který doopravdy přijde jako první
   document.getElementById("notifPreviewText").textContent = WEEKLY_NOTIFS[0].body;
-  box.hidden = false;
+  document.getElementById("sheetBackdrop").hidden = false;
+  const sheet = document.getElementById("notifSheet");
+  sheet.classList.remove("closing");
+  sheet.hidden = false;
+}
+
+/* zavření s dojezdem dolů; pak teprve schovat */
+function closeNotifSheet() {
+  const sheet = document.getElementById("notifSheet");
+  const backdrop = document.getElementById("sheetBackdrop");
+  if (sheet.hidden) return;
+  sheet.classList.add("closing");
+  backdrop.classList.add("closing");
+  setTimeout(() => {
+    sheet.hidden = true;
+    sheet.classList.remove("closing");
+    sheet.style.transform = "";
+    backdrop.hidden = true;
+    backdrop.classList.remove("closing");
+  }, 300);
 }
 
 async function acceptNotifOffer() {
-  document.getElementById("notifOffer").hidden = true;
+  closeNotifSheet();
   const ok = await scheduleWeeklyNotifs();   // tady teprve vyskočí systémový dotaz
   state.notifOn = ok;
   state.notifAsked = true;
@@ -3186,29 +3224,38 @@ async function acceptNotifOffer() {
 }
 
 function declineNotifOffer() {
-  document.getElementById("notifOffer").hidden = true;
+  closeNotifSheet();
   state.notifAsked = true; // podruhé už neotravovat, zůstává přepínač v nastavení
   saveStore();
 }
 
-/* Most k dalšímu sezení — nabídnout náhodnou neprošlou kombinaci */
-function renderNextTip() {
-  const remaining = [];
-  DECKS.forEach(d => [0, 1, 2].forEach(dep => {
-    if (!state.done.has(d.id + ":" + dep)) remaining.push({ d, dep });
-  }));
-  const label = document.getElementById("nextTipLabel");
-  const btn = document.getElementById("nextTipBtn");
-  if (remaining.length === 0) {
-    label.textContent = "Prošli jste všechno! Klidně začněte znovu — odpovědi se mění.";
-    btn.hidden = true;
-    return;
-  }
-  const pick = remaining[Math.floor(Math.random() * remaining.length)];
-  label.textContent = "Příště zkuste";
-  btn.hidden = false;
-  btn.textContent = `${pick.d.emoji} ${pick.d.title} · ${DEPTH_NAMES[pick.dep]}`;
-  btn.onclick = () => { openDeck(pick.d.id); pickDepth(pick.dep); };
+/* Stažení okna dolů ho zavře — úchyt nahoře to slibuje, tak ať to platí. */
+(function enableSheetDrag() {
+  const sheet = document.getElementById("notifSheet");
+  let y0 = 0, dy = 0, dragging = false;
+  sheet.addEventListener("touchstart", (e) => {
+    dragging = true; dy = 0;
+    y0 = e.touches[0].clientY;
+    sheet.style.transition = "none";
+  }, { passive: true });
+  sheet.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+    dy = Math.max(0, e.touches[0].clientY - y0); // jen dolů
+    sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  sheet.addEventListener("touchend", () => {
+    dragging = false;
+    sheet.style.transition = "";
+    if (dy > 70) { declineNotifOffer(); return; }
+    sheet.style.transform = ""; // málo — vrátit na místo
+  }, { passive: true });
+})();
+
+/* Odchod ze závěrečné obrazovky: domů a teprve tam případná nabídka
+   nedělní inspirace — ať závěr povídání zůstane jen o povídání. */
+function leaveFinish() {
+  goHome();
+  maybeOfferNotifs();
 }
 
 function confirmLeave() {
@@ -3325,8 +3372,7 @@ function finishBleskovka() {
     document.getElementById("statQuestionsLbl").textContent = "bleskovka";
     document.getElementById("statDepth").textContent = BLESKOVKY[bleskTime].title;
     document.getElementById("statDepthLbl").textContent = "denní doba";
-    renderNextTip();
-    maybeOfferNotifs();
+
     go("s-finish");
   }, 900);
 }
