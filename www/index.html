@@ -618,6 +618,10 @@
   /* ===== Nastavení — menu a podstránky =====
      Skupiny po vzoru iOS: sekce = jeden zaoblený celek, položky uvnitř
      oddělené vlasovou linkou, vlevo ikonka (Lucide) v barevném čipu. */
+  /* Poznámky pod skupinami nesmí být nalepené na kartě nad sebou.
+     Obecný sourozenec (~), ne přímý (+): před viditelnou poznámkou může
+     stát jiná, právě skrytá (notifDeniedNote/notifWebNote). */
+  .settings-group ~ .muted { margin-top: 12px; }
   .settings-group {
     background: var(--card);
     border-radius: var(--radius-md);
