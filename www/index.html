@@ -421,12 +421,20 @@
   .card-fan {
     /* Jedno místo, kde se vějíř ladí. Rozpětí vějíře je naměřených
        2,42 × šířka karty (dané překryvem a úhlem FAN_ANGLE), takže se
-       karta odvozuje z dostupné šířky. Vějíř se tak vejde do obsahu
-       obrazovky a od okraje displeje zůstane bezpečná mezera ~30 px.
+       karta odvozuje z dostupné šířky. Vějíř je o 76 px širší než obsah
+       obrazovky, takže krajní karty přesahují ~12 px za hranu displeje —
+       jen tolik, aby bylo vidět, že balíček pokračuje.
        Překryv 22 % je strop: při větším se „?“ překryté karty schová pod
-       sousední kartu. Strop 63 mm = skutečná hrací karta. */
+       sousední kartu. Strop 63 mm = skutečná hrací karta.
+       Třetí člen min() je strop podle výšky displeje: na nízkých telefonech
+       (iPhone SE) by jinak vyšší karta obrazovku rozscrollovala.
+       0.716 = 63/88, tedy přepočet výšky karty na šířku. */
     --overlap: .22;
-    --card-w: min(63mm, calc((100% - 6px) / 2.42));
+    --card-w: min(
+      63mm,
+      calc((100% + 76px) / 2.42),
+      max(96px, calc((100dvh - 400px) * .716))
+    );
     display: flex; justify-content: center; align-items: flex-start;
     margin-top: 24px;
   }
@@ -435,7 +443,11 @@
        zmenší podle šířky, ať zůstane hratelná. Krajní karty schválně
        vylézají z obrazovky (.screen má overflow-x: hidden, tak se ořežou). */
     width: var(--card-w); aspect-ratio: 63 / 88; height: auto; flex: none;
-    margin: 0 calc(var(--card-w) * -1 * var(--overlap));
+    /* Longhandy schválně: zkrácený zápis `margin: 0 calc(…)` prohlížeč zahodí,
+       jakmile je ve --card-w vnořený max() — karty by se pak nepřekrývaly. */
+    margin-top: 0; margin-bottom: 0;
+    margin-left: calc(var(--card-w) * var(--overlap) * -1);
+    margin-right: calc(var(--card-w) * var(--overlap) * -1);
     border: none; cursor: pointer;
     border-radius: 18px;
     background:
@@ -3189,7 +3201,10 @@ function finishSession() {
    dotaz ještě neukázal — po odmítnutí už appka nemá co nabízet. */
 async function maybeOfferNotifs() {
   if (!notifPlugin || state.notifOn || state.notifAsked) return;
-  if (await notifPermission() !== "prompt") return;
+  // „denied“ = iOS dotaz už proběhl a byl odmítnutý, znovu ho ukázat nejde,
+  // takže nemáme co nabízet. Při „granted“ (povoleno dřív, náš přepínač ale
+  // vypnutý) nabídku ukázat smysl má — zapne se pak bez dalšího dotazu.
+  if (await notifPermission() === "denied") return;
   // v náhledu je text, který doopravdy přijde jako první
   document.getElementById("notifPreviewText").textContent = WEEKLY_NOTIFS[0].body;
   document.getElementById("sheetBackdrop").hidden = false;
