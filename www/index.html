@@ -459,7 +459,11 @@
     display: flex; align-items: center; justify-content: center;
     /* vějíř se rozevírá od bodu pod kartami, jako když je držíte v ruce */
     transform-origin: 50% 104%;
-    transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px)) scale(var(--scale, 1));
+    /* --raise = trvalé povytažení karty z vějíře (prostřední je o kousek výš),
+       --lift = dočasné nadzvednutí při hoveru a výběru */
+    transform: rotate(var(--rot, 0deg))
+               translateY(calc(var(--raise, 0px) + var(--lift, 0px)))
+               scale(var(--scale, 1));
     transition: transform .3s ease, opacity .35s ease;
   }
   .draw-card:hover { --lift: -10px; }
@@ -1234,6 +1238,18 @@
         <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
         <span class="item-label">Jeden tip týdně<br><span class="item-note">V neděli večer — otázka, nebo malé povzbuzení</span></span>
         <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Nedělní inspirace" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
+      </div>
+      <button class="settings-item" onclick="sendTestNotif()">
+        <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
+        <span class="item-label" id="testNotifLabel">Poslat zkušební oznámení<br><span class="item-note">Přijde za 5 sekund — appku nechte zavřenou</span></span>
+      </button>
+      <button class="settings-item" onclick="showNotifOfferAgain()">
+        <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></span>
+        <span class="item-label">Zobrazit nabídku upozornění</span>
+      </button>
+      <div class="settings-item static">
+        <span class="item-icon" style="background:var(--paper-soft); color:var(--ink-soft);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+        <span class="item-label">Stav oznámení<br><span class="item-note" id="notifDiag">…</span></span>
       </div>
     </div>
     <p class="muted" id="notifDeniedNote" hidden>Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení&nbsp;→ Mezi&nbsp;námi&nbsp;→ Oznámení.</p>
@@ -2539,6 +2555,57 @@ async function toggleWeeklyNotifs() {
   saveStore();
 }
 
+/* Zkušební oznámení za 5 s — jediný způsob, jak si na telefonu ověřit, že
+   celá cesta (povolení → naplánování → doručení) opravdu funguje. */
+async function sendTestNotif() {
+  const label = document.getElementById("testNotifLabel");
+  const say = (t) => label.innerHTML = "Poslat zkušební oznámení<br><span class=\"item-note\">" + t + "</span>";
+  if (!notifPlugin) { say("Funguje jen v nainstalované aplikaci."); return; }
+  try {
+    let perm = await notifPermission();
+    if (perm === "prompt") perm = (await notifPlugin.requestPermissions()).display;
+    if (perm !== "granted") { say("Oznámení jsou v iOS zakázaná — povolte je v Nastavení telefonu."); return; }
+    await notifPlugin.schedule({
+      notifications: [{
+        id: 990,
+        title: "Mezi námi — zkouška",
+        body: "Takhle vypadá nedělní tip. Pokud tohle vidíte, oznámení fungují.",
+        schedule: { at: new Date(Date.now() + 5000) }
+      }]
+    });
+    say("Naplánováno — zavřete appku a čekejte 5 sekund.");
+  } catch (e) {
+    say("Nepovedlo se: " + (e && e.message ? e.message : e));
+  }
+  renderNotifDiag();
+}
+
+/* Ruční vyvolání nabídky — aby se dala zkontrolovat i po tom, co ji
+   uživatel jednou odmítl (jinak se ukáže jen jednou za instalaci). */
+function showNotifOfferAgain() {
+  state.notifAsked = false;
+  saveStore();
+  goHome();
+  maybeOfferNotifs();
+}
+
+/* Stav oznámení na jednom řádku — bez toho se na telefonu nedá poznat,
+   proč se nabídka neukázala. */
+async function renderNotifDiag() {
+  const el = document.getElementById("notifDiag");
+  if (!el) return;
+  if (!notifPlugin) { el.textContent = "Web — plánovaná oznámení neumí"; return; }
+  let perm = "?", pending = "?";
+  try { perm = await notifPermission(); } catch (e) { perm = "chyba"; }
+  try {
+    const p = await notifPlugin.getPending();
+    pending = (p.notifications || []).length;
+  } catch (e) { pending = "chyba"; }
+  el.textContent = "povolení: " + perm + " · naplánováno: " + pending +
+    " · přepínač: " + (state.notifOn ? "zapnuto" : "vypnuto") +
+    " · nabídka: " + (state.notifAsked ? "už zobrazena" : "ještě ne");
+}
+
 /* Přepínač v nastavení nemá nic slibovat, když jsou oznámení zakázaná
    v iOS — v tom případě rovnou ukážeme, kde se to zapíná. */
 async function refreshNotifPermissionNote() {
@@ -2901,7 +2968,14 @@ function goDraw() {
   for (let i = 0; i < count; i++) {
     const c = document.createElement("button");
     c.className = "draw-card";
-    c.style.setProperty("--rot", ((i - (count - 1) / 2) * FAN_ANGLE) + "deg");
+    const fromCenter = i - (count - 1) / 2;
+    c.style.setProperty("--rot", (fromCenter * FAN_ANGLE) + "deg");
+    // Prostřední karta je povytažená, jako když z vějíře v ruce jedna kouká
+    // výš. 23 px, ne 10: rotace krajních karet kolem osy pod vějířem zvedá
+    // jejich horní rohy o ~13 px, takže samotných 10 px by prostřední kartu
+    // nechalo pod nimi. Výsledek je ~10 px nad rohy sousedů.
+    // U dvou karet nemá co povytáhnout — vějíř by jen poskočil.
+    if (count > 2 && fromCenter === 0) c.style.setProperty("--raise", "-23px");
     c.textContent = "?";
     c.onclick = () => pickCard(c);
     fan.appendChild(c);
@@ -3399,6 +3473,7 @@ function openSettings() {
   document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
   renderNotifSwitch();
   refreshNotifPermissionNote();
+  renderNotifDiag();
   go("s-settings");
 }
 
