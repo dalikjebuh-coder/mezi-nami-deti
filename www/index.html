@@ -420,19 +420,19 @@
   /* ===== Losování karet ===== */
   .card-fan {
     /* Jedno místo, kde se vějíř ladí. Rozpětí vějíře je naměřených
-       2,42 × šířka karty (dané překryvem a úhlem FAN_ANGLE), takže se
+       2,52 × šířka karty (dané překryvem a úhlem FAN_ANGLE), takže se
        karta odvozuje z dostupné šířky. Vějíř je o 76 px širší než obsah
        obrazovky, takže krajní karty přesahují ~12 px za hranu displeje —
        jen tolik, aby bylo vidět, že balíček pokračuje.
-       Překryv 22 % je strop: při větším se „?“ překryté karty schová pod
+       Překryv 30 % je strop: při větším se „?“ překryté karty schová pod
        sousední kartu. Strop 63 mm = skutečná hrací karta.
        Třetí člen min() je strop podle výšky displeje: na nízkých telefonech
        (iPhone SE) by jinak vyšší karta obrazovku rozscrollovala.
        0.716 = 63/88, tedy přepočet výšky karty na šířku. */
-    --overlap: .22;
+    --overlap: .3;
     --card-w: min(
       63mm,
-      calc((100% + 76px) / 2.42),
+      calc((100% + 76px) / 2.52),
       max(96px, calc((100dvh - 400px) * .716))
     );
     display: flex; justify-content: center; align-items: flex-start;
@@ -2877,7 +2877,7 @@ function confetti() {
 /* --- losování karet --- */
 /* Rozevření vějíře. Menší úhel = větší karta se vejde na obrazovku,
    protože rotace roztahuje vějíř do šířky. Drží se s --overlap v CSS. */
-const FAN_ANGLE = 6;
+const FAN_ANGLE = 15;
 let picking = false;
 
 let lastPickJoker = false;
