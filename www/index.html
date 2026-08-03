@@ -1316,6 +1316,10 @@
 
     <div class="section-label">Pomoc</div>
     <div class="settings-group">
+      <button class="settings-item" onclick="openSettingsPage('podpora')">
+        <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg></span>
+        <span class="item-label">Podpora a kontakt</span>
+      </button>
       <button class="settings-item" onclick="openSettingsPage('sos')">
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" x2="9.17" y1="4.93" y2="9.17"/><line x1="14.83" x2="19.07" y1="14.83" y2="19.07"/><line x1="14.83" x2="19.07" y1="9.17" y2="4.93"/><line x1="4.93" x2="9.17" y1="19.07" y2="14.83"/></svg></span>
         <span class="item-label">Linka bezpečí a další odborná pomoc</span>
@@ -3479,10 +3483,11 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.8"; // zvedat při větších změnách
+const APP_VERSION = "1.9"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
+const SUPPORT_URL = "https://dalikjebuh-coder.github.io/mezi-nami-deti/podpora.html";
 
 const SETTINGS_PAGES = {
   "jak-hrat": { title: "Jak hrát", html: `
@@ -3531,6 +3536,28 @@ const SETTINGS_PAGES = {
     <p>Není za ní žádná firma ani byznys — je zdarma, bez reklam a bez sběru dat.</p>
     <p>Když budete chtít cokoli napsat — nápad, co vám chybí, nebo jak vám hra doma fungovala — ozvěte se mi přímo na <a href="mailto:${CONTACT_EMAIL}?subject=Mezi%20n%C3%A1mi">${CONTACT_EMAIL}</a> nebo na <a href="${LINKEDIN_URL}" target="_blank" rel="noopener">LinkedInu</a>. Čte to jeden člověk, ne podpora.</p>
     <p>Zdrojový kód je veřejný na <a href="${GITHUB_URL}" target="_blank" rel="noopener">GitHubu</a>.</p>` },
+
+  "podpora": { title: "Podpora", html: `
+    <p>Když něco nefunguje nebo vám v aplikaci něco chybí, napište mi přímo —
+       čte to jeden člověk, ne podpora.</p>
+    <div class="contact">
+      <strong>E-mail</strong>
+      <a href="mailto:${CONTACT_EMAIL}?subject=Mezi%20n%C3%A1mi">${CONTACT_EMAIL}</a>
+      <span>Nejrychlejší cesta</span>
+    </div>
+    <div class="contact">
+      <strong>LinkedIn</strong>
+      <a href="${LINKEDIN_URL}" target="_blank" rel="noopener">Dalibor Novák</a>
+      <span>Když je vám bližší</span>
+    </div>
+    <h3>Než napíšete</h3>
+    <ul>
+      <li><strong>Ztracený postup</strong> je uložený jen v telefonu — smazáním aplikace zmizí a zálohu nemám kde vzít.</li>
+      <li><strong>Oznámení</strong> vypnete v Nastavení → Oznámení, úplně pak v Nastavení telefonu → Mezi námi.</li>
+      <li><strong>Vážné starosti o dítě</strong> patří odborníkům — kontakty jsou v sekci Pomoc.</li>
+    </ul>
+    <p>Delší odpovědi na časté dotazy jsou i na
+       <a href="${SUPPORT_URL}" target="_blank" rel="noopener">stránce podpory</a>.</p>` },
 
   "data": { title: "Jak chráníme vaše data", html: `
     <p>Nejlepší ochrana dat je žádná nesbírat. Přesně tak to tady je:</p>
