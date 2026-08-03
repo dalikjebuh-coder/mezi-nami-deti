@@ -665,7 +665,10 @@
   .settings-item.static { cursor: default; }
   .settings-item.static:active { background: none; }
   .settings-item.static::after { display: none; }
-  .settings-item .item-note { font-weight: 500; font-size: 14px; color: var(--ink-faint); }
+  /* stejný řez i velikost jako poznámky pod boxy (.muted) */
+  .settings-item .item-note {
+    font-weight: 400; font-size: 13.5px; line-height: 1.45; color: var(--ink-faint);
+  }
 
   .settings-page-body { padding-bottom: 12px; }
   .settings-page-body p { margin-bottom: 12px; }
@@ -1252,18 +1255,6 @@
         <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
         <span class="item-label">Povolit oznámení<br><span class="item-note">Jednou týdně otázka, nebo malé povzbuzení</span></span>
         <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Povolit oznámení" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
-      </div>
-      <button class="settings-item" onclick="sendTestNotif()">
-        <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
-        <span class="item-label" id="testNotifLabel">Poslat zkušební oznámení<br><span class="item-note">Přijde za 5 sekund — appku nechte zavřenou</span></span>
-      </button>
-      <button class="settings-item" onclick="showNotifOfferAgain()">
-        <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></span>
-        <span class="item-label">Zobrazit nabídku upozornění</span>
-      </button>
-      <div class="settings-item static">
-        <span class="item-icon" style="background:var(--paper-soft); color:var(--ink-soft);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
-        <span class="item-label">Stav oznámení<br><span class="item-note" id="notifDiag">…</span></span>
       </div>
     </div>
     <p class="muted" id="notifDeniedNote" hidden>Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení&nbsp;→ Mezi&nbsp;námi&nbsp;→ Oznámení.</p>
@@ -2481,20 +2472,17 @@ const WEEKLY_NOTIFS = [
    chyběl, výjimka by zabila celý skript — appka se bez notifikací obejde,
    bez tlačítek ne. */
 let notifPlugin = null;
-let notifBootError = null; // co přesně selhalo — ukazuje se v diagnostice
 try {
   const cap = window.Capacitor;
   const isNative = !!(cap && ((cap.isNativePlatform && cap.isNativePlatform()) || cap.platform === "ios"));
   if (isNative) {
-    // starší i novější cesta k pluginu — podle toho, co bridge zrovna nabízí
+    // Nejdřív Capacitor.Plugins, teprve pak registerPlugin. V téhle appce
+    // (čisté HTML bez bundleru) most registerPlugin nevystavuje, takže sama
+    // ta cesta plugin nikdy nenašla a všechno kolem oznámení tiše vypadlo.
     notifPlugin = (cap.Plugins && cap.Plugins.LocalNotifications) ||
       (cap.registerPlugin && cap.registerPlugin("LocalNotifications")) || null;
-    if (!notifPlugin) notifBootError = "bridge běží, ale plugin se nenašel";
   }
-} catch (e) {
-  notifPlugin = null;
-  notifBootError = e && e.message ? e.message : String(e);
-}
+} catch (e) { notifPlugin = null; }
 const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
 
 /* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
@@ -2578,66 +2566,7 @@ async function toggleWeeklyNotifs() {
   state.notifAsked = true; // ať se na to appka po sezení už neptá podruhé
   deniedNote.hidden = ok; // nešlo to = oznámení jsou zakázaná v systému
   renderNotifSwitch();
-  renderNotifDiag();
   saveStore();
-  renderNotifDiag();
-}
-
-/* Zkušební oznámení za 5 s — jediný způsob, jak si na telefonu ověřit, že
-   celá cesta (povolení → naplánování → doručení) opravdu funguje. */
-async function sendTestNotif() {
-  const label = document.getElementById("testNotifLabel");
-  const say = (t) => label.innerHTML = "Poslat zkušební oznámení<br><span class=\"item-note\">" + t + "</span>";
-  if (!notifPlugin) { say("Funguje jen v nainstalované aplikaci."); return; }
-  try {
-    let perm = await notifPermission();
-    if (perm === "prompt") perm = (await notifPlugin.requestPermissions()).display;
-    if (perm !== "granted") { say("Oznámení jsou v iOS zakázaná — povolte je v Nastavení telefonu."); return; }
-    await notifPlugin.schedule({
-      notifications: [{
-        id: 990,
-        title: "Mezi námi — zkouška",
-        body: "Takhle vypadá nedělní tip. Pokud tohle vidíte, oznámení fungují.",
-        schedule: { at: new Date(Date.now() + 5000) }
-      }]
-    });
-    say("Naplánováno — zavřete appku a čekejte 5 sekund.");
-  } catch (e) {
-    say("Nepovedlo se: " + (e && e.message ? e.message : e));
-  }
-  renderNotifDiag();
-}
-
-/* Ruční vyvolání nabídky — aby se dala zkontrolovat i po tom, co ji
-   uživatel jednou odmítl (jinak se ukáže jen jednou za instalaci). */
-function showNotifOfferAgain() {
-  state.notifAsked = false;
-  saveStore();
-  goHome();
-  maybeOfferNotifs();
-}
-
-/* Stav oznámení na jednom řádku — bez toho se na telefonu nedá poznat,
-   proč se nabídka neukázala. */
-async function renderNotifDiag() {
-  const el = document.getElementById("notifDiag");
-  if (!el) return;
-  const cap = window.Capacitor;
-  const env = "Capacitor: " + (cap ? "ano" : "ne") +
-    " · nativní: " + (cap && cap.isNativePlatform && cap.isNativePlatform() ? "ano" : "ne");
-  if (!notifPlugin) {
-    el.textContent = env + " · plugin: NE" + (notifBootError ? " (" + notifBootError + ")" : " — prohlížeč");
-    return;
-  }
-  let perm = "?", pending = "?";
-  try { perm = await notifPermission(); } catch (e) { perm = "chyba: " + (e && e.message || e); }
-  try {
-    const p = await notifPlugin.getPending();
-    pending = (p.notifications || []).length;
-  } catch (e) { pending = "chyba: " + (e && e.message || e); }
-  el.textContent = env + " · povolení: " + perm + " · naplánováno: " + pending +
-    " · přepínač: " + (state.notifOn ? "zapnuto" : "vypnuto") +
-    " · nabídka: " + (state.notifAsked ? "už zobrazena" : "ještě ne");
 }
 
 /* Přepínač v nastavení nemá nic slibovat, když jsou oznámení zakázaná
@@ -3510,7 +3439,6 @@ function openSettings() {
   document.getElementById("notifSwitch").disabled = !notifPlugin;
   document.getElementById("notifWebNote").hidden = !!notifPlugin;
   refreshNotifPermissionNote();
-  renderNotifDiag();
   go("s-settings");
 }
 
