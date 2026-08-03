@@ -689,6 +689,7 @@
   .switch[aria-checked="true"] .knob { transform: translateX(20px); }
   .switch:active .knob { transform: scale(.92); }
   .switch[aria-checked="true"]:active .knob { transform: translateX(20px) scale(.92); }
+  .switch:disabled { opacity: .4; cursor: default; pointer-events: none; }
 
   /* ===== Vysouvací okno zespodu (bottom sheet) =====
      Leží uvnitř .phone, takže se vysouvá v rámu appky a nepřekryje ji celou. */
@@ -1238,13 +1239,15 @@
       </button>
     </div>
 
-    <!-- Nedělní inspirace — ukazuje se jen v nativní appce (web plánované notifikace neumí) -->
-    <div class="section-label" id="notifLabel" hidden>Nedělní inspirace</div>
-    <div class="settings-group" id="notifGroup" hidden>
+    <!-- Sekce je vidět vždycky — dřív se schovávala, když se nepřipojil nativní
+         plugin, takže při jakémkoli problému prostě zmizela a nešlo poznat proč.
+         Na webu je přepínač vypnutý s vysvětlením. -->
+    <div class="section-label" id="notifLabel">Oznámení</div>
+    <div class="settings-group" id="notifGroup">
       <div class="settings-item static">
         <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
-        <span class="item-label">Jeden tip týdně<br><span class="item-note">V neděli večer — otázka, nebo malé povzbuzení</span></span>
-        <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Nedělní inspirace" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
+        <span class="item-label">Povolit oznámení<br><span class="item-note">Jednou týdně otázka, nebo malé povzbuzení</span></span>
+        <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Povolit oznámení" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
       </div>
       <button class="settings-item" onclick="sendTestNotif()">
         <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
@@ -1260,6 +1263,7 @@
       </div>
     </div>
     <p class="muted" id="notifDeniedNote" hidden>Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení&nbsp;→ Mezi&nbsp;námi&nbsp;→ Oznámení.</p>
+    <p class="muted" id="notifWebNote" hidden>V prohlížeči plánovaná oznámení nefungují — jsou jen v aplikaci pro iOS.</p>
 
     <div class="section-label">Jak aplikaci používat</div>
     <div class="settings-group">
@@ -2473,10 +2477,20 @@ const WEEKLY_NOTIFS = [
    chyběl, výjimka by zabila celý skript — appka se bez notifikací obejde,
    bez tlačítek ne. */
 let notifPlugin = null;
+let notifBootError = null; // co přesně selhalo — ukazuje se v diagnostice
 try {
-  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
-    notifPlugin = window.Capacitor.registerPlugin("LocalNotifications");
-} catch (e) { notifPlugin = null; }
+  const cap = window.Capacitor;
+  const isNative = !!(cap && ((cap.isNativePlatform && cap.isNativePlatform()) || cap.platform === "ios"));
+  if (isNative) {
+    // starší i novější cesta k pluginu — podle toho, co bridge zrovna nabízí
+    notifPlugin = (cap.Plugins && cap.Plugins.LocalNotifications) ||
+      (cap.registerPlugin && cap.registerPlugin("LocalNotifications")) || null;
+    if (!notifPlugin) notifBootError = "bridge běží, ale plugin se nenašel";
+  }
+} catch (e) {
+  notifPlugin = null;
+  notifBootError = e && e.message ? e.message : String(e);
+}
 const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
 
 /* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
@@ -2546,6 +2560,7 @@ async function cancelWeeklyNotifs() {
 }
 
 async function toggleWeeklyNotifs() {
+  if (!notifPlugin) return; // web — přepínač je neaktivní, tohle je jen pojistka
   const deniedNote = document.getElementById("notifDeniedNote");
   if (state.notifOn) {
     state.notifOn = false;
@@ -2559,7 +2574,9 @@ async function toggleWeeklyNotifs() {
   state.notifAsked = true; // ať se na to appka po sezení už neptá podruhé
   deniedNote.hidden = ok; // nešlo to = oznámení jsou zakázaná v systému
   renderNotifSwitch();
+  renderNotifDiag();
   saveStore();
+  renderNotifDiag();
 }
 
 /* Zkušební oznámení za 5 s — jediný způsob, jak si na telefonu ověřit, že
@@ -2601,14 +2618,20 @@ function showNotifOfferAgain() {
 async function renderNotifDiag() {
   const el = document.getElementById("notifDiag");
   if (!el) return;
-  if (!notifPlugin) { el.textContent = "Web — plánovaná oznámení neumí"; return; }
+  const cap = window.Capacitor;
+  const env = "Capacitor: " + (cap ? "ano" : "ne") +
+    " · nativní: " + (cap && cap.isNativePlatform && cap.isNativePlatform() ? "ano" : "ne");
+  if (!notifPlugin) {
+    el.textContent = env + " · plugin: NE" + (notifBootError ? " (" + notifBootError + ")" : " — prohlížeč");
+    return;
+  }
   let perm = "?", pending = "?";
-  try { perm = await notifPermission(); } catch (e) { perm = "chyba"; }
+  try { perm = await notifPermission(); } catch (e) { perm = "chyba: " + (e && e.message || e); }
   try {
     const p = await notifPlugin.getPending();
     pending = (p.notifications || []).length;
-  } catch (e) { pending = "chyba"; }
-  el.textContent = "povolení: " + perm + " · naplánováno: " + pending +
+  } catch (e) { pending = "chyba: " + (e && e.message || e); }
+  el.textContent = env + " · povolení: " + perm + " · naplánováno: " + pending +
     " · přepínač: " + (state.notifOn ? "zapnuto" : "vypnuto") +
     " · nabídka: " + (state.notifAsked ? "už zobrazena" : "ještě ne");
 }
@@ -3479,6 +3502,9 @@ function openSettings() {
   document.getElementById("setNameParent").value = state.nameParent === "Rodič" ? "" : state.nameParent;
   document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
   renderNotifSwitch();
+  // na webu je přepínač neaktivní s vysvětlením — plánovaná oznámení tam nejsou
+  document.getElementById("notifSwitch").disabled = !notifPlugin;
+  document.getElementById("notifWebNote").hidden = !!notifPlugin;
   refreshNotifPermissionNote();
   renderNotifDiag();
   go("s-settings");
@@ -3521,7 +3547,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.7"; // zvedat při větších změnách
+const APP_VERSION = "1.8"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
@@ -3741,8 +3767,6 @@ if (saved && saved.nameKid) {
    notifikaci a při každém startu posunout naplánované okno 12 nedělí. */
 if (notifPlugin) {
   try {
-    document.getElementById("notifLabel").hidden = false;
-    document.getElementById("notifGroup").hidden = false;
     notifPlugin.addListener("localNotificationActionPerformed", (ev) => {
       const card = ev && ev.notification && ev.notification.extra && ev.notification.extra.card;
       if (card) openWeeklyCard(card);
