@@ -436,7 +436,14 @@
       max(96px, calc((100dvh - 400px) * .716))
     );
     display: flex; justify-content: center; align-items: flex-start;
-    margin-top: 24px;
+    /* Hodně vzduchu mezi zadáním a kartami — na nižších displejích méně. */
+    margin-top: clamp(48px, 16vh, 150px);
+  }
+  /* Vějíř drží u spodní části obrazovky, ne uprostřed: samotná větší mezera
+     by při centrování jen vytáhla text nahoru a karty by zůstaly, kde byly. */
+  #drawPick {
+    justify-content: flex-end;
+    padding-bottom: clamp(24px, 10vh, 96px);
   }
   .draw-card {
     /* Skutečná velikost hrací karty — 63 × 88 mm. Na úzkých displejích se
@@ -3514,7 +3521,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.6"; // zvedat při větších změnách
+const APP_VERSION = "1.7"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
