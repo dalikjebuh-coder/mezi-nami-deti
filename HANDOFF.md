@@ -4,10 +4,10 @@
 
 - **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.9**, aktuální
 - **iOS:** verze **1.9, build 19** odeslána do App Review
-- **Android:** platforma přidána, podepsaný AAB přes CI připraven — čeká na
-  Google Play Developer účet a první ruční nahrání (viz sekce Android níže)
-- Repo: `~/mezi-nami-deti`, branch `main` — Android změny commitnuté lokálně,
-  **zatím nepushnuté**
+- **Android:** platforma přidána a **CI build ověřen** (nepodepsaný smoke test
+  prošel, artefakt 3,2 MB) — čekají jen GitHub secrets, Google Play Developer
+  účet a první ruční nahrání (viz sekce Android níže)
+- Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté (9e58197)
 
 ## Android (přidáno 15. 8. 2026)
 
@@ -20,11 +20,19 @@
   `versionName "1.9"` ručně v `android/app/build.gradle` — zvedat spolu
   s `MARKETING_VERSION` (iOS) a `APP_VERSION` (web)
 - **Upload keystore:** `android/keystore/upload-keystore.p12` (PKCS12, openssl,
-  bez Javy) — složka je **gitignored, existuje jen na tomhle Macu → zálohovat!**
-  Heslo v `android/keystore/keystore.properties`, base64 pro GitHub secret
-  v `upload-keystore.p12.b64`. Regenerace: `scripts/generate-upload-keystore.py`
-  (odmítne přepsat existující).
+  bez Javy) — složka je gitignored; **záloha je na iCloud Drive**
+  (`Zalohy/mezi-nami-keystore-2026-08-15/`). Heslo v `android/keystore/
+  keystore.properties`, base64 pro GitHub secret v `upload-keystore.p12.b64`.
+  Regenerace: `scripts/generate-upload-keystore.py` (odmítne přepsat existující).
 - **GitHub secrets k nastavení:** `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`
+  — bez nich CI staví nepodepsaný AAB (jen smoke test, Play ho nepřijme)
+- **CI ověřeno 15. 8.:** smoke test prošel (run #3, unsigned). Tag `android-v1`
+  spadl na Groovy pasti ve versionCode (opraveno 9e58197) — číslo v1 je spálené,
+  příští release = `android-v2`. versionCode řada = run number (už 3), na Play
+  záleží jen na nahraných číslech.
+- **Ladění CI bez přihlášení:** při pádu Gradlu workflow propíše posledních
+  150 řádků logu do step summary a anotace (jsou veřejné, na rozdíl od logů).
+  Smoke build bez tagu: push do větve `android-ci-debug` (trigger je ve workflow).
 - Ikony/splash vygenerované z iOS podkladů (`assets/` + `npx @capacitor/assets
   generate --android`); adaptivní ikona, monochromatická notifikační ikona
   `ic_stat_mezinami`, splash pro Android 12+ (krémové pozadí v `styles.xml`)
