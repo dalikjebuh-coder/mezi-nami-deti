@@ -3,6 +3,8 @@ apply plugin: 'com.android.application'
 // Podpis release buildu bere CI z env proměnných (viz .github/workflows/android-play.yml).
 // Bez nich se staví nepodepsaný build — lokální ladění tím není blokované.
 def keystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
+// CI dosazuje GITHUB_RUN_NUMBER; bez env (lokální build) zůstává 1
+def ciVersionCode = (System.getenv('ANDROID_VERSION_CODE') ?: '1').toInteger()
 
 android {
     namespace = "com.dalikjebuh.mezinami"
@@ -11,7 +13,7 @@ android {
         applicationId "com.dalikjebuh.mezinami"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv('ANDROID_VERSION_CODE') ?: '1').toInteger()
+        versionCode ciVersionCode
         versionName "1.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
