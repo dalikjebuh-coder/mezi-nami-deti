@@ -1,10 +1,45 @@
-# Kde jsme skončili (3. 8. 2026)
+# Kde jsme skončili (15. 8. 2026)
 
 ## Stav
 
 - **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.9**, aktuální
-- **TestFlight:** verze **1.9, build 19** (tag `ios-v17`) — kandidát pro App Store, ještě neproklikaný na telefonu
-- Repo: `~/mezi-nami-deti`, branch `main`, čisté
+- **iOS:** verze **1.9, build 19** odeslána do App Review
+- **Android:** platforma přidána, podepsaný AAB přes CI připraven — čeká na
+  Google Play Developer účet a první ruční nahrání (viz sekce Android níže)
+- Repo: `~/mezi-nami-deti`, branch `main` — Android změny commitnuté lokálně,
+  **zatím nepushnuté**
+
+## Android (přidáno 15. 8. 2026)
+
+- `@capacitor/android` 8.5 + `android/` platforma; web assety se kopírují přes
+  `npx cap sync android` (CI si je dělá samo, stejně jako iOS)
+- **Release = tag `android-vN`** (nebo ručně workflow_dispatch) →
+  `.github/workflows/android-play.yml` na ubuntu runneru postaví podepsaný AAB
+  a vystaví ho jako artefakt **mezi-nami-aab**; do Play Console se nahrává ručně
+- `versionCode` = `GITHUB_RUN_NUMBER` (vlastní řada, nezávislá na iOS);
+  `versionName "1.9"` ručně v `android/app/build.gradle` — zvedat spolu
+  s `MARKETING_VERSION` (iOS) a `APP_VERSION` (web)
+- **Upload keystore:** `android/keystore/upload-keystore.p12` (PKCS12, openssl,
+  bez Javy) — složka je **gitignored, existuje jen na tomhle Macu → zálohovat!**
+  Heslo v `android/keystore/keystore.properties`, base64 pro GitHub secret
+  v `upload-keystore.p12.b64`. Regenerace: `scripts/generate-upload-keystore.py`
+  (odmítne přepsat existující).
+- **GitHub secrets k nastavení:** `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`
+- Ikony/splash vygenerované z iOS podkladů (`assets/` + `npx @capacitor/assets
+  generate --android`); adaptivní ikona, monochromatická notifikační ikona
+  `ic_stat_mezinami`, splash pro Android 12+ (krémové pozadí v `styles.xml`)
+- Notifikace: plugin si sám řeší POST_NOTIFICATIONS (13+), obnovu po restartu
+  i fallback na nepřesné alarmy (14+) — beze změn v kódu appky
+- Status bar: `SystemBars.style = "LIGHT"` v capacitor.config.json (Android-only
+  volba, iOS neovlivní); edge-to-edge řeší Capacitor 8.5 sám přes
+  `env(safe-area-inset-*)`, které appka už používá
+- **Play metadata a návod:** `app-store/google-play/metadata-cs.md` — texty
+  (title/short/full), Data safety („No data collected“), content rating,
+  cílovka **18+** (ne Families — stejná logika jako „ne Kids Category“ na iOS),
+  účet a proces vydání. Grafika v `app-store/google-play/graphics/` (gitignored):
+  icon 512, feature graphic 1024×500, 7 screenshotů 1620×2880 (9:16, z iOS sady)
+- **Pozor:** osobní Play účet založený po 11/2023 musí před produkcí projít
+  closed testingem — 12 testerů po 14 dní (+ 25 USD registrace)
 
 ## Co zbývá k publikaci (vše v App Store Connect, pod Apple účtem)
 

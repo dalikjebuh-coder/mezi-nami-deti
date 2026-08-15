@@ -8,7 +8,12 @@
   },
   "plugins": {
     "LocalNotifications": {
-      "presentationOptions": ["banner"]
+      "presentationOptions": ["banner"],
+      "smallIcon": "ic_stat_mezinami",
+      "iconColor": "#6E3B52"
+    },
+    "SystemBars": {
+      "style": "LIGHT"
     }
   }
 }

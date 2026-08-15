@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mezi námi</string>
+    <string name="title_activity_main">Mezi námi</string>
+    <string name="package_name">com.dalikjebuh.mezinami</string>
+    <string name="custom_url_scheme">com.dalikjebuh.mezinami</string>
+</resources>

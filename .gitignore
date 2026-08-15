@@ -8,3 +8,5 @@ ios/DerivedData/
 *.mobileprovision.b64
 app-store/screenshots-6.9/
 app-store/screenshots-6.5/
+android/keystore/
+app-store/google-play/graphics/
