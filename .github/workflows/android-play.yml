@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - 'android-v*'
+    branches:
+      - android-ci-debug
 
 jobs:
   build-aab:
@@ -54,7 +56,25 @@ jobs:
             echo "::warning::ANDROID_KEYSTORE_B64 neni nastaveny - stavim NEPODEPSANY AAB (jen smoke test, do Play nenahravat)."
           fi
           cd android
-          ./gradlew bundleRelease
+          set -o pipefail
+          ./gradlew bundleRelease --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+
+      # Logy běhů jsou na GitHubu jen po přihlášení; anotace a step summary jsou
+      # veřejné — při pádu do nich propíšeme konec Gradle logu, ať se dá ladit
+      # i bez gh/API tokenu.
+      - name: Report Gradle failure publicly
+        if: failure()
+        run: |
+          LOG="$RUNNER_TEMP/gradle.log"
+          [ -f "$LOG" ] || exit 0
+          {
+            echo '## Gradle selhal — posledních 150 řádků'
+            echo '```'
+            tail -n 150 "$LOG"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          MSG=$(tail -n 40 "$LOG" | sed ':a;N;$!ba;s/\n/%0A/g' | cut -c1-3500)
+          echo "::error title=Gradle failure::$MSG"
 
       - name: Upload AAB as artifact
         uses: actions/upload-artifact@v4
