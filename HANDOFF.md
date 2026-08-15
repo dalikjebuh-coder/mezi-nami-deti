@@ -4,10 +4,13 @@
 
 - **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.9**, aktuální
 - **iOS:** verze **1.9, build 19** odeslána do App Review
-- **Android:** platforma přidána a **CI build ověřen** (nepodepsaný smoke test
-  prošel, artefakt 3,2 MB) — čekají jen GitHub secrets, Google Play Developer
-  účet a první ruční nahrání (viz sekce Android níže)
-- Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté (9e58197)
+- **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
+  otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
+  Artefakt `mezi-nami-aab` u běhu
+  https://github.com/dalikjebuh-coder/mezi-nami-deti/actions/runs/31898565031
+  (expiruje 13. 11. 2026 — pak stačí nový tag). Secrets nastavené.
+  Čeká se jen na Google Play Developer účet a ruční nahrání.
+- Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté
 
 ## Android (přidáno 15. 8. 2026)
 
@@ -24,12 +27,12 @@
   (`Zalohy/mezi-nami-keystore-2026-08-15/`). Heslo v `android/keystore/
   keystore.properties`, base64 pro GitHub secret v `upload-keystore.p12.b64`.
   Regenerace: `scripts/generate-upload-keystore.py` (odmítne přepsat existující).
-- **GitHub secrets k nastavení:** `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`
-  — bez nich CI staví nepodepsaný AAB (jen smoke test, Play ho nepřijme)
-- **CI ověřeno 15. 8.:** smoke test prošel (run #3, unsigned). Tag `android-v1`
-  spadl na Groovy pasti ve versionCode (opraveno 9e58197) — číslo v1 je spálené,
-  příští release = `android-v2`. versionCode řada = run number (už 3), na Play
-  záleží jen na nahraných číslech.
+- **GitHub secrets:** `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`
+  — **nastavené 15. 8.** Bez nich by CI stavěl nepodepsaný AAB (jen smoke test).
+  Podpis se ověřuje anotací „AAB podpis“ (otisk musí být 9E:0F:29:…:D1:B2:39).
+- **CI ověřeno 15. 8.:** podepsaný build `android-v2` prošel (versionCode 4).
+  Tag `android-v1` spadl na Groovy pasti ve versionCode (opraveno 9e58197) —
+  v1 je spálené. versionCode řada = run number, na Play záleží jen na nahraných.
 - **Ladění CI bez přihlášení:** při pádu Gradlu workflow propíše posledních
   150 řádků logu do step summary a anotace (jsou veřejné, na rozdíl od logů).
   Smoke build bez tagu: push do větve `android-ci-debug` (trigger je ve workflow).
