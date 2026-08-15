@@ -36,18 +36,23 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode upload keystore
-        run: |
-          printf '%s' "${{ secrets.ANDROID_KEYSTORE_B64 }}" | base64 --decode > "$RUNNER_TEMP/upload-keystore.p12"
-
-      - name: Build signed AAB
+      # Bez nastavených secrets (ANDROID_KEYSTORE_B64 + ANDROID_KEYSTORE_PASSWORD)
+      # se postaví NEPODEPSANÝ AAB — projde celý toolchain, ale Play ho nepřijme.
+      - name: Build AAB (signed when keystore secret is set)
         env:
-          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload-keystore.p12
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: upload
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: |
+          if [ -n "$ANDROID_KEYSTORE_B64" ]; then
+            printf '%s' "$ANDROID_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-keystore.p12"
+            export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/upload-keystore.p12"
+            export ANDROID_KEY_PASSWORD="$ANDROID_KEYSTORE_PASSWORD"
+            echo "Keystore secret nalezen - stavim PODEPSANY AAB."
+          else
+            echo "::warning::ANDROID_KEYSTORE_B64 neni nastaveny - stavim NEPODEPSANY AAB (jen smoke test, do Play nenahravat)."
+          fi
           cd android
           ./gradlew bundleRelease
 
