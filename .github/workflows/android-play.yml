@@ -58,6 +58,11 @@ jobs:
           cd android
           set -o pipefail
           ./gradlew bundleRelease --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+          # Ověření podpisu: otisk certifikátu do veřejné anotace (logy veřejné nejsou)
+          if [ -n "$ANDROID_KEYSTORE_B64" ]; then
+            FP=$(keytool -printcert -jarfile app/build/outputs/bundle/release/app-release.aab | grep 'SHA256:' | head -1 | tr -d ' \t')
+            echo "::notice title=AAB podpis::$FP"
+          fi
 
       # Logy běhů jsou na GitHubu jen po přihlášení; anotace a step summary jsou
       # veřejné — při pádu do nich propíšeme konec Gradle logu, ať se dá ladit
