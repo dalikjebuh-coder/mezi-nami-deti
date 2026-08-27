@@ -99,6 +99,13 @@ První vydání. Šest témat, 108 otázek ve třech úrovních hloubky, bonusov
 a Bleskovky na pár minut. Vše offline a bez sběru dat.
 ```
 
+## Text „Co je nového“ pro 1.10
+
+```
+Aplikaci teď jde ohodnotit přímo z Nastavení. Pokud vám doma k něčemu je,
+hvězdičky pomůžou ostatním rodičům ji vůbec najít. Díky.
+```
+
 ---
 
 ## Nastavení v App Store Connect

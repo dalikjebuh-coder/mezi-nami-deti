@@ -1299,6 +1299,12 @@
         <span class="item-icon" style="background:var(--rose-soft); color:var(--rose);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></span>
         <span class="item-label">Ozvat se na LinkedInu</span>
       </a>
+      <!-- Systémové okno s hvězdičkami se ukáže jen občas a rozhoduje o tom
+           telefon; kdo chce hodnotit sám, potřebuje tuhle cestu. -->
+      <button class="settings-item ext" id="rateItem" onclick="openStoreReview()" hidden>
+        <span class="item-icon" style="background:var(--rose-soft); color:var(--rose);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"/></svg></span>
+        <span class="item-label">Ohodnotit aplikaci</span>
+      </button>
     </div>
     <p class="muted">Za appkou stojí jeden táta, ne firma. Napište mi cokoli — co vám v ní chybí, co vám doma zafungovalo, i co je špatně.</p>
 
@@ -2475,18 +2481,33 @@ const WEEKLY_NOTIFS = [
    notifikací se tiše přeskočí. Try/catch je nutný: kdyby plugin v buildu
    chyběl, výjimka by zabila celý skript — appka se bez notifikací obejde,
    bez tlačítek ne. */
-let notifPlugin = null;
-try {
-  const cap = window.Capacitor;
-  const isNative = !!(cap && ((cap.isNativePlatform && cap.isNativePlatform()) || cap.platform === "ios"));
-  if (isNative) {
-    // Nejdřív Capacitor.Plugins, teprve pak registerPlugin. V téhle appce
-    // (čisté HTML bez bundleru) most registerPlugin nevystavuje, takže sama
-    // ta cesta plugin nikdy nenašla a všechno kolem oznámení tiše vypadlo.
-    notifPlugin = (cap.Plugins && cap.Plugins.LocalNotifications) ||
-      (cap.registerPlugin && cap.registerPlugin("LocalNotifications")) || null;
-  }
-} catch (e) { notifPlugin = null; }
+const isNativeApp = (() => {
+  try {
+    const cap = window.Capacitor;
+    return !!(cap && ((cap.isNativePlatform && cap.isNativePlatform()) ||
+      cap.platform === "ios" || cap.platform === "android"));
+  } catch (e) { return false; }
+})();
+
+/* Nejdřív Capacitor.Plugins, teprve pak registerPlugin. V téhle appce
+   (čisté HTML bez bundleru) most registerPlugin nevystavuje, takže sama
+   ta cesta plugin nikdy nenašla a všechno kolem oznámení tiše vypadlo. */
+function nativePlugin(name) {
+  if (!isNativeApp) return null;
+  try {
+    const cap = window.Capacitor;
+    return (cap.Plugins && cap.Plugins[name]) ||
+      (cap.registerPlugin && cap.registerPlugin(name)) || null;
+  } catch (e) { return null; }
+}
+
+const notifPlugin = nativePlugin("LocalNotifications");
+
+/* Systémový dotaz na hodnocení v App Storu / Google Play. Appka jen řekne
+   „teď by byla vhodná chvíle“ — jestli se okno doopravdy ukáže, rozhoduje
+   systém (iOS: max 3× za rok, kdo už hodnotil, ten ho neuvidí). Návratová
+   hodnota nic neprozradí, takže se nedá zjistit, jestli okno vyskočilo. */
+const reviewPlugin = nativePlugin("InAppReview");
 const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
 
 /* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
@@ -2652,7 +2673,9 @@ const state = {
   done: new Set(), // kombinace téma:hloubka s probranými všemi otázkami
   notifOn: false,  // nedělní inspirace zapnutá (jen nativní appka)
   notifStart: null, // první naplánovaná neděle (ms) — drží pořadí zpráv v cyklu
-  notifAsked: false // na nedělní inspiraci jsme se po povídání už zeptali
+  notifAsked: false, // na nedělní inspiraci jsme se po povídání už zeptali
+  talksDone: 0,    // dokončená povídání celkem — řídí, kdy se nabídne hodnocení
+  reviewAsked: 0   // kolikrát appka vyvolala systémový dotaz na hodnocení
 };
 
 /* ================= Navigace ================= */
@@ -2709,7 +2732,9 @@ function saveStore() {
       done: [...state.done],
       notifOn: state.notifOn,
       notifStart: state.notifStart,
-      notifAsked: state.notifAsked
+      notifAsked: state.notifAsked,
+      talksDone: state.talksDone,
+      reviewAsked: state.reviewAsked
     }));
   } catch (e) { /* soukromý režim — hra funguje i bez ukládání */ }
 }
@@ -3224,6 +3249,7 @@ function finishSession() {
   const allSeen = state.deck.questions[state.depth]
     .every((_, i) => state.seen.has(state.deck.id + ":" + state.depth + ":" + i));
   if (allSeen) state.done.add(state.deck.id + ":" + state.depth);
+  state.talksDone++; // jen doopravdy dokončená povídání, bleskovky se nepočítají
   saveStore();
   document.getElementById("finishText").textContent =
     "Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.";
@@ -3241,17 +3267,38 @@ function finishSession() {
    (web plánované notifikace neumí), jen jednou a jen když iOS systémový
    dotaz ještě neukázal — po odmítnutí už appka nemá co nabízet. */
 async function maybeOfferNotifs() {
-  if (!notifPlugin || state.notifOn || state.notifAsked) return;
+  if (!notifPlugin || state.notifOn || state.notifAsked) return false;
   // „denied“ = iOS dotaz už proběhl a byl odmítnutý, znovu ho ukázat nejde,
   // takže nemáme co nabízet. Při „granted“ (povoleno dřív, náš přepínač ale
   // vypnutý) nabídku ukázat smysl má — zapne se pak bez dalšího dotazu.
-  if (await notifPermission() === "denied") return;
+  if (await notifPermission() === "denied") return false;
   // v náhledu je text, který doopravdy přijde jako první
   document.getElementById("notifPreviewText").textContent = WEEKLY_NOTIFS[0].body;
   document.getElementById("sheetBackdrop").hidden = false;
   const sheet = document.getElementById("notifSheet");
   sheet.classList.remove("closing");
   sheet.hidden = false;
+  return true;
+}
+
+/* ===== Dotaz na hodnocení =====
+   Až po třetím dokončeném povídání: po prvním rodič ještě neví, jestli mu
+   appka sedí, po třetím už to ví — a je to jediné místo, kde je zjevně
+   spokojený. Podruhé (a naposledy) zkusíme po dvanáctém, protože systém
+   napoprvé okno klidně spolkne, aniž by to appka poznala.
+   Nikdy zároveň s nabídkou nedělní inspirace — dvě okna po sobě otravují. */
+const REVIEW_AFTER_TALKS = [3, 12];
+
+function maybeAskReview() {
+  if (!reviewPlugin) return;
+  if (state.reviewAsked >= REVIEW_AFTER_TALKS.length) return;
+  if (state.talksDone < REVIEW_AFTER_TALKS[state.reviewAsked]) return;
+  state.reviewAsked++;
+  saveStore();
+  // dojezd návratu na témata dobíhá — ať okno nepadá do rozjeté animace
+  setTimeout(() => {
+    try { reviewPlugin.requestReview(); } catch (e) { /* nic, appka jede dál */ }
+  }, 900);
 }
 
 /* zavření s dojezdem dolů; pak teprve schovat */
@@ -3309,9 +3356,11 @@ function declineNotifOffer() {
 
 /* Odchod ze závěrečné obrazovky: domů a teprve tam případná nabídka
    nedělní inspirace — ať závěr povídání zůstane jen o povídání. */
-function leaveFinish() {
+async function leaveFinish() {
   goHome();
-  maybeOfferNotifs();
+  // nabídka nedělní inspirace má přednost; hodnocení až v některém dalším sezení
+  const offered = await maybeOfferNotifs();
+  if (!offered) maybeAskReview();
 }
 
 function confirmLeave() {
@@ -3443,6 +3492,8 @@ function openSettings() {
   document.getElementById("notifSwitch").disabled = !notifPlugin;
   document.getElementById("notifWebNote").hidden = !!notifPlugin;
   refreshNotifPermissionNote();
+  // hodnocení má smysl jen v nativní appce — na webu není co hodnotit
+  document.getElementById("rateItem").hidden = !isNativeApp;
   go("s-settings");
 }
 
@@ -3483,11 +3534,24 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.9"; // zvedat při větších změnách
+const APP_VERSION = "1.10"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
 const SUPPORT_URL = "https://dalikjebuh-coder.github.io/mezi-nami-deti/podpora.html";
+/* Ruční hodnocení vede na stránku obchodu, ne na systémové okno: Apple si
+   výslovně nepřeje, aby okno s hvězdičkami viselo na tlačítku. */
+// bez země v cestě — Apple pošle uživatele do jeho vlastního obchodu (CZ i SK)
+const APPSTORE_REVIEW_URL = "https://apps.apple.com/app/id6791562078?action=write-review";
+const PLAY_REVIEW_URL = "https://play.google.com/store/apps/details?id=com.dalikjebuh.mezinami";
+
+function openStoreReview() {
+  const android = (() => {
+    try { return window.Capacitor && window.Capacitor.getPlatform &&
+      window.Capacitor.getPlatform() === "android"; } catch (e) { return false; }
+  })();
+  window.open(android ? PLAY_REVIEW_URL : APPSTORE_REVIEW_URL, "_blank", "noopener");
+}
 
 const SETTINGS_PAGES = {
   "jak-hrat": { title: "Jak hrát", html: `
@@ -3709,6 +3773,8 @@ if (saved && saved.nameKid) {
   state.notifOn = !!saved.notifOn;
   state.notifStart = saved.notifStart || null;
   state.notifAsked = !!saved.notifAsked;
+  state.talksDone = saved.talksDone || 0;
+  state.reviewAsked = saved.reviewAsked || 0;
   state.seen = new Set(saved.seen || []);
   // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
   state.done = new Set(saved.seen ? saved.done || [] : []);

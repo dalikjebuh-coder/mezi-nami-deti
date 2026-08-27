@@ -1,9 +1,11 @@
-# Kde jsme skončili (15. 8. 2026)
+# Kde jsme skončili (27. 8. 2026)
 
 ## Stav
 
-- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.9**, aktuální
-- **iOS:** verze **1.9, build 19** odeslána do App Review
+- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.10**
+- **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,
+  https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
+- **iOS 1.10:** hodnocení v App Storu (viz níže) — v repu hotové, **ještě neodeslané**
 - **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
   otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
   Artefakt `mezi-nami-aab` u běhu
@@ -52,26 +54,39 @@
 - **Pozor:** osobní Play účet založený po 11/2023 musí před produkcí projít
   closed testingem — 12 testerů po 14 dní (+ 25 USD registrace)
 
-## Co zbývá k publikaci (vše v App Store Connect, pod Apple účtem)
+## Hodnocení v obchodě (1.10, přidáno 27. 8. 2026)
 
-1. Ověřit dostupnost názvu „Mezi námi: rodiče a děti" (záložní varianty v `app-store/metadata-cs.md`)
-2. Vytvořit záznam aplikace, nahrát screenshoty z `app-store/screenshots-6.9/`, vložit texty z `metadata-cs.md`
-3. App Privacy dotazník → **Data Not Collected**
-4. Věkové hodnocení (dotazník, očekávaně 4+), kategorie **Education**, **ne** Kids Category
-   (vyžadovala by rodičovskou bránu před `tel:` odkazy na Linku bezpečí)
-5. Support URL: `…/podpora.html` · Privacy URL: `…/soukromi.html`
-6. Vybrat build 19 a odeslat k recenzi
+- Plugin `@capacitor-community/in-app-review` 8.0 — jedna implementace pro obě
+  platformy (iOS `AppStore.requestReview`, Android Play In-App Review)
+- **Systémové okno**: `maybeAskReview()` po **3.** a **12.** dokončeném povídání
+  (`REVIEW_AFTER_TALKS`), volané z `leaveFinish()`. Nikdy zároveň s nabídkou
+  nedělní inspirace — `maybeOfferNotifs()` teď vrací bool a má přednost.
+  Nové položky ve stavu: `talksDone`, `reviewAsked` (obojí v localStorage).
+  Bleskovky se do `talksDone` nepočítají (zvedá ho jen `finishSession()`).
+- **Ruční cesta**: „Ohodnotit aplikaci" v Nastavení → *Napište mi* (jen nativní
+  appka). Vede na stránku obchodu, **ne** na systémové okno — Apple si nepřeje
+  mít prompt na tlačítku. URL bez země v cestě, ať funguje CZ i SK.
+- Ověřeno v prohlížeči se stubem nativního mostu: gating (1–2 nic, 3 → ask,
+  5 nic, 12 → ask, dál nic), kolize s notifikačním sheetem, persistence.
+  **Na telefonu neověřeno** — systémové okno se v simulaci nedá vyvolat.
+- Release notes pro 1.10 jsou v `app-store/metadata-cs.md`
 
-**Doporučeno předtím:** projít 1.9 na telefonu — je to první build bez ladicích položek
-a s iPhone-only nastavením.
+## Co zbývá k vydání 1.10
+
+1. Otagovat `ios-v18` → CI nahraje build do TestFlightu
+2. Projít na telefonu (hodnocení po 3. povídání se dá vyzkoušet smazáním appky
+   a odehráním tří povídání; iOS okno se ukáže max 3× za rok)
+3. V App Store Connect nová verze **1.10**, vložit „Co je nového", vybrat build
+4. Android: `android-v3` až po založení Play účtu (viz sekce Android)
 
 ## Jak se pracuje s projektem
 
 - Appka je **jeden soubor** `www/index.html` (bez závislostí), stránky `podpora.html`, `soukromi.html`
 - Po každé změně obsahu **zvednout `CACHE` v `www/sw.js`** (konvence repa)
 - Push do `main` → GitHub Pages nasadí web ~za 15 s
-- iOS release = tag **`ios-vN`** (poslední `ios-v17`); číslo buildu si CI bere z `GITHUB_RUN_NUMBER`,
-  ručně se nezvedá. `MARKETING_VERSION` v pbxproj + `APP_VERSION` v index.html + `package.json` ano.
+- iOS release = tag **`ios-vN`** (poslední `ios-v17` = build 19 = vydaná 1.9); číslo buildu si CI bere z `GITHUB_RUN_NUMBER`,
+  ručně se nezvedá. Verzi zvedat na **4 místech**: `MARKETING_VERSION` v pbxproj,
+  `APP_VERSION` v index.html, `package.json` a `versionName` v android/app/build.gradle.
 - CI si `www/` kopíruje samo (`npx cap sync ios`) — Xcode lokálně netřeba (a není nainstalovaný)
 - Testování v prohlížeči: `cd www && python3 -m http.server PORT`, pak **vždy s cache-busterem**
   (`?v=2`), jinak servíruje starou verzi z SW/HTTP cache

@@ -1,6 +1,6 @@
 {
   "name": "mezi-nami-deti",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Mezi námi — hra na povídání pro rodiče a děti",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "open": "cap open ios"
   },
   "dependencies": {
+    "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
