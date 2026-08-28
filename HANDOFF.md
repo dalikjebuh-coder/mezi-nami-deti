@@ -127,17 +127,33 @@ a rozšíří se dostupnost. Anglický název pracovně **Between Us**.
   parita struktury EN×CS (id, emoji, bg, počty otázek, `temp`, délky `fu`),
   test na české diakritice v celém EN obsahu (projde — zůstává jen
   „Novák" ve jméně autora, což je správně)
-- stránka „When it's serious" má **americké linky** (988, 741741, Childhelp
-  1-800-422-4453, National Parent Helpline, 911) — před vydáním ověřit,
-  a pro UK/AU/CA by chtěly vlastní čísla
+- stránka „When it's serious" má **americké linky, ověřené 28. 8. 2026** na
+  oficiálních webech: 988 Suicide & Crisis Lifeline (volat i psát, 24/7),
+  Crisis Text Line (HOME na 741741), Childhelp 1-800-422-4453 (i text GO),
+  **National Parent & Youth Helpline** 1-855-427-2736 a 911.
+  POZOR: helpline se dřív jmenoval „National Parent Helpline" a měl provozní
+  dobu — dnes je to Parents Anonymous, 24/7, volat/psát/chat. Kdyby se
+  dostupnost rozšířila na UK/IE/CA/AU, budou potřeba jejich vlastní čísla —
+  jedna „anglická" sada to nepokryje.
 
-**Co zbývá**
-1. Rozhodnout anglický název appky (teď „Between Us")
-2. `CFBundleLocalizations` = cs, en v `ios/App/App/Info.plist`
-3. Anglické screenshoty + English lokalizace v App Store Connect
-   (vlastní název, popis, klíčová slova, sada screenshotů) + rozšířit dostupnost
-4. Anglická `support.html` / `privacy.html` na Pages jako support URL pro EN
+**Hotovo pro obchod**
+- `CFBundleLocalizations` = cs, en v `ios/App/App/Info.plist` (ověřeno `plutil`)
+- `app-store/metadata-en.md` — název, podtitul, klíčová slova, popis,
+  „Co je nového", nastavení v ASC. Všechno v limitech znaků.
+
+**Co zbývá — jen věci, které jdou udělat ručně v ASC / na telefonu**
+1. Anglické screenshoty pro 6.5" a 6.9" (Apple je nesdílí mezi lokalizacemi;
+   nejlíp ze simulátoru nebo telefonu, ne z prohlížeče — kvůli přesným rozměrům)
+2. V App Store Connect přidat *English (U.S.)* lokalizaci k appce 6791562078
+   a vyplnit texty z `metadata-en.md`
+3. Rozšířit dostupnost z CZ + SK (aspoň US, CA, GB, IE, AU, NZ)
+4. Anglická stránka podpory na Pages jako Support URL pro EN lokalizaci
 5. Zvednout verzi na 4 místech (viz výš) a otagovat `ios-vN`
+
+**Nedořešené:** název na ploše telefonu (`CFBundleDisplayName`) je pro všechny
+„Mezi námi". Lokalizovat ho jde jen přes `cs.lproj`/`en.lproj/InfoPlist.strings`,
+což znamená přidat soubory do `project.pbxproj` — ručně a bez Xcode je to risk
+na rozbití release buildu. Nechal jsem to na chvíli, kdy bude Xcode po ruce.
 
 **Pozor:** `www/sw.js` už je na `v55` a má `i18n-en.js` v ASSETS.
 Verze appky zůstává 1.10 — zvedne se až při vydání.

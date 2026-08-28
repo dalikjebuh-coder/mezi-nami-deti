@@ -16,8 +16,8 @@ label: "English",
 
 ui: {
   /* --- Úvod --- */
-  "Mezi námi — rodiče a děti": "Between Us — parents and kids",
-  "Mezi námi": "Between Us",
+  "Mezi námi — rodiče a děti": "The Two of Us — parents and kids",
+  "Mezi námi": "The Two of Us",
   "Pro rodiče a děti": "For parents and kids",
   "Hra, která pomáhá otevírat složitá témata, o kterých je někdy těžké mluvit.":
     "A game that opens up the conversations nobody quite knows how to start.",
@@ -156,7 +156,7 @@ ui: {
   "Povolit oznámení": "Allow notifications",
   "Jednou týdně otázka, nebo malé povzbuzení": "One question or a small nudge, once a week",
   "Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení → Mezi námi → Oznámení.":
-    "Notifications are turned off for this app on your phone. Turn them on in Settings → Between Us → Notifications.",
+    "Notifications are turned off for this app on your phone. Turn them on in Settings → The Two of Us → Notifications.",
   "V prohlížeči plánovaná oznámení nefungují — jsou jen v aplikaci pro iOS.":
     "Scheduled notifications don't work in a browser — they're only in the iOS app.",
   "Jak aplikaci používat": "Using the app",
@@ -1292,20 +1292,20 @@ pages: {
 
   "proc": { title: "Why it exists", html: `
     <p>Ask “how was school?” and you get “fine”. That's usually where it ends.</p>
-    <p>Between Us exists so families actually talk — about the good stuff, the scary stuff, and the things that are hard to say out loud. It runs on something simple: a good question, two honest people, and a quiet minute.</p>
+    <p>The Two of Us exists so families actually talk — about the good stuff, the scary stuff, and the things that are hard to say out loud. It runs on something simple: a good question, two honest people, and a quiet minute.</p>
     <p>The questions are written around how kids between six and nine think and talk about feelings: open the subject, name the emotion, close it safely. And because honesty takes courage from both sides, the parent answers every question too.</p>` },
 
   "autor": { title: "Who made it", html: `
-    <p>Between Us is a personal project by one dad who wanted to talk with his kids about more than grades.</p>
+    <p>The Two of Us is a personal project by one dad who wanted to talk with his kids about more than grades.</p>
     <p>There's no company and no business behind it — it's free, with no ads and no data collection.</p>
-    <p>If you ever want to write — an idea, something you're missing, or how it went at your house — reach me directly at <a href="mailto:font@email.cz?subject=Between%20Us">font@email.cz</a> or on <a href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">LinkedIn</a>. One person reads it, not a support desk.</p>
+    <p>If you ever want to write — an idea, something you're missing, or how it went at your house — reach me directly at <a href="mailto:font@email.cz?subject=The%20Two%20of%20Us">font@email.cz</a> or on <a href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">LinkedIn</a>. One person reads it, not a support desk.</p>
     <p>The source code is public on <a href="https://github.com/dalikjebuh-coder/mezi-nami-deti" target="_blank" rel="noopener">GitHub</a>.</p>` },
 
   "podpora": { title: "Support", html: `
     <p>If something's broken or missing, write to me directly — one person reads it, not a support desk.</p>
     <div class="contact">
       <strong>Email</strong>
-      <a href="mailto:font@email.cz?subject=Between%20Us">font@email.cz</a>
+      <a href="mailto:font@email.cz?subject=The%20Two%20of%20Us">font@email.cz</a>
       <span>The fastest way</span>
     </div>
     <div class="contact">
@@ -1316,7 +1316,7 @@ pages: {
     <h3>Before you write</h3>
     <ul>
       <li><strong>Lost progress</strong> lives only on your phone — deleting the app clears it, and there's no backup I can restore.</li>
-      <li><strong>Notifications</strong> can be turned off under Settings → Notifications, and completely in your phone's Settings → Between Us.</li>
+      <li><strong>Notifications</strong> can be turned off under Settings → Notifications, and completely in your phone's Settings → The Two of Us.</li>
       <li><strong>Serious worries about your child</strong> belong with professionals — the numbers are under Help.</li>
     </ul>` },
 
@@ -1332,10 +1332,10 @@ pages: {
     <p>You can erase everything with “Reset progress” (and by clearing the names), by deleting the app — or, if you're playing in a browser, by clearing the site data.</p>` },
 
   "zasady": { title: "Privacy policy", html: `
-    <p>Between Us does not collect or transmit any personal data.</p>
+    <p>The Two of Us does not collect or transmit any personal data.</p>
     <p>The names you enter are stored only in your device's local storage and never leave it. The app contains no third-party analytics or advertising tools and uses no cookies.</p>
     <p>The web version is hosted on GitHub Pages, which — like any website — may briefly record technical access data (such as an IP address) in its server logs. The app has no access to those logs and does nothing with them.</p>
-    <p>Privacy questions go straight to the author at <a href="mailto:font@email.cz?subject=Between%20Us%20%E2%80%94%20privacy">font@email.cz</a>, or on <a href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">LinkedIn</a>.</p>` },
+    <p>Privacy questions go straight to the author at <a href="mailto:font@email.cz?subject=The%20Two%20of%20Us%20%E2%80%94%20privacy">font@email.cz</a>, or on <a href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">LinkedIn</a>.</p>` },
 
   "sos": { title: "When it's serious", html: `
     <p>Some questions can open up heavy things — someone hurting them, fear, something they saw online. If you hear something that knocks the wind out of you:</p>
@@ -1348,22 +1348,22 @@ pages: {
     <div class="contact">
       <strong>988 Suicide &amp; Crisis Lifeline</strong>
       <a href="tel:988">988</a>
-      <span>Free, 24/7, for anyone in crisis. Call or text.</span>
+      <span>Free and confidential, 24/7. Call or text 988.</span>
     </div>
     <div class="contact">
       <strong>Crisis Text Line</strong>
       <a href="sms:741741&body=HOME">Text HOME to 741741</a>
-      <span>Free, 24/7, by text</span>
+      <span>Free and confidential, 24/7, by text</span>
     </div>
     <div class="contact">
       <strong>Childhelp National Child Abuse Hotline</strong>
       <a href="tel:18004224453">1-800-422-4453</a>
-      <span>Free and confidential, 24/7</span>
+      <span>Free and confidential, 24/7. You can also text GO to the same number.</span>
     </div>
     <div class="contact">
-      <strong>National Parent Helpline — support for parents</strong>
+      <strong>National Parent &amp; Youth Helpline — support for parents</strong>
       <a href="tel:18554272736">1-855-427-2736</a>
-      <span>Weekdays, for parents who need someone to talk to</span>
+      <span>Free, 24/7, for parents and caregivers. Call, text or chat.</span>
     </div>
     <div class="contact">
       <strong>Immediate danger</strong>
@@ -1380,7 +1380,7 @@ pages: {
     </ul>` },
 
   "licence": { title: "License", html: `
-    <p>© 2026 the author of Between Us. The question texts, the guides and the design of the app are protected by copyright.</p>
+    <p>© 2026 the author of The Two of Us. The question texts, the guides and the design of the app are protected by copyright.</p>
     <p>The source code is public on <a href="https://github.com/dalikjebuh-coder/mezi-nami-deti" target="_blank" rel="noopener">GitHub</a>.</p>
     <p>The app uses no external libraries. Emoji and fonts are your device's own.</p>` }
 }
