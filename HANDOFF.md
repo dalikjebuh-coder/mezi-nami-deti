@@ -6,6 +6,7 @@
 - **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,
   https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
 - **iOS 1.10:** hodnocení v App Storu (viz níže) — v repu hotové, **ještě neodeslané**
+- **Angličtina:** kompletní, živá na webu; do App Storu ještě nešla (viz níže)
 - **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
   otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
   Artefakt `mezi-nami-aab` u běhu
@@ -79,7 +80,7 @@
 3. V App Store Connect nová verze **1.10**, vložit „Co je nového", vybrat build
 4. Android: `android-v3` až po založení Play účtu (viz sekce Android)
 
-## Angličtina — pilot (28. 8. 2026, NEPUSHNUTÉ)
+## Angličtina — kompletní překlad (28. 8. 2026, PUSHNUTÉ)
 
 Cíl: jedna appka, dva jazyky. Ne druhé Apple ID, ne druhý záznam v obchodě —
 k existující appce (6791562078) se v App Store Connect přidá English lokalizace
@@ -116,26 +117,29 @@ a rozšíří se dostupnost. Anglický název pracovně **Between Us**.
   (`openLanguagePage()`), aktivní řádek má zaškrtnutí. Přepnutí uloží volbu
   a appku reloadne; jména i postup zůstanou.
 
-**Co je přeložené (ověřeno v prohlížeči)**
+**Co je přeložené — kompletní (ověřeno v prohlížeči)**
 - celé UI, průvodce, tři sliby, závěr, všech 11 stránek nastavení
-- balíček **School** (všechny 3 hloubky × 6 otázek i s doptávačkami)
-- všech 33 bonusových karet, všech 12 nedělních oznámení (odkazy ověřené)
+- **všech 6 balíčků** × 3 hloubky × 6 otázek = 108 otázek se `soft`
+  variantou, doptávačkami a škálovacími otázkami (570 řetězců)
+- **všech 50 bleskovek** (16 ranních, 18 odpoledních, 16 večerních)
+- 33 bonusových karet, 12 nedělních oznámení
+- Automatické kontroly: `scripts/i18n-extract.py` (0 chybějících ze 118),
+  parita struktury EN×CS (id, emoji, bg, počty otázek, `temp`, délky `fu`),
+  test na české diakritice v celém EN obsahu (projde — zůstává jen
+  „Novák" ve jméně autora, což je správně)
 - stránka „When it's serious" má **americké linky** (988, 741741, Childhelp
   1-800-422-4453, National Parent Helpline, 911) — před vydáním ověřit,
   a pro UK/AU/CA by chtěly vlastní čísla
 
 **Co zbývá**
-1. Projít tón textů (to je smysl pilotu) a doladit
-2. Zbylých 5 balíčků + bleskovky do `i18n-en.js` (v angličtině se zatím
-   vůbec nenabízejí — `HAS_BLESKOVKY`, `decks` má jen jeden)
-3. Rozhodnout anglický název appky (teď „Between Us")
-4. `CFBundleLocalizations` = cs, en v `ios/App/App/Info.plist`
-5. Anglické screenshoty + English lokalizace v App Store Connect
+1. Rozhodnout anglický název appky (teď „Between Us")
+2. `CFBundleLocalizations` = cs, en v `ios/App/App/Info.plist`
+3. Anglické screenshoty + English lokalizace v App Store Connect
    (vlastní název, popis, klíčová slova, sada screenshotů) + rozšířit dostupnost
-6. Anglická `support.html` / `privacy.html` na Pages jako support URL pro EN
-7. Zvednout verzi na 4 místech (viz výš) a otagovat `ios-vN`
+4. Anglická `support.html` / `privacy.html` na Pages jako support URL pro EN
+5. Zvednout verzi na 4 místech (viz výš) a otagovat `ios-vN`
 
-**Pozor:** `www/sw.js` už je na `v54` a má `i18n-en.js` v ASSETS.
+**Pozor:** `www/sw.js` už je na `v55` a má `i18n-en.js` v ASSETS.
 Verze appky zůstává 1.10 — zvedne se až při vydání.
 
 ## Jak se pracuje s projektem
