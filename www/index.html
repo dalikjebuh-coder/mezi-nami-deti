@@ -942,6 +942,18 @@
   .stat .num { font-family: var(--font-display); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--plum); }
   .stat .num.words { font-size: 15px; line-height: 1.25; }
   .stat .lbl { font-size: 12px; color: var(--ink-faint); }
+  /* Výběr jazyka — řádek jako v nastavení, jen se šipky mění na zaškrtnutí.
+     Seznam roste s počtem jazyků, proto vlastní podstránka a ne přepínač. */
+  .lang-option { font-size: 16px; }
+  .lang-option::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+  .lang-option[aria-current="true"] { color: var(--plum); font-weight: 500; }
+  .lang-option[aria-current="true"]::after { opacity: 1; color: var(--plum); }
+  .lang-note { margin-bottom: 16px; }
 </style>
 </head>
 <body>
@@ -1050,8 +1062,8 @@
     <div class="section-label">O čem si dnes budete povídat?</div>
     <div class="deck-grid" id="deckGrid"></div>
 
-    <div class="section-label" style="margin-top:22px;">Když je málo času</div>
-    <button class="deck-card blesk-card" onclick="openBleskovky()">
+    <div class="section-label" id="bleskLabel" style="margin-top:22px;">Když je málo času</div>
+    <button class="deck-card blesk-card" id="bleskHomeCard" onclick="openBleskovky()">
       <div class="deck-emoji">⚡</div>
       <div><h3>Bleskovky</h3><p>Zábavné hry a výzvy</p></div>
       <span class="blesk-min">5 minut</span>
@@ -1229,6 +1241,15 @@
       <input id="setNameKid" type="text" placeholder="např. Kuba" autocomplete="off">
     </div>
     <p class="muted">Změny se ukládají samy.</p>
+
+    <div class="section-label">Jazyk</div>
+    <div class="settings-group">
+      <button class="settings-item" onclick="openLanguagePage()">
+        <span class="item-icon" style="background:var(--sky-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+        <span class="item-label">Jazyk aplikace</span>
+        <span class="item-note" id="langCurrent"></span>
+      </button>
+    </div>
 
     <div class="section-label">Hra</div>
     <div class="settings-group">
@@ -1421,7 +1442,119 @@
 
 </div>
 
+<script src="i18n-en.js"></script>
 <script>
+/* ================= Jazyky =================
+   Čeština je zdrojový jazyk: texty zůstávají přímo v markupu a v kódu, tak jak
+   byly. Angličtina je slovník v i18n-en.js, kde klíčem je česká předloha —
+   nezavádíme tak žádné kódy typu "welcome.title", které by se rozešly s textem.
+
+   Statické texty v markupu přeloží applyStaticI18n() jedním průchodem DOMem
+   při startu (všechny obrazovky jsou v DOMu od začátku). Texty skládané v JS
+   jdou přes t(). Obsah (balíčky otázek, bleskovky…) se bere celý z balíčku.
+
+   Kontrola pokrytí: `python3 scripts/i18n-extract.py` vypíše texty z markupu,
+   které v i18n-en.js nemají protějšek. */
+const LANG_KEY = "mezi-nami-lang";
+
+/* Balíčky se registrují samy (window.I18N_PACKS.xx = {...}), takže další jazyk
+   = nový soubor i18n-xx.js + jeden <script>. Čeština balíček nemá — je to
+   zdrojový jazyk přímo v tomhle souboru. */
+const PACKS = (typeof window !== "undefined" && window.I18N_PACKS) || {};
+const LANGUAGES = [{ code: "cs", label: "Čeština" }].concat(
+  Object.keys(PACKS).map(code => ({ code: code, label: PACKS[code].label || code })));
+
+/* Jazyk podle telefonu, ale jen při úplně prvním spuštění. Kdo si appku
+   nainstaloval, dokud byla jen česky, má ji dál česky i s anglickým
+   telefonem — přepnout jde v nastavení.
+   Bere se první jazyk z telefonu, který umíme; slovenština míří na češtinu,
+   ta je Slovákům bližší než angličtina. Když se netrefí nic, angličtina. */
+function detectLang() {
+  let saved = null;
+  try { saved = localStorage.getItem(LANG_KEY); } catch (e) {}
+  if (saved && LANGUAGES.some(l => l.code === saved)) return saved;
+  let hadStore = false;
+  try { hadStore = !!localStorage.getItem("mezi-nami-deti"); } catch (e) {}
+  if (hadStore) return "cs";
+  const tags = (navigator.languages && navigator.languages.length)
+    ? navigator.languages : [navigator.language || "cs"];
+  for (let i = 0; i < tags.length; i++) {
+    const base = String(tags[i]).toLowerCase().split("-")[0];
+    if (base === "sk") return "cs";
+    if (LANGUAGES.some(l => l.code === base)) return base;
+  }
+  return LANGUAGES.some(l => l.code === "en") ? "en" : "cs";
+}
+
+const LANG = detectLang();
+const PACK = PACKS[LANG] || null;
+const LANG_LABEL = (LANGUAGES.find(l => l.code === LANG) || {}).label || LANG;
+document.documentElement.lang = LANG;
+
+function setLang(code) {
+  try { localStorage.setItem(LANG_KEY, code); } catch (e) {}
+  location.reload(); // jednorázová cena za to, že se nemusí překreslovat celý DOM
+}
+
+/* mezery sjednotit, ať klíč sedí bez ohledu na zalomení v markupu */
+function i18nKey(s) { return s.replace(/ /g, " ").replace(/\s+/g, " ").trim(); }
+
+/* Obsahová sekce balíčku (decks, bonus, …) — bez ní se použije česká předloha */
+function pack(key, fallback) {
+  return (PACK && PACK[key]) ? PACK[key] : fallback;
+}
+
+/* Text skládaný v JS. Placeholdery ve tvaru {jmeno}. */
+function t(cs, vars) {
+  let out = (PACK && PACK.ui && PACK.ui[i18nKey(cs)]) || cs;
+  if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => vars[k] != null ? vars[k] : m);
+  return out;
+}
+
+const I18N_ATTRS = ["placeholder", "aria-label", "title", "alt"];
+const i18nMissing = new Set();
+
+/* Klíč bez jediného písmene (emoji, „?", číslo) se nepřekládá */
+const HAS_LETTER = /\p{L}/u;
+
+function translateNode(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const raw = node.nodeValue;
+    const key = i18nKey(raw);
+    if (!key || !HAS_LETTER.test(key)) return;
+    const hit = PACK.ui[key];
+    if (hit === undefined) { i18nMissing.add(key); return; }
+    node.nodeValue = raw.match(/^\s*/)[0] + hit + raw.match(/\s*$/)[0];
+    return;
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) return;
+  const tag = node.tagName;
+  if (tag === "SCRIPT" || tag === "STYLE" || tag === "svg" || node.namespaceURI !== "http://www.w3.org/1999/xhtml") return;
+  I18N_ATTRS.forEach(a => {
+    const v = node.getAttribute(a);
+    if (!v) return;
+    const key = i18nKey(v);
+    if (!HAS_LETTER.test(key)) return;
+    const hit = PACK.ui[key];
+    if (hit === undefined) { i18nMissing.add(key); return; }
+    node.setAttribute(a, hit);
+  });
+  Array.prototype.slice.call(node.childNodes).forEach(translateNode);
+}
+
+function applyStaticI18n() {
+  if (!PACK || !PACK.ui) return;
+  translateNode(document.body);
+  if (PACK.ui[i18nKey(document.title)]) document.title = PACK.ui[i18nKey(document.title)];
+  if (i18nMissing.size) console.warn("i18n: bez překladu", Array.from(i18nMissing));
+}
+applyStaticI18n();
+
+/* Výchozí jména — porovnávají se s uloženým stavem, tak ať jsou pojmenovaná */
+const DEFAULT_PARENT = t("Rodič");
+const DEFAULT_KID = t("Dítě");
+const DEFAULT_NAMES = ["Rodič", "Dítě", DEFAULT_PARENT, DEFAULT_KID];
+
 /* ================= Data =================
    Otázky pro dítě 6–9 let. Otázka se vylosuje a povídá se nahlas —
    nic se nepíše. Rodič odpovídá taky (o práci, o svém dětství).
@@ -1429,7 +1562,7 @@
    temp = škálovací otázka („jak velké to je?“) — vplete se mezi doptávačky jako 2. v pořadí,
    fu = doptávací otázky šité na tuhle otázku, v záměrném pořadí
    (otevřít a nechat vyprávět → prohloubit k pocitu → bezpečně uzavřít). */
-const DECKS = [
+const DECKS_CS = [
   {
     id: "skola", emoji: "🎒", bg: "var(--sky-soft)",
     title: "Škola",
@@ -2274,7 +2407,7 @@ const DECKS = [
 
 /* Bonusové karty — vydýchání mezi vážnými otázkami: mini-úkoly a hravé otázky.
    Losují se z osudí bez opakování, dokud se zásobník nevyčerpá. */
-const BONUS_CARDS = [
+const BONUS_CARDS_CS = [
   // úkoly
   "Zavrč jako medvěd. Pořádně!",
   "Udělejte na sebe navzájem nejsměšnější obličej.",
@@ -2315,7 +2448,7 @@ const BONUS_CARDS = [
 /* ================= Bleskovky =================
    Rychlé hry na pár minut stoprocentní pozornosti, filtrované podle denní
    doby. Guilt-free: nic se nepočítá, neukládá ani nehodnotí. */
-const BLESKOVKY = {
+const BLESKOVKY_CS = {
   rano: {
     title: "Ranní start", emoji: "🌅",
     items: [
@@ -2433,7 +2566,15 @@ const BLESKOVKY = {
   }
 };
 
-const DEPTH_NAMES = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"];
+const DEPTH_NAMES_CS = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"];
+const DEPTH_NAMES = pack("depth", DEPTH_NAMES_CS);
+
+/* Balíčky a bleskovky se v jiném jazyce nepřekládají po kusech — bere se
+   celá přeložená sada. Co ještě přeložené není, se v tom jazyce neukáže. */
+const DECKS = pack("decks", DECKS_CS);
+const BONUS_CARDS = pack("bonus", BONUS_CARDS_CS);
+const BLESKOVKY = pack("blesk", BLESKOVKY_CS);
+const HAS_BLESKOVKY = !PACK || !!PACK.blesk;
 
 /* ================= Nedělní inspirace =================
    Jednou týdně (neděle 18:00) přijde tichá notifikace. Střídají se dva druhy:
@@ -2443,7 +2584,7 @@ const DEPTH_NAMES = ["Na rozehřátí", "S kouskem odvahy", "Úplně upřímně"
    notifikace neumí, sekce v nastavení se tam vůbec neukáže.
    POZOR: card odkazuje na pořadí v DECKS/BONUS_CARDS — při přeskupení otázek
    zkontrolovat i tady. soft:true = notifikace cituje jemnější znění otázky. */
-const WEEKLY_NOTIFS = [
+const WEEKLY_NOTIFS_CS = [
   { title: "Tip na tento týden",
     body: "Zkuste se dětí v autě nebo u večeře jen tak zeptat: „Na co se teď nejvíc těšíš?“ Schválně, co společně vymyslíte.",
     card: { deck: "pocity", depth: 0, idx: 5 } },
@@ -2481,6 +2622,8 @@ const WEEKLY_NOTIFS = [
    notifikací se tiše přeskočí. Try/catch je nutný: kdyby plugin v buildu
    chyběl, výjimka by zabila celý skript — appka se bez notifikací obejde,
    bez tlačítek ne. */
+const WEEKLY_NOTIFS = pack("weekly", WEEKLY_NOTIFS_CS);
+
 const isNativeApp = (() => {
   try {
     const cap = window.Capacitor;
@@ -2620,7 +2763,7 @@ function openWeeklyCard(card) {
   const deckBtn = document.getElementById("weeklyDeckBtn");
   if (card.bonus != null) {
     if (!BONUS_CARDS[card.bonus]) return; // odkaz už neplatí — nechat appku doma
-    tag.textContent = "Bonusová otázka";
+    tag.textContent = t("Bonusová otázka");
     emoji.textContent = "🎁";
     emoji.style.background = "var(--honey-soft)";
     q.textContent = BONUS_CARDS[card.bonus];
@@ -2645,7 +2788,7 @@ function openWeeklyCard(card) {
     });
     fuBox.hidden = false;
     deckBtn.hidden = false;
-    deckBtn.textContent = `Otevřít téma ${deck.title}`;
+    deckBtn.textContent = t("Otevřít téma {deck}", { deck: deck.title });
     deckBtn.onclick = () => openDeck(deck.id);
   }
   go("s-weekly");
@@ -2657,8 +2800,8 @@ const SESSION_SIZE = 2;
 
 /* ================= Stav ================= */
 const state = {
-  nameParent: "Rodič",
-  nameKid: "Dítě",
+  nameParent: DEFAULT_PARENT,
+  nameKid: DEFAULT_KID,
   deck: null,
   depth: null,
   queue: [],       // otázky, které ještě čekají v balíčku
@@ -2742,7 +2885,7 @@ function saveStore() {
 /* ================= Průvodce při prvním spuštění =================
    Tři slidy (proč → co uvnitř → pravidla) → jména → domů.
    Tři sliby se skládají až před úplně prvním povídáním (startSession). */
-const ONBOARD_SLIDES = [
+const ONBOARD_SLIDES_CS = [
   { emoji: "🫶", bg: "var(--sage-soft)", title: "Pojďte si spolu upřímně popovídat",
     text: "Místo klasického „Jak bylo ve škole?“ otevřete hlubší témata a zjistěte o sobě víc." },
   { emoji: "💬", bg: "var(--sky-soft)", title: "Otázky, které sbližují rodiče a děti",
@@ -2750,6 +2893,7 @@ const ONBOARD_SLIDES = [
   { emoji: "🤝", bg: "var(--plum-soft)", title: "Jednoduchá pravidla pro oba",
     text: "Stačí jen vylosovat kartu a povídat si. Nic se neukládá, hrát můžete kdekoli — třeba v autě." }
 ];
+const ONBOARD_SLIDES = pack("onboard", ONBOARD_SLIDES_CS);
 let onboardIdx = 0;
 let onboardFromSettings = false; // z nastavení se průvodce jen prohlíží — vrací se zpět tam
 
@@ -2803,14 +2947,17 @@ function goOnboardEnd() {
 
 /* ================= Onboarding ================= */
 function saveNames() {
-  state.nameParent = document.getElementById("nameParent").value.trim() || "Rodič";
-  state.nameKid = document.getElementById("nameKid").value.trim() || "Dítě";
+  state.nameParent = document.getElementById("nameParent").value.trim() || DEFAULT_PARENT;
+  state.nameKid = document.getElementById("nameKid").value.trim() || DEFAULT_KID;
   saveStore();
   goHome();
 }
 
 /* ================= Domů ================= */
 function renderHome() {
+  // bleskovky se ukážou jen v jazyce, kde jsou přeložené
+  document.getElementById("bleskLabel").hidden = !HAS_BLESKOVKY;
+  document.getElementById("bleskHomeCard").hidden = !HAS_BLESKOVKY;
   const grid = document.getElementById("deckGrid");
   grid.innerHTML = "";
   DECKS.forEach(d => {
@@ -2849,7 +2996,8 @@ function openDeck(id) {
     o.classList.toggle("done", done);
     const badge = o.querySelector(".done-badge");
     badge.hidden = seenCount === 0;
-    badge.textContent = done ? "✓ Vše prošlé" : `${seenCount}/${pool.length} otázek`;
+    badge.textContent = done ? t("✓ Vše prošlé")
+      : t("{seen}/{total} otázek", { seen: seenCount, total: pool.length });
     // v pravém slotu vždy jen jedno — štítek nese víc než šipka, tak má přednost
     o.querySelector(".depth-arrow").hidden = seenCount > 0;
   });
@@ -2951,10 +3099,11 @@ function goDraw() {
   const count = state.queue.length + (state.jokerLeft ? 1 : 0);
   const lastIsReward = state.queue.length === 0 && state.jokerLeft;
   document.getElementById("drawTitle").textContent =
-    lastIsReward ? "Ještě jedna — za odměnu!" : count > 1 ? "Vyber si kartu" : "Poslední karta!";
+    lastIsReward ? t("Ještě jedna — za odměnu!")
+      : count > 1 ? t("Vyber si kartu") : t("Poslední karta!");
   document.getElementById("drawWho").textContent = lastIsReward
-    ? `${state.nameKid}, zvládli jste všechno. Otoč si kartu na rozloučenou.`
-    : `${state.nameKid}, klepni na jednu — uvnitř se schovává otázka.`;
+    ? t("{kid}, zvládli jste všechno. Otoč si kartu na rozloučenou.", { kid: state.nameKid })
+    : t("{kid}, klepni na jednu — uvnitř se schovává otázka.", { kid: state.nameKid });
   const fan = document.getElementById("cardFan");
   fan.innerHTML = "";
   for (let i = 0; i < count; i++) {
@@ -3036,8 +3185,8 @@ function flipCard() {
     document.getElementById("cardFront").hidden = flipped;
     document.getElementById("cardBack").hidden = !flipped;
     document.getElementById("flipHint").textContent = flipped
-      ? "Klepni zpátky na otázku"
-      : "Klepni na kartu — poradíme, jak si o tom povídat";
+      ? t("Klepni zpátky na otázku")
+      : t("Klepni na kartu — poradíme, jak si o tom povídat");
     void big.offsetWidth; // restart animace otočení
     big.classList.add("flip-in");
     flipping = false;
@@ -3054,10 +3203,10 @@ function drawBonus() {
 function jokerContent(isFinal) {
   // závěrečný žolík = vždy bonus (končíme smíchem); uprostřed občas výměna rolí
   if (!isFinal && Math.random() < .35) return {
-    tag: "Výměna rolí",
-    text: "Teď se ptáš ty! Vymysli pro rodiče libovolnou otázku — a rodič musí upřímně odpovědět."
+    tag: t("Výměna rolí"),
+    text: t("Teď se ptáš ty! Vymysli pro rodiče libovolnou otázku — a rodič musí upřímně odpovědět.")
   };
-  return { tag: "Bonusová otázka", text: drawBonus() };
+  return { tag: t("Bonusová otázka"), text: drawBonus() };
 }
 
 function pickCard(cardEl) {
@@ -3106,7 +3255,7 @@ function fillPickedCard(isJoker) {
     big.classList.add("face-down");
     // hint zůstává skrytý — odhalí ho revealPickedCard, ať pod letící kartou
     // nenaskakuje text (má vlastní animaci screenIn)
-    document.getElementById("flipHint").textContent = "Klepni na kartu a otoč si ji";
+    document.getElementById("flipHint").textContent = t("Klepni na kartu a otoč si ji");
   } else {
     // připravit rub: doptávací otázky → záchrana; u „škálovacích“ se původní
     // otázka teploměru vplete jako 2. doptávačka (prohloubit k pocitu)
@@ -3121,13 +3270,13 @@ function fillPickedCard(isJoker) {
     });
     document.getElementById("backSoft").textContent = state.current.soft;
     document.getElementById("flipHint").textContent =
-      "Klepni na kartu — poradíme, jak si o tom povídat";
+      t("Klepni na kartu — poradíme, jak si o tom povídat");
     document.getElementById("drawFinishBtn").hidden = false;
   }
   document.getElementById("drawGoBtn").textContent = isJoker
-    ? (state.queue.length === 0 ? "A je to! Dokončit povídání" : "Splněno! Losujeme dál")
+    ? (state.queue.length === 0 ? t("A je to! Dokončit povídání") : t("Splněno! Losujeme dál"))
     : (state.queue.length === 0 && !state.jokerLeft
-        ? "🖐️ Plácněte si — a hotovo!" : "🖐️ Plácněte si a losujte dál");
+        ? t("🖐️ Plácněte si — a hotovo!") : t("🖐️ Plácněte si a losujte dál"));
 }
 
 /* Odhalení velké karty. Otázka se dotočí lícem k dítěti, bonusovka zůstane
@@ -3252,11 +3401,12 @@ function finishSession() {
   state.talksDone++; // jen doopravdy dokončená povídání, bleskovky se nepočítají
   saveStore();
   document.getElementById("finishText").textContent =
-    "Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.";
+    t("Povídat si takhle upřímně je velká věc. Buďte na sebe pyšní.");
   document.getElementById("statQuestions").textContent = state.answered;
-  document.getElementById("statQuestionsLbl").textContent = "otázek";
+  document.getElementById("statQuestionsLbl").textContent =
+    t(state.answered === 1 ? "otázka" : "otázky");
   document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
-  document.getElementById("statDepthLbl").textContent = "hloubka"; // závěr sdílí i bleskovka
+  document.getElementById("statDepthLbl").textContent = t("hloubka"); // závěr sdílí i bleskovka
 
   go("s-finish");
 }
@@ -3364,7 +3514,7 @@ async function leaveFinish() {
 }
 
 function confirmLeave() {
-  if (confirm("Opustit povídání a vrátit se na témata?")) goHome();
+  if (confirm(t("Opustit povídání a vrátit se na témata?"))) goHome();
 }
 
 /* ================= Bleskovky ================= */
@@ -3415,7 +3565,7 @@ function renderBleskovka() {
   document.getElementById("bleskTitle").textContent = bleskCurrent.title;
   document.getElementById("bleskBackTitle").textContent = bleskCurrent.title;
   document.getElementById("bleskText").textContent = bleskCurrent.text;
-  document.getElementById("bleskHint").textContent = "Otoč a zjisti víc";
+  document.getElementById("bleskHint").textContent = t("Otoč a zjisti víc");
 }
 
 function drawBleskovka(first) {
@@ -3457,8 +3607,8 @@ function flipBleskovka() {
     document.getElementById("bleskFront").hidden = bleskFlipped;
     document.getElementById("bleskBack").hidden = !bleskFlipped;
     document.getElementById("bleskHint").textContent = bleskFlipped
-      ? "Klepni zpátky na název"
-      : "Otoč a zjisti víc";
+      ? t("Klepni zpátky na název")
+      : t("Otoč a zjisti víc");
     void card.offsetWidth;
     card.classList.add("flip-in");
     bleskFlipping = false;
@@ -3472,11 +3622,11 @@ function finishBleskovka() {
   setTimeout(() => {
     document.getElementById("bleskDoneBtn").disabled = false;
     document.getElementById("finishText").textContent =
-      "Pár minut naplno jen pro vás dva — a ty se počítají nejvíc.";
+      t("Pár minut naplno jen pro vás dva — a ty se počítají nejvíc.");
     document.getElementById("statQuestions").textContent = "1";
-    document.getElementById("statQuestionsLbl").textContent = "bleskovka";
+    document.getElementById("statQuestionsLbl").textContent = t("bleskovka");
     document.getElementById("statDepth").textContent = BLESKOVKY[bleskTime].title;
-    document.getElementById("statDepthLbl").textContent = "denní doba";
+    document.getElementById("statDepthLbl").textContent = t("denní doba");
 
     go("s-finish");
   }, 900);
@@ -3485,9 +3635,12 @@ function finishBleskovka() {
 /* ================= Nastavení ================= */
 function openSettings() {
   // předvyplnit jen skutečně zadaná jména, ne výchozí „Rodič“/„Dítě“
-  document.getElementById("setNameParent").value = state.nameParent === "Rodič" ? "" : state.nameParent;
-  document.getElementById("setNameKid").value = state.nameKid === "Dítě" ? "" : state.nameKid;
+  document.getElementById("setNameParent").value =
+    DEFAULT_NAMES.includes(state.nameParent) ? "" : state.nameParent;
+  document.getElementById("setNameKid").value =
+    DEFAULT_NAMES.includes(state.nameKid) ? "" : state.nameKid;
   renderNotifSwitch();
+  document.getElementById("langCurrent").textContent = LANG_LABEL;
   // na webu je přepínač neaktivní s vysvětlením — plánovaná oznámení tam nejsou
   document.getElementById("notifSwitch").disabled = !notifPlugin;
   document.getElementById("notifWebNote").hidden = !!notifPlugin;
@@ -3498,8 +3651,8 @@ function openSettings() {
 }
 
 function settingsNamesChanged() {
-  state.nameParent = document.getElementById("setNameParent").value.trim() || "Rodič";
-  state.nameKid = document.getElementById("setNameKid").value.trim() || "Dítě";
+  state.nameParent = document.getElementById("setNameParent").value.trim() || DEFAULT_PARENT;
+  state.nameKid = document.getElementById("setNameKid").value.trim() || DEFAULT_KID;
   // držet v synchronu i vstupy v úvodním průvodci
   document.getElementById("nameParent").value = document.getElementById("setNameParent").value;
   document.getElementById("nameKid").value = document.getElementById("setNameKid").value;
@@ -3508,13 +3661,13 @@ function settingsNamesChanged() {
 
 /* Reset maže jen postup (prošlé otázky) — jména mají vlastní sekci Rodina */
 function resetProgress() {
-  if (!confirm("Opravdu resetovat postup? Prošlé otázky se začnou počítat od začátku. Jména zůstanou.")) return;
+  if (!confirm(t("Opravdu resetovat postup? Prošlé otázky se začnou počítat od začátku. Jména zůstanou."))) return;
   state.seen = new Set();
   state.done = new Set();
   saveStore();
   const label = document.querySelector("#resetBtn .item-label");
-  label.textContent = "✓ Postup resetován";
-  setTimeout(() => { label.textContent = "Resetovat postup"; }, 2000);
+  label.textContent = t("✓ Postup resetován");
+  setTimeout(() => { label.textContent = t("Resetovat postup"); }, 2000);
 }
 
 /* Sliby: před prvním povídáním (mode "game", se slibovacím tlačítkem)
@@ -3553,7 +3706,7 @@ function openStoreReview() {
   window.open(android ? PLAY_REVIEW_URL : APPSTORE_REVIEW_URL, "_blank", "noopener");
 }
 
-const SETTINGS_PAGES = {
+const SETTINGS_PAGES_CS = {
   "jak-hrat": { title: "Jak hrát", html: `
     <ol>
       <li><strong>Vyberte téma a hloubku otázek.</strong> Začněte klidně „Na rozehřátí“.</li>
@@ -3683,6 +3836,39 @@ const SETTINGS_PAGES = {
     <p>Aplikace nepoužívá žádné externí knihovny. Emoji a písma jsou systémová — jsou součástí vašeho zařízení.</p>` }
 };
 
+const SETTINGS_PAGES = pack("pages", SETTINGS_PAGES_CS);
+
+/* Výběr jazyka má vlastní podstránku, ne přepínač v řádku: jazyků bude
+   přibývat a seznam se do řádku nevejde. Sdílí obrazovku s ostatními
+   podstránkami nastavení, včetně tlačítka zpět. */
+function openLanguagePage() {
+  document.getElementById("settingsPageTitle").textContent = t("Jazyk aplikace");
+  const body = document.getElementById("settingsPageBody");
+  body.innerHTML = "";
+
+  const note = document.createElement("p");
+  note.className = "lang-note";
+  note.textContent = t("Přepnutí aplikaci restartuje. Jména i postup zůstanou.");
+  body.appendChild(note);
+
+  const group = document.createElement("div");
+  group.className = "settings-group";
+  LANGUAGES.forEach(lang => {
+    const item = document.createElement("button");
+    item.className = "settings-item lang-option";
+    item.setAttribute("aria-current", lang.code === LANG ? "true" : "false");
+    // název jazyka vždy v tom jazyce — tak ho pozná i ten, kdo appku má
+    // omylem v řeči, které nerozumí
+    item.innerHTML = '<span class="item-label"></span>';
+    item.querySelector(".item-label").textContent = lang.label;
+    item.onclick = () => { if (lang.code !== LANG) setLang(lang.code); };
+    group.appendChild(item);
+  });
+  body.appendChild(group);
+
+  go("s-settings-page");
+}
+
 function openSettingsPage(key) {
   const page = SETTINGS_PAGES[key];
   document.getElementById("settingsPageTitle").textContent = page.title;
@@ -3767,8 +3953,8 @@ document.getElementById("appVersion").textContent = APP_VERSION;
 let saved = null;
 try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
 if (saved && saved.nameKid) {
-  state.nameParent = saved.nameParent || "Rodič";
-  state.nameKid = saved.nameKid || "Dítě";
+  state.nameParent = saved.nameParent || DEFAULT_PARENT;
+  state.nameKid = saved.nameKid || DEFAULT_KID;
   state.pledged = !!saved.pledged;
   state.notifOn = !!saved.notifOn;
   state.notifStart = saved.notifStart || null;

@@ -79,6 +79,65 @@
 3. V App Store Connect nová verze **1.10**, vložit „Co je nového", vybrat build
 4. Android: `android-v3` až po založení Play účtu (viz sekce Android)
 
+## Angličtina — pilot (28. 8. 2026, NEPUSHNUTÉ)
+
+Cíl: jedna appka, dva jazyky. Ne druhé Apple ID, ne druhý záznam v obchodě —
+k existující appce (6791562078) se v App Store Connect přidá English lokalizace
+a rozšíří se dostupnost. Anglický název pracovně **Between Us**.
+
+**Jak je to udělané**
+- Čeština zůstává zdrojový jazyk: texty jsou dál natvrdo v `www/index.html`.
+  Angličtina je slovník `www/i18n-en.js`, kde **klíčem je česká předloha** —
+  žádné umělé kódy typu `welcome.title`, které se časem rozejdou s textem.
+- Statické texty v markupu přeloží `applyStaticI18n()` jedním průchodem DOMem
+  při startu (všechny obrazovky jsou v DOMu od začátku). Texty skládané v JS
+  jdou přes `t("česky", { placeholder })`.
+- Balíčky se **registrují samy**: `window.I18N_PACKS.en = { label: "English", … }`.
+  Další jazyk = nový `www/i18n-xx.js` + jeden `<script>` v index.html; seznam
+  v nastavení i detekce se doplní samy, do UI se nesahá. `label` je název
+  jazyka vlastním jazykem — tak se ukáže v seznamu.
+- Obsah (`decks`, `bonus`, `blesk`, `weekly`, `onboard`, `pages`, `depth`) se
+  nebere po kusech — `pack()` sáhne pro **celou přeloženou sadu**, nebo použije
+  českou. Co v balíčku chybí, se v tom jazyce vůbec nenabídne.
+- `id` balíčků a **pořadí bonusových karet musí zůstat stejné** jako v češtině —
+  drží na nich uložený postup (`seen`) a odkazy z nedělních oznámení.
+- Kontrola pokrytí: `python3 scripts/i18n-extract.py` vypíše texty z markupu
+  bez protějšku (teď 0 ze 121). Spouštět po každé změně textů.
+
+**Volba jazyka**
+- Uložená volba (`mezi-nami-lang`) má vždy přednost.
+- Kdo už appku má nainstalovanou (v localStorage existuje `mezi-nami-deti`),
+  zůstává **česky** i s anglickým telefonem — nainstaloval si českou appku.
+- Jinak se jde `navigator.languages` odshora a bere se **první jazyk, který
+  umíme**; `sk` míří na češtinu (Slovákům bližší než angličtina). Netrefí-li
+  se nic, angličtina. Ověřeno: en-US→en, sk-SK→cs, de-DE→en, fr-FR,cs-CZ→cs,
+  en-GB,cs-CZ→en, ja-JP→en.
+- Ručně: Nastavení → Jazyk aplikace → **vlastní podstránka** se seznamem
+  (`openLanguagePage()`), aktivní řádek má zaškrtnutí. Přepnutí uloží volbu
+  a appku reloadne; jména i postup zůstanou.
+
+**Co je přeložené (ověřeno v prohlížeči)**
+- celé UI, průvodce, tři sliby, závěr, všech 11 stránek nastavení
+- balíček **School** (všechny 3 hloubky × 6 otázek i s doptávačkami)
+- všech 33 bonusových karet, všech 12 nedělních oznámení (odkazy ověřené)
+- stránka „When it's serious" má **americké linky** (988, 741741, Childhelp
+  1-800-422-4453, National Parent Helpline, 911) — před vydáním ověřit,
+  a pro UK/AU/CA by chtěly vlastní čísla
+
+**Co zbývá**
+1. Projít tón textů (to je smysl pilotu) a doladit
+2. Zbylých 5 balíčků + bleskovky do `i18n-en.js` (v angličtině se zatím
+   vůbec nenabízejí — `HAS_BLESKOVKY`, `decks` má jen jeden)
+3. Rozhodnout anglický název appky (teď „Between Us")
+4. `CFBundleLocalizations` = cs, en v `ios/App/App/Info.plist`
+5. Anglické screenshoty + English lokalizace v App Store Connect
+   (vlastní název, popis, klíčová slova, sada screenshotů) + rozšířit dostupnost
+6. Anglická `support.html` / `privacy.html` na Pages jako support URL pro EN
+7. Zvednout verzi na 4 místech (viz výš) a otagovat `ios-vN`
+
+**Pozor:** `www/sw.js` už je na `v54` a má `i18n-en.js` v ASSETS.
+Verze appky zůstává 1.10 — zvedne se až při vydání.
+
 ## Jak se pracuje s projektem
 
 - Appka je **jeden soubor** `www/index.html` (bez závislostí), stránky `podpora.html`, `soukromi.html`

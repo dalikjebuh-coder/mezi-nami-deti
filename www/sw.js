@@ -1,10 +1,11 @@
 /* Mezi námi — děti: service worker pro offline běh.
    Network-first s cache fallbackem — online se vždy zkusí čerstvá verze,
    offline se hraje z cache. Při změně obsahu zvednout verzi cache. */
-const CACHE = "mezi-nami-deti-v52";
+const CACHE = "mezi-nami-deti-v54";
 const ASSETS = [
   "./",
   "./index.html",
+  "./i18n-en.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
