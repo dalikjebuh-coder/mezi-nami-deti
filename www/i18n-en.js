@@ -45,7 +45,7 @@ ui: {
   "Domluvme se": "Let's agree on",
   "na třech věcech": "three things",
   "Přečtěte si je společně nahlas a plácněte si.":
-    "Read them out loud together, then high-five on it.",
+    "Read them out loud together, then seal it with a high-five.",
   "Za pravdu se nezlobíme": "Nobody gets in trouble for the truth",
   "Každá odpověď je v pořádku.": "Every answer is okay.",
   "Necháme domluvit": "We let each other finish",
@@ -56,7 +56,7 @@ ui: {
   "Slibujeme oba": "We both promise",
 
   /* --- Domů --- */
-  "✋ Vítejte zpátky. Sliby platí dál.": "✋ Welcome back. The promises still hold.",
+  "✋ Vítejte zpátky. Sliby platí dál.": "✋ Welcome back. The promises still stand.",
   "O čem si dnes budete povídat?": "What do you want to talk about today?",
   "Když je málo času": "When time is short",
   "Bleskovky": "Quick Ones",
@@ -66,7 +66,7 @@ ui: {
   /* --- Bleskovky --- */
   "Zkuste si zahrát rychlé hry a zábavné výzvy podle denní doby nebo třeba při čekání na autobus.":
     "Quick games and playful challenges for any time of day — or while you wait for the bus.",
-  "Kdy si těch pár minut dáte?": "When are those few minutes?",
+  "Kdy si těch pár minut dáte?": "When do you have a few minutes?",
   "Ranní start": "Morning start",
   "Naladit se na den a ulehčit ranní loučení": "Ease into the day and make goodbyes lighter",
   "Odpolední pohoda": "Afternoon reset",
@@ -82,7 +82,7 @@ ui: {
   "bleskovka": "quick one",
   "denní doba": "time of day",
   "Pár minut naplno jen pro vás dva — a ty se počítají nejvíc.":
-    "A few minutes with your whole attention — those are the ones that count.",
+    "A few minutes of your full attention — those are the moments that count.",
 
   /* --- Výběr hloubky --- */
   "Jaké otázky to budou?": "How deep do you want to go?",
@@ -105,10 +105,10 @@ ui: {
   "{kid}, klepni na jednu — uvnitř se schovává otázka.":
     "{kid}, tap one — there's a question hiding inside.",
   "{kid}, zvládli jste všechno. Otoč si kartu na rozloučenou.":
-    "{kid}, you got through them all. Flip one last card.",
+    "{kid}, you answered them all. Flip one last card.",
   "Bonusová karta": "Bonus card",
   "Bonusová otázka": "Bonus question",
-  "Výměna rolí": "Switch it around",
+  "Výměna rolí": "Switch roles",
   "Teď se ptáš ty! Vymysli pro rodiče libovolnou otázku — a rodič musí upřímně odpovědět.":
     "Your turn to ask! Come up with any question for your parent — and they have to answer honestly.",
   "Pro hlubší rozhovor": "To go deeper",
@@ -172,7 +172,7 @@ ui: {
   "Ozvat se na LinkedInu": "Reach me on LinkedIn",
   "Ohodnotit aplikaci": "Rate the app",
   "Za appkou stojí jeden táta, ne firma. Napište mi cokoli — co vám v ní chybí, co vám doma zafungovalo, i co je špatně.":
-    "One dad built this, not a company. Write me anything — what's missing, what worked at your house, what's broken.",
+    "This app was built by one dad, not a company. Send me anything — what's missing, what worked at your house, or what's broken.",
   "Soukromí": "Privacy",
   "Jak chráníme vaše data": "How your data is protected",
   "Zásady ochrany soukromí": "Privacy policy",
@@ -211,7 +211,7 @@ onboard: [
   { emoji: "💬", bg: "var(--sky-soft)", title: "Questions that bring you closer",
     text: "Questions about family, feelings and worries, written for kids 6 to 9 — plus playful challenges in between." },
   { emoji: "🤝", bg: "var(--plum-soft)", title: "Simple rules for both of you",
-    text: "Draw a card and talk. Nothing is saved, and you can play anywhere — even in the car." }
+    text: "Draw a card and talk. Your answers aren't recorded, and you can play anywhere — even in the car." }
 ],
 
 /* Balíčky otázek. `id` musí zůstat české ("skola", "kamaradi", …) — na nich
@@ -369,7 +369,7 @@ decks: [
           soft: "Who's the most fun to be around? What do you like doing together?",
           fu: [
             "How did you two become friends? Do you remember?",
-            "What are you two the same about — and totally different about?",
+            "How are you two alike — and how are you totally different?",
             "Do you want to have them over sometime?"
           ] },
         { q: "What's your favorite thing to do with your friends?",
@@ -458,7 +458,7 @@ decks: [
           fu: [
             "Thank you for telling me — that took courage. What's going on?",
             "How long has it been going on? Does any adult know?",
-            "We'll figure out what's next together. I won't do anything without you, I promise. Okay?"
+            "We'll figure out what to do next together. I'll explain every step, and you won't have to face it alone."
           ] },
         { q: "Have you ever done something to a friend that you felt bad about after?",
           soft: "Can you remember a time you hurt someone? What happened?",
@@ -564,7 +564,7 @@ decks: [
             "What if we gave that fear a name? Anything you can call by name gets smaller."
           ] },
         { q: "What shows up in your bad dreams?",
-          soft: "Can you remember an ugly dream? What was in it?",
+          soft: "Can you remember a scary dream? What was in it?",
           fu: [
             "Tell me one you remember. How did it end?",
             "What do you do when you wake up from one?",
@@ -633,7 +633,7 @@ decks: [
           fu: [
             "Want to try saying even a piece of it? Whisper it if you want.",
             "How often does a thought like that come around? At night, during the day?",
-            "Thoughts lose their power once they're spoken. Whenever you want, we'll say it together."
+            "Talking about scary thoughts can make them feel less powerful. Whenever you want, we can talk about them together."
           ] }
       ]
     ]
@@ -720,7 +720,7 @@ decks: [
         { q: "Which rule in this house feels unfair to you?",
           soft: "If you could cancel one of our rules, which one would it be?",
           fu: [
-            "What exactly are you objecting to? Argue it like a lawyer.",
+            "What feels unfair about it? Make your case like a lawyer.",
             "Want to hear why we have that rule? Maybe it has a weak spot.",
             "Pitch me a better version. If it's good, we'll try it for a week."
           ] },
@@ -937,7 +937,7 @@ decks: [
           fu: [
             "When were you last that happy? What happened?",
             "Where do you feel happy in your body — stomach, legs, everywhere?",
-            "Now do me when I'm happy. What do I look like?"
+            "Now imitate me when I'm happy. What do I look like?"
           ] },
         { q: "What cheers you up every single time?",
           soft: "If there were a medicine for a bad mood, what would be in it?",
@@ -1077,7 +1077,7 @@ bonus: [
   "Parent acts out what they look like in the morning before they're really awake.",
   "Parent sings “Row, Row, Row Your Boat” like an opera singer.",
   "Parent acts out an animal — you guess which one.",
-  "Give your parent five words and they have to say them all backwards.",
+  "Give your parent five words. They have to spell each one backwards.",
   // hravé otázky
   "If you could turn into any animal, which one would it be and why?",
   "What would you do if you were invisible for one day?",
@@ -1187,7 +1187,7 @@ blesk: {
       { emoji: "📔", title: "The diary in your head",
         text: "Close your eyes for a moment. Each of you play today back in your head like a movie and find the one moment that was the best — the one you want to save in your “memory box”. Then tell each other." },
       { emoji: "📻", title: "Whisper radio",
-        text: "Turn off the light and talk only in whispers. Imagine you're the hosts of a late-night radio show for tired elves. Whisper each other the three most ridiculous things you can think of — or what you'd like to dream about tonight." },
+        text: "Turn off the light and talk only in whispers. Imagine you're the hosts of a late-night radio show for tired elves. Whisper three ridiculous things to each other — or talk about what you'd like to dream about tonight." },
       { emoji: "📖", title: "A story from three words",
         text: "The kid picks three completely random words (say: sock, rocket, dog). The parent's job is to invent a very short, calm bedtime story with all three in it. The story has to end with the hero going to sleep." },
       { emoji: "🛸", title: "The flying vacuum",
@@ -1195,7 +1195,7 @@ blesk: {
       { emoji: "✍️", title: "The mystery touch",
         text: "Under the covers, take your kid's hand and “write” a simple shape in their palm with your finger — a circle, a heart, an X — or a letter. Can they guess it with their eyes closed?" },
       { emoji: "💗", title: "Kind writing",
-        text: "Write or draw one word on your kid's back with your finger — one that warms them up. “LOVED”, “BRAVE”, or just a heart. Let them guess what it was." },
+        text: "Write or draw one word on your kid's back with your finger — one that makes them feel warm inside. “LOVED”, “BRAVE”, or just a heart. Let them guess what it was." },
       { emoji: "🌀", title: "The thought vacuum",
         text: "At bedtime a head is full of thoughts. Pick up the imaginary thought vacuum — hold your hand near your kid's ear and go “bzzzz” — and suck out all the worries and to-dos of the day, so sleep comes easy." },
       { emoji: "🤫", title: "What the blanket hears",
@@ -1232,7 +1232,7 @@ weekly: [
   { title: "A small ritual for this week",
     body: "Next time you're sitting somewhere quiet together, take 3 minutes of silence and count how many different sounds you can hear. 🤫 No rush." },
   { title: "One from your back pocket",
-    body: "“If you could turn into any animal, which one would it be and why?” 🦁 See what they come up with — and what you do.",
+    body: "“If you could turn into any animal, which one would it be and why?” 🦁 See what they come up with — and what you'd choose.",
     card: { bonus: 15 } },
   { title: "An easy start to the week",
     body: "The world won't end if you're not a perfectly educational parent every day. Sometimes the best connection is a long hug at bedtime. ✨" },
@@ -1251,19 +1251,19 @@ weekly: [
     body: "“What would you do if you were invisible for one day?” 🔍 Enjoy making it up together.",
     card: { bonus: 16 } },
   { title: "Whatever this week brings",
-    body: "To your kid, you are the whole world. Small rituals and moments of honest interest show up in your relationship sooner than you'd think. Have a good week. 🤍" }
+    body: "To your kid, you are the whole world. Small rituals and moments of genuine interest make a bigger difference than you'd think. Have a good week. 🤍" }
 ],
 
 pages: {
   "jak-hrat": { title: "How to play", html: `
     <ol>
-      <li><strong>Pick a topic and how deep you want to go.</strong> Starting with “Warm-up” is a fine idea.</li>
+      <li><strong>Pick a topic and how deep you want to go.</strong> “Warm-up” is a good place to start.</li>
       <li><strong>Your kid draws a card.</strong> Each talk has two questions and one bonus card with a challenge or a playful question.</li>
       <li><strong>You both answer.</strong> Your kid about school and friends, you about work and your own childhood. It's not an interrogation — it's a conversation.</li>
       <li><strong>Flip the card</strong> (tap it or swipe) — the back has ways to keep the conversation going, plus a gentler version of the question.</li>
       <li><strong>High-five after every question.</strong> And when you're done, be proud of each other.</li>
     </ol>
-    <p>The app remembers which questions you've been through, so coming back to the same topic brings new ones. Every topic and depth has six.</p>` },
+    <p>The app remembers which questions you've been through, so coming back to the same topic brings new ones. Each topic has six questions at every depth.</p>` },
 
   "tipy": { title: "Conversation tips", html: `
     <ul>
@@ -1271,18 +1271,18 @@ pages: {
       <li><strong>Don't rush.</strong> Silence is fine — kids need time to put an answer together.</li>
       <li><strong>Don't correct or grade the answer.</strong> “Nobody gets in trouble for the truth” holds even when the answer catches you off guard.</li>
       <li><strong>Use the follow-ups on the back</strong> — but only while your kid is still into it. Three questions is a ceiling, not a to-do list.</li>
-      <li><strong>Short and often</strong> beats long and once. One talk is a few minutes.</li>
+      <li><strong>A few short talks</strong> beat one long talk. Each one takes only a few minutes.</li>
       <li><strong>Play anywhere:</strong> in the car, at dinner, at bedtime. Best where you don't have to look each other in the eye — side by side is easier.</li>
       <li><strong>“Stop” means stop.</strong> If your kid doesn't want to keep going, stop without negotiating. It'll go better next time.</li>
     </ul>` },
 
   "faq": { title: "Common questions", html: `
     <p class="faq-q">What age is this for?</p>
-    <p>The questions are written for kids roughly 6 to 9. The edges are soft though — try it and see.</p>
+    <p>The questions are written for kids roughly 6 to 9. The age range is flexible, though — try it and see.</p>
     <p class="faq-q">Do we both have to answer?</p>
     <p>Yes, that's the heart of it. Every question is for the kid and the parent.</p>
     <p class="faq-q">What if my kid doesn't want to answer?</p>
-    <p>Don't push. Try the gentler version on the back of the card, answer first yourself — or let the card go and tap “That's enough for today”.</p>
+    <p>Don't push. Try the gentler version on the back of the card, answer it yourself first — or let the card go and tap “That's enough for today”.</p>
     <p class="faq-q">Are our answers saved anywhere?</p>
     <p>No. You talk out loud; nothing is written down or sent anywhere. All that stays on the phone is the names and which questions you've been through.</p>
     <p class="faq-q">Can we play the same topic more than once?</p>
@@ -1315,7 +1315,7 @@ pages: {
     </div>
     <h3>Before you write</h3>
     <ul>
-      <li><strong>Lost progress</strong> lives only on your phone — deleting the app clears it, and there's no backup I can restore.</li>
+      <li><strong>Progress</strong> is stored only on your phone — deleting the app clears it, and there's no backup I can restore.</li>
       <li><strong>Notifications</strong> can be turned off under Settings → Notifications, and completely in your phone's Settings → The Two of Us.</li>
       <li><strong>Serious worries about your child</strong> belong with professionals — the numbers are under Help.</li>
     </ul>` },
@@ -1342,7 +1342,7 @@ pages: {
     <ul>
       <li><strong>Stay calm and thank them for telling you.</strong> Saying it took courage.</li>
       <li><strong>Don't interrogate.</strong> Let your kid say only as much as they want to.</li>
-      <li><strong>Don't promise “I won't tell anyone”.</strong> Promise you won't do anything without them.</li>
+      <li><strong>Don't promise “I won't tell anyone.”</strong> Tell them: “I'll explain what we need to do next, and we'll take each step together.”</li>
     </ul>
     <h3>You don't have to handle it alone</h3>
     <div class="contact">
