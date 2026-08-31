@@ -52,8 +52,20 @@
   cílovka **18+** (ne Families — stejná logika jako „ne Kids Category“ na iOS),
   účet a proces vydání. Grafika v `app-store/google-play/graphics/` (gitignored):
   icon 512, feature graphic 1024×500, 7 screenshotů 1620×2880 (9:16, z iOS sady)
-- **Pozor:** osobní Play účet založený po 11/2023 musí před produkcí projít
-  closed testingem — 12 testerů po 14 dní (+ 25 USD registrace)
+- **Closed testing — rešerše 31. 8. 2026 (ověřeno proti oficiálním pravidlům):**
+  12 testerů s NEPŘERUŠENÝM opt-inem 14 dní, počítá se per tester a per app;
+  žádná oficiální výjimka/odvolání neexistuje. Opt-in nestačí — Google při
+  žádosti o produkci hodnotí i engagement („insufficient tester engagement" je
+  oficiální důvod zamítnutí, ~30–40 % prvních žádostí padá). Playbook:
+  15+ testerů (rezerva), instalace přes opt-in odkaz na skutečný telefon,
+  otevřít appku několikrát týdně po celých 14 dní, nechat nainstalovanou;
+  během okna vydat 1–2 drobné aktualizace do closed tracku a sbírat feedback;
+  odpovědi do dotazníku konkrétní (čísla, zmíněné bugy, i negativní feedback).
+  Firemní účet je z povinnosti vyňat, ale pro nás nedává smysl (D-U-N-S až
+  30 dní, verifikace týdny, veřejná adresa živnosti = domů). Výměnné testerské
+  komunity (testerscommunity.com apod.) nejsou zakázané, ale jsou doložená
+  zamítnutí pro nízký engagement i jeden ban po placené službě — vlastní lidé
+  jsou nejbezpečnější, komunitou max doplnit 2–3 chybějící.
 
 ## Hodnocení v obchodě (1.10, přidáno 27. 8. 2026)
 
