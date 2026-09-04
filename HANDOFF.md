@@ -2,7 +2,7 @@
 
 ## Stav
 
-- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.10**
+- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.11** (živá od 4. 9. 2026)
 - **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,
   https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
 - **iOS 1.10:** hodnocení v App Storu (viz níže) — v repu hotové, **ještě neodeslané**
@@ -15,11 +15,13 @@
   Čeká se jen na Google Play Developer účet a ruční nahrání.
 - Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté
 
-## Verze 1.11 — interakce, animace, večerní režim (3. 9. 2026, NECOMMITOVÁNO)
+## Verze 1.11 — interakce, animace, večerní režim (4. 9. 2026, WEB ŽIVĚ)
 
 Zapracovaný UI audit z 3. 9. (návrhy 1–14 kromě dvouprstého plácnutí — rodič
-s dítětem se dotýkat displeje zároveň nemusí). Vše ověřené v prohlížeči
-(375×812 i 375×667, světlý i tmavý režim), **na telefonu zatím ne**.
+s dítětem se dotýkat displeje zároveň nemusí). Commit `51bdfec`, **pushnuto
+4. 9. 2026 — web je živý na 1.11**. Do obchodů zatím nic nešlo: iOS čeká na tag
+`ios-v18`, Android na `android-v3`. Vše ověřené v prohlížeči (375×812 i 375×667,
+světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatím ne**.
 
 **Co se změnilo v `www/index.html`**
 - **Přechody obrazovek mají směr** — `go(id, dir)` odvozuje směr z `SCREEN_DEPTH`
@@ -72,8 +74,9 @@ s dítětem se dotýkat displeje zároveň nemusí). Vše ověřené v prohlíž
   texty bez „hra“ na úvodu, ve 3. slidu průvodce a v nastavení („Povídání“).
 - **i18n**: 17 nových EN klíčů + změněné předlohy (úvod, „Povídání“), stale klíče
   confirm() odstraněné; `scripts/i18n-extract.py` → 0 chybějících.
-- `sw.js` CACHE **v57**. Verze v kódu zatím 1.10 — při vydání zvednout na **1.11**
-  na 4 místech.
+- `sw.js` CACHE **v57**. Verze zvednutá na **1.11** na všech 4 místech
+  (`APP_VERSION`, `package.json`, `versionName`, `MARKETING_VERSION`) — iOS
+  a Android tak mají verzi připravenou na příští tag.
 
 **Nové pluginy** (`package.json`): `@capacitor/haptics` 8.0.2, `@capacitor/status-bar`
 8.0.3. `npx cap sync android` lokálně prošel (4 pluginy) a aktualizoval
