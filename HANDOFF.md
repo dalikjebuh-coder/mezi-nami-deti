@@ -7,7 +7,12 @@
   https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
 - **iOS 1.10:** v TestFlightu — `ios-v18` = build 20, `ios-v19` = build 21 (s angličtinou),
   oba běhy prošly. Jestli se 1.10 poslala do recenze v App Store Connect, z repa nepoznám.
-- **iOS 1.11:** `ios-v20` = build 22, otagováno 4. 9. 2026 — jde do TestFlightu na test
+- **iOS 1.11: V TESTFLIGHTU** — `ios-v20` = build **22**, nahráno 4. 9. 2026,
+  všech 12 kroků CI prošlo (běh
+  https://github.com/dalikjebuh-coder/mezi-nami-deti/actions/runs/33846882092,
+  artefakt `App-ipa` vyprší 3. 12. 2026). Apple build ještě zpracovává, pak se
+  objeví v TestFlightu. Texty „Co je nového" a „What to Test" jsou
+  v `app-store/metadata-cs.md`. Do recenze **neposláno** — je to test.
 - **Angličtina:** kompletní, živá na webu; do App Storu ještě nešla (viz níže)
 - **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
   otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
