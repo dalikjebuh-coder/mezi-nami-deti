@@ -15,6 +15,79 @@
   Čeká se jen na Google Play Developer účet a ruční nahrání.
 - Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté
 
+## Verze 1.11 — interakce, animace, večerní režim (3. 9. 2026, NECOMMITOVÁNO)
+
+Zapracovaný UI audit z 3. 9. (návrhy 1–14 kromě dvouprstého plácnutí — rodič
+s dítětem se dotýkat displeje zároveň nemusí). Vše ověřené v prohlížeči
+(375×812 i 375×667, světlý i tmavý režim), **na telefonu zatím ne**.
+
+**Co se změnilo v `www/index.html`**
+- **Přechody obrazovek mají směr** — `go(id, dir)` odvozuje směr z `SCREEN_DEPTH`
+  (dopředu zprava, zpět zleva), stará obrazovka krátce vybledne (`.leaving`,
+  absolutně přes rám). Nástup po částech (`rise` stagger, `dealIn` témat) jen při
+  prvním vstupu (`.first` přes `visitedScreens`). Průvodce z nastavení předává směr sám.
+- **Haptika** — `haptic(kind)` přes `@capacitor/haptics` (pick MEDIUM, flip LIGHT,
+  hi5 2× HEAVY, success notifikace); na webu Android `navigator.vibrate`, iOS web nic.
+- **Plácnutí** — konfety vystřelí z tlačítka a snášejí se jako papír: `burstFrom()`
+  simuluje každý papírek dopředu po 1/60 s (gravitace 950 px/s², strop 2,9 s, odpor vzduchu
+  podle natočení a rychlosti — rychlý letí hranou napřed, pomalý brzdí naplocho,
+  plachtění do stran svázané s přetáčením) a dráhu přehraje Web Animations API
+  (~90 keyframů/papírek, za letu na hlavním vlákně nic neběží). 36 papírků ve
+  směsi obdélníčky/čtverečky/proužky, každý má dvě strany (sytá + světlá,
+  `backface-visibility`), `#confettiLayer` má `perspective`. Tlačítko odskočí
+  (`.hi5`). Původní CSS `confetti()` je pryč. Tlačítko se během oslavy neblokuje
+  přes `disabled` (šedlo), ale `pointer-events`. Reduced motion: jen odskok.
+- **Nakouknutí karty** — první karta v sezení (a první bleskovka v kategorii) po
+  1,6 s klidu jednou pootočí (`schedulePeek`, `.peek`); ruší se klepnutím/odchodem.
+- **Sheety místo `confirm()`** — `askSheet({title,text,ok,cancel,danger})` vrací
+  Promise; společný `showSheet/hideSheet/dismissSheet` pro nabídku inspirace i
+  potvrzení (`#confirmSheet`). Tažení dolů: podklad průhledne úměrně, švih zavře,
+  jinak pružný návrat. Opuštění povídání i reset postupu jdou přes sheet.
+- **Večerní režim** — `html[data-theme="dark"]` s teplou tmavou paletou, průhledné
+  odvozeniny přes `--ink-rgb/--plum-rgb/--honey-rgb/--card-rgb`, `--cream` pro text
+  na plum rubech, `--edge-face` pro boky karty. Volba v Nastavení → Vzhled (podle
+  telefonu / světlý / tmavý, `mezi-nami-theme`), skript v `<head>` nastaví atribut
+  před prvním vykreslením. V režimu podle telefonu se appka ztmaví sama u
+  **večerních Bleskovek** (`setEveningDim`), zpět při odchodu. Stavová lišta přes
+  `@capacitor/status-bar` (`setStyle DARK/LIGHT`), `theme-color` meta se přepíná.
+- **Domů: chip „Naposledy“** — `state.lastDeck/lastDepth` (localStorage), klepnutí
+  = `continueLast()` rovnou do vějíře.
+- **Závěr** — prostřední dlaždice ukazuje `talksDone` („povídání celkem“) místo
+  věčných „2 odvážlivců“ (u bleskovky zůstávají).
+- **Výběr hloubky** — vybraná volba se nadzvedne, ostatní zeslábnou (`.dimmed`),
+  pauza 260 ms; `clearDepthPick()` při návratu ze slibů.
+- **iPhone SE** — karta `min-height: clamp(360px, 100dvh − 300px, 470px)` +
+  `@media (max-height: 700px)` těsnější rub; na 667 px nic nepřetéká (ověřeno).
+- **Rub karty** — doptávačky 16,5 px, jemnější znění 15,5 px, bleskovky 17 px.
+- **Boky karty (`.card-edge`)** — končí před zaoblením rohů (`--edge-inset`,
+  u velké karty = `--radius-lg`), dřív při otáčení přečnívaly jako rovný proužek.
+  V klidu se nekreslí (`opacity: 0`) — rovina na hranu se vykreslovala jako
+  vlasová linka po stranách; vidět jsou jen během `flip-out/flip-in/joker-in/peek`,
+  a `flip-in`/`joker-in` se po dotočení sundávají přes `animationend`.
+- **Průvodce** — přejetí prstem mezi slidy.
+- Drobnosti: `aria-label` „Karta n z N“ na kartách vějíře; gyroskopická smyčka běží
+  jen během sezení (`ensureGyroLoop`, po konci se karta srovná); dotaz na gyroskop
+  se volá přímo v `pickDepth`/`continueLast` (gesto, ne po timeoutu); karty témat
+  těsnější (padding/gap/proužky), ať „Strachy a starosti“ drží na jednom řádku;
+  texty bez „hra“ na úvodu, ve 3. slidu průvodce a v nastavení („Povídání“).
+- **i18n**: 17 nových EN klíčů + změněné předlohy (úvod, „Povídání“), stale klíče
+  confirm() odstraněné; `scripts/i18n-extract.py` → 0 chybějících.
+- `sw.js` CACHE **v57**. Verze v kódu zatím 1.10 — při vydání zvednout na **1.11**
+  na 4 místech.
+
+**Nové pluginy** (`package.json`): `@capacitor/haptics` 8.0.2, `@capacitor/status-bar`
+8.0.3. `npx cap sync android` lokálně prošel (4 pluginy) a aktualizoval
+`android/capacitor.settings.gradle` + `android/app/capacitor.build.gradle`. iOS
+Package.swift si přepíše CI při `cap sync ios` (jako u in-app-review).
+
+**Co ověřit na telefonu**
+1. Haptika na všech čtyřech místech (vějíř, otočení, plácnutí, závěr) — v iOS
+   simulátoru nejde.
+2. Stavová lišta v tmavém režimu (světlé písmo) a při přepnutí zpět.
+3. Dotaz na pohyb/gyroskop se ukáže hned při klepnutí na hloubku (ne až po pauze).
+4. Večerní ztmavení u Bleskovek jde plynule (0,45 s) a po návratu na témata se vrátí.
+5. Tažení sheetu prstem — práh 90 px nebo švih.
+
 ## Android (přidáno 15. 8. 2026)
 
 - `@capacitor/android` 8.5 + `android/` platforma; web assety se kopírují přes

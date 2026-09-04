@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mezi námi — rodiče a děti</title>
-<meta name="theme-color" content="#FAF4EC">
+<meta name="theme-color" content="#FAF4EC" id="themeColor">
+<!-- Téma se nastaví ještě před prvním vykreslením, ať tmavý režim neblikne světle.
+     Stejná logika je i v applyTheme() dole; tady jen minimum bez závislostí. -->
+<script>
+(function () {
+  try {
+    var mode = localStorage.getItem("mezi-nami-theme") || "auto";
+    var dark = mode === "dark" || (mode === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -40,6 +51,17 @@
     --honey: #C08A2D;
     --honey-soft: #F6EBD3;
     --sky-soft: #E2EBF0;
+    /* krémová na tmavém rubu karty — stejná v obou režimech, je to barva papíru */
+    --cream: #F6EBD3;
+    /* RGB složky pro průhledné odvozeniny (linky, stopy, rámečky) — v tmavém
+       režimu se otočí, jinak by linky z inkoustu na tmavém papíru zmizely */
+    --ink-rgb: 51,38,31;
+    --plum-rgb: 110,59,82;
+    --honey-rgb: 192,138,45;
+    --card-rgb: 255,255,255;
+    --backdrop: rgba(51,38,31,.4);
+    /* boky velké karty proti světlému líci */
+    --edge-face: linear-gradient(90deg, #D9C9B7 0%, #EFE5D9 45%, #D2C1AE 100%);
     --radius-lg: 24px;
     --radius-md: 16px;
     --radius-sm: 10px;
@@ -47,6 +69,46 @@
     --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --shadow-card: 0 2px 6px rgba(51,38,31,.06), 0 12px 32px rgba(51,38,31,.08);
     --shadow-float: 0 4px 12px rgba(51,38,31,.10), 0 24px 56px rgba(51,38,31,.14);
+    color-scheme: light;
+  }
+
+  /* ===== Večerní režim =====
+     Teplý tmavý papír, ne černá obrazovka. Zapíná se podle telefonu, ručně
+     v nastavení, a sám u večerních Bleskovek (ty říkají „zhasněte“). */
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #1F1815;
+    --paper-soft: #2A211C;
+    --card: #322822;
+    --ink: #F1E7DC;
+    --ink-soft: #C7B8AA;
+    --ink-faint: #8E8074;
+    --plum: #8A4E69;
+    --plum-deep: #6E3B52;
+    --plum-soft: #3B2A35;
+    --rose: #D98A75;
+    --rose-soft: #45302A;
+    --sage: #98A58A;
+    --sage-soft: #2E3529;
+    --honey: #D6A44E;
+    --honey-soft: #3D3222;
+    --sky-soft: #2A343B;
+    --ink-rgb: 241,231,220;
+    --plum-rgb: 138,78,105;
+    --honey-rgb: 214,164,78;
+    --card-rgb: 50,40,34;
+    --backdrop: rgba(0,0,0,.55);
+    --edge-face: linear-gradient(90deg, #4A3D33 0%, #5C4D42 45%, #46392F 100%);
+    --shadow-card: 0 2px 6px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.30);
+    --shadow-float: 0 4px 12px rgba(0,0,0,.30), 0 24px 56px rgba(0,0,0,.40);
+  }
+  /* multiply by na tmavém podkladu kruhy loga utopil — screen zachová průnik */
+  html[data-theme="dark"] .hero-mark .c1, html[data-theme="dark"] .hero-mark .c2,
+  html[data-theme="dark"] .brand-mark .b1, html[data-theme="dark"] .brand-mark .b2,
+  html[data-theme="dark"] .notif-preview .app-icon i { mix-blend-mode: screen; }
+  /* přepnutí režimu za běhu (večerní Bleskovky) — barvy plynule, ne skokem */
+  html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+    transition: background-color .45s ease, color .45s ease, border-color .45s ease, box-shadow .45s ease !important;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -81,6 +143,7 @@
   }
 
   /* ===== Telefonní rámeček ===== */
+  html[data-theme="dark"] body { background: linear-gradient(160deg, #2B211C 0%, #211915 60%, #1A130F 100%); }
   .phone {
     width: 100%;
     max-width: 400px;
@@ -118,9 +181,25 @@
     overflow-x: hidden; /* obsah přesahující do šířky (vějíř karet apod.) nesmí obrazovku roztáhnout */
     overscroll-behavior-y: contain; /* žádné gumování celé stránky na iOS */
     padding: 28px 26px 32px;
-    animation: fadeIn .25s ease both;
   }
-  .screen.active { display: flex; }
+  /* Nová obrazovka přijíždí ze strany, kam se jde: dopředu zprava, zpět zleva.
+     Stará zatím vybledne a o kousek ustoupí opačným směrem — leží absolutně
+     přes rám, aby se obě na chvíli vešly vedle sebe, a na klepnutí nereaguje. */
+  .screen.active {
+    display: flex; position: relative; z-index: 1;
+    animation: enterFwd .32s cubic-bezier(.22,.85,.3,1) both;
+  }
+  .screen.active.from-back { animation-name: enterBack; }
+  .screen.leaving {
+    display: flex; position: absolute; inset: 0; z-index: 0;
+    pointer-events: none;
+    animation: leaveFwd .2s ease both;
+  }
+  .screen.leaving.leave-back { animation-name: leaveBack; }
+  @keyframes enterFwd  { from { opacity: 0; transform: translateX(28px); } }
+  @keyframes enterBack { from { opacity: 0; transform: translateX(-28px); } }
+  @keyframes leaveFwd  { to { opacity: 0; transform: translateX(-18px); } }
+  @keyframes leaveBack { to { opacity: 0; transform: translateX(18px); } }
   @keyframes fadeIn { from { opacity: 0; } }
   @keyframes screenIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -128,15 +207,17 @@
   }
 
   /* ===== Postupné najíždění obsahu =====
-     Sekce obrazovky nastupují odshora dolů s malým rozestupem. */
-  .screen.active > * { animation: rise .38s ease both; }
-  .screen.active > *:nth-child(2) { animation-delay: .06s; }
-  .screen.active > *:nth-child(3) { animation-delay: .12s; }
-  .screen.active > *:nth-child(4) { animation-delay: .18s; }
-  .screen.active > *:nth-child(5) { animation-delay: .24s; }
-  .screen.active > *:nth-child(6) { animation-delay: .3s; }
-  .screen.active > *:nth-child(7) { animation-delay: .36s; }
-  .screen.active > *:nth-child(n+8) { animation-delay: .42s; }
+     Sekce obrazovky nastupují odshora dolů s malým rozestupem — ale jen při
+     prvním vstupu (.first). Při návratu už uživatel obrazovku zná a čeká na ni;
+     stačí, že přijede celá. */
+  .screen.active.first > * { animation: rise .38s ease both; }
+  .screen.active.first > *:nth-child(2) { animation-delay: .06s; }
+  .screen.active.first > *:nth-child(3) { animation-delay: .12s; }
+  .screen.active.first > *:nth-child(4) { animation-delay: .18s; }
+  .screen.active.first > *:nth-child(5) { animation-delay: .24s; }
+  .screen.active.first > *:nth-child(6) { animation-delay: .3s; }
+  .screen.active.first > *:nth-child(7) { animation-delay: .36s; }
+  .screen.active.first > *:nth-child(n+8) { animation-delay: .42s; }
   @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
 
   /* šetrný režim — kdo má animace vypnuté, dostane vše hned */
@@ -170,9 +251,11 @@
     text-align: center;
   }
   .btn:active { transform: scale(.97); }
-  .btn-primary { background: var(--plum); color: #fff; box-shadow: 0 6px 18px rgba(110,59,82,.30); }
+  .btn-primary { background: var(--plum); color: #fff; box-shadow: 0 6px 18px rgba(var(--plum-rgb),.30); }
   .btn-primary:hover { background: var(--plum-deep); }
-  .btn-secondary { background: transparent; color: var(--plum); border: 1.5px solid rgba(110,59,82,.35); }
+  .btn-primary.danger { background: var(--rose); box-shadow: 0 6px 18px rgba(201,111,91,.30); }
+  .btn-primary.danger:hover { background: #B85F4C; }
+  .btn-secondary { background: transparent; color: var(--plum); border: 1.5px solid rgba(var(--plum-rgb),.35); }
   .btn-secondary:hover { background: var(--plum-soft); }
   .btn-ghost { background: transparent; color: var(--ink-soft); font-weight: 500; padding: 12px; }
   .btn-ghost:hover { color: var(--ink); }
@@ -270,7 +353,7 @@
   .onboard-dots { display: flex; justify-content: center; gap: 7px; margin-top: 28px; }
   .onboard-dots span {
     width: 8px; height: 8px; border-radius: 4px;
-    background: rgba(51,38,31,.14);
+    background: rgba(var(--ink-rgb),.14);
     /* aktivní tečka se protáhne do proužku — pohyb místo pouhé změny barvy */
     transition: width .34s cubic-bezier(.34,1.3,.64,1), background .25s ease;
   }
@@ -315,7 +398,7 @@
     font-size: 16px;
     color: var(--ink);
     background: var(--card);
-    border: 1.5px solid rgba(51,38,31,.14);
+    border: 1.5px solid rgba(var(--ink-rgb),.14);
     border-radius: var(--radius-md);
     padding: 14px 16px;
     transition: border-color .15s ease;
@@ -345,23 +428,25 @@
     background: var(--card);
     border: none;
     border-radius: var(--radius-md);
-    padding: 18px;
-    display: flex; align-items: center; gap: 14px;
+    padding: 18px 16px 18px 18px;
+    display: flex; align-items: center; gap: 12px;
     cursor: pointer; text-align: left;
     box-shadow: var(--shadow-card);
     transition: transform .12s ease, box-shadow .15s ease;
     font-family: var(--font-body);
   }
+  /* textový sloupec si smí vzít zbytek šířky — názvy tak drží na jednom řádku i na 375 px */
+  .deck-card > div:not(.deck-emoji) { flex: 1; min-width: 0; }
   .deck-card:hover { box-shadow: var(--shadow-float); }
   .deck-card:active { transform: scale(.97); }
 
-  /* témata nastupují jedno po druhém */
-  .deck-grid .deck-card { animation: rise .32s ease backwards; }
-  .deck-grid .deck-card:nth-child(2) { animation-delay: .06s; }
-  .deck-grid .deck-card:nth-child(3) { animation-delay: .12s; }
-  .deck-grid .deck-card:nth-child(4) { animation-delay: .18s; }
-  .deck-grid .deck-card:nth-child(5) { animation-delay: .24s; }
-  .deck-grid .deck-card:nth-child(6) { animation-delay: .3s; }
+  /* témata nastupují jedno po druhém — jen při prvním příchodu na obrazovku */
+  .screen.first .deck-grid .deck-card { animation: rise .32s ease backwards; }
+  .screen.first .deck-grid .deck-card:nth-child(2) { animation-delay: .06s; }
+  .screen.first .deck-grid .deck-card:nth-child(3) { animation-delay: .12s; }
+  .screen.first .deck-grid .deck-card:nth-child(4) { animation-delay: .18s; }
+  .screen.first .deck-grid .deck-card:nth-child(5) { animation-delay: .24s; }
+  .screen.first .deck-grid .deck-card:nth-child(6) { animation-delay: .3s; }
   .deck-emoji {
     width: 48px; height: 48px; border-radius: 14px; flex: none;
     display: flex; align-items: center; justify-content: center;
@@ -371,11 +456,33 @@
   .deck-card p { font-size: 13px; margin-top: 2px; }
   /* postup tématem = proužky (ne tečky) — tečky v appce znamenají intenzitu otázek */
   .deck-progress { display: flex; gap: 3px; margin-left: auto; flex: none; }
-  .deck-progress span { width: 14px; height: 5px; border-radius: 3px; background: rgba(51,38,31,.12); }
+  .deck-progress span { width: 12px; height: 5px; border-radius: 3px; background: rgba(var(--ink-rgb),.12); }
   .deck-progress span.on { background: var(--honey); }
   /* rozehraná hloubka — proužek vyplněný zleva */
-  .deck-progress span.half { background: linear-gradient(to right, var(--honey) 50%, rgba(51,38,31,.12) 50%); }
+  .deck-progress span.half { background: linear-gradient(to right, var(--honey) 50%, rgba(var(--ink-rgb),.12) 50%); }
   .deck-arrow { color: var(--ink-faint); flex: none; }
+
+  /* ===== Domů: navázat, kde skončili =====
+     Lehčí než karty témat — barevný proužek, ne další bílá karta. */
+  .resume-chip {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    background: var(--plum-soft); color: var(--plum);
+    border: none; border-radius: var(--radius-md);
+    padding: 10px 14px 10px 10px; margin: 2px 0 6px;
+    font-family: var(--font-body); text-align: left; cursor: pointer;
+    transition: transform .12s ease, background .15s ease;
+  }
+  .resume-chip:active { transform: scale(.98); }
+  .resume-icon {
+    width: 34px; height: 34px; border-radius: 50%; flex: none;
+    background: var(--plum); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .resume-icon .ic { width: 15px; height: 15px; margin-left: 2px; }
+  .resume-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .resume-label { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--plum); opacity: .75; }
+  .resume-what { font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .resume-arrow { color: var(--plum); opacity: .6; }
 
   .section-label {
     font-size: 12px; font-weight: 700; letter-spacing: .08em;
@@ -396,12 +503,14 @@
     margin-bottom: 12px;
     font-family: var(--font-body);
     color: var(--ink); /* iOS jinak dává textu v buttonu systémovou modrou */
-    transition: transform .12s ease, border-color .15s ease;
+    transition: transform .14s ease, border-color .15s ease, opacity .26s ease, box-shadow .2s ease;
   }
   .depth-option:active { transform: scale(.97); }
-  .depth-option.selected { border-color: var(--plum); }
+  /* po klepnutí: vybraná se nadzvedne, ostatní ustoupí — pauza před vějířem tak má co říct */
+  .depth-option.selected { border-color: var(--plum); transform: translateY(-3px); box-shadow: var(--shadow-float); }
+  .depth-option.dimmed { opacity: .45; }
   .depth-dots { display: flex; gap: 4px; flex: none; }
-  .depth-dots span { width: 9px; height: 9px; border-radius: 50%; background: rgba(51,38,31,.14); }
+  .depth-dots span { width: 9px; height: 9px; border-radius: 50%; background: rgba(var(--ink-rgb),.14); }
   .depth-dots span.on { background: var(--honey); }
   .depth-option h3 { font-size: 15.5px; }
   .depth-option p { font-size: 13px; margin-top: 2px; }
@@ -461,7 +570,7 @@
       radial-gradient(circle at 30% 25%, rgba(255,255,255,.16), transparent 55%),
       linear-gradient(150deg, var(--plum) 0%, var(--plum-deep) 100%);
     box-shadow: var(--shadow-card), inset 0 0 0 5px rgba(250,244,236,.22);
-    color: var(--honey-soft);
+    color: var(--cream);
     font-family: var(--font-display); font-size: 58px; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
     /* vějíř se rozevírá od bodu pod kartami, jako když je držíte v ruce */
@@ -499,7 +608,7 @@
     position: fixed; z-index: 80; pointer-events: none;
     --t: 1mm;
     transform-style: preserve-3d;
-    color: var(--honey-soft);
+    color: var(--cream);
     font-family: var(--font-display); font-weight: 600; line-height: 1;
   }
   .cf-face {
@@ -517,9 +626,11 @@
     transform: translateZ(calc(var(--t) / -2)) rotateY(180deg);
     box-shadow: var(--shadow-float), inset 0 0 0 5px rgba(250,244,236,.22);
   }
-  /* bok karty = řez papírem: světlé jádro, na koncích tmavší (spoj s lícem) */
+  /* bok karty = řez papírem: světlé jádro, na koncích tmavší (spoj s lícem).
+     Boky končí před zaoblením rohů — kdyby sahaly až k hraně, při otáčení by
+     přes oblé rohy přečnívaly jako rovný proužek. */
   .card-edge {
-    position: absolute; top: 2px; bottom: 2px; width: var(--t);
+    position: absolute; top: var(--edge-inset, 20px); bottom: var(--edge-inset, 20px); width: var(--t);
     background: linear-gradient(90deg, #BEAB96 0%, #FDFAF4 38%, #FBF5EC 62%, #B7A48F 100%);
   }
   /* Každý bok se sklápí do hloubky kolem své krajní hrany. Znaménka rotace
@@ -543,6 +654,16 @@
            animation-timing-function: cubic-bezier(.3, .7, .45, 1); }
     55%  { transform: perspective(900px) rotateY(6deg); opacity: 1;
            animation-timing-function: cubic-bezier(.25, .55, .3, 1); }
+    100% { transform: none; }
+  }
+
+  /* První karta v sezení po chvilce klidu jednou „nakoukne“ na rub — bez
+     čtení nápovědy je vidět, že se dá otočit. Točí se stejným směrem jako
+     skutečné otočení (flip-out jde na +90°). */
+  .peek { animation: peek .9s cubic-bezier(.34,1.2,.64,1) both; }
+  @keyframes peek {
+    0%   { transform: none; }
+    40%  { transform: perspective(900px) rotateY(16deg); }
     100% { transform: none; }
   }
 
@@ -573,7 +694,7 @@
     display: inline-block;
     font-size: 11px; font-weight: 700; letter-spacing: .07em;
     text-transform: uppercase; color: var(--honey);
-    background: rgba(255,255,255,.65);
+    background: rgba(var(--card-rgb),.75);
     padding: 4px 12px; border-radius: 999px;
     margin-bottom: 10px;
   }
@@ -589,7 +710,7 @@
   .question-card.face-down::before { display: none; }
   #jokerCover {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
-    color: var(--honey-soft);
+    color: var(--cream);
     font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
   }
   #jokerCover .cover-mark {
@@ -603,13 +724,13 @@
   .blesk-min {
     flex: none; margin-left: auto;
     font-size: 11px; font-weight: 700; letter-spacing: .04em;
-    color: var(--honey); background: rgba(255,255,255,.7);
+    color: var(--honey); background: rgba(var(--card-rgb),.75);
     padding: 4px 10px; border-radius: 999px;
   }
   /* karta bleskovky — bez ozdobné uvozovky, líc má velkou ikonu */
   .question-card.blesk-question::before { display: none; }
   .blesk-icon { font-size: 52px; line-height: 1; margin-bottom: 14px; }
-  .blesk-text { text-align: left; font-size: 15.5px; line-height: 1.6; color: var(--ink); }
+  .blesk-text { text-align: left; font-size: 17px; line-height: 1.55; color: var(--ink); }
 
   /* gyroskopický náklon karty — transform dostává obal, aby se nepral
      s flip animacemi karty uvnitř */
@@ -641,8 +762,8 @@
     cursor: pointer;
     transition: background .15s ease;
   }
-  .settings-item + .settings-item { border-top: 1px solid rgba(51,38,31,.07); }
-  .settings-item:active { background: rgba(51,38,31,.05); }
+  .settings-item + .settings-item { border-top: 1px solid rgba(var(--ink-rgb),.07); }
+  .settings-item:active { background: rgba(var(--ink-rgb),.05); }
   .settings-item .item-label { flex: 1; }
   .item-icon {
     width: 28px; height: 28px; border-radius: 8px; flex: none;
@@ -683,13 +804,13 @@
   /* přepínač v nastavení (Nedělní inspirace) */
   .switch {
     width: 50px; height: 30px; border-radius: 15px; border: none;
-    background: rgba(51,38,31,.18); position: relative; cursor: pointer;
+    background: rgba(var(--ink-rgb),.18); position: relative; cursor: pointer;
     transition: background .25s ease; flex-shrink: 0; padding: 0;
   }
   .switch .knob {
     position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
     border-radius: 50%; background: #fff;
-    box-shadow: 0 1px 4px rgba(51,38,31,.25);
+    box-shadow: 0 1px 4px rgba(var(--ink-rgb),.25);
     transition: transform .32s cubic-bezier(.34,1.4,.64,1); /* dojezd s malým přesahem */
   }
   .switch[aria-checked="true"] { background: var(--sage); }
@@ -702,14 +823,14 @@
      Leží uvnitř .phone, takže se vysouvá v rámu appky a nepřekryje ji celou. */
   .sheet-backdrop {
     position: absolute; inset: 0; z-index: 60;
-    background: rgba(51,38,31,.4);
+    background: var(--backdrop);
     animation: fadeIn .28s ease both;
   }
   .sheet {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 61;
     background: var(--card);
     border-radius: 26px 26px 0 0;
-    box-shadow: 0 -8px 40px rgba(51,38,31,.20);
+    box-shadow: 0 -8px 40px rgba(var(--ink-rgb),.20);
     padding: 12px 24px 24px;
     animation: sheetUp .44s cubic-bezier(.22,.9,.28,1) both;
     touch-action: none; /* tažení dolů zavírá, ne scrolluje */
@@ -725,7 +846,7 @@
   /* úchyt — napovídá, že okno jde stáhnout dolů */
   .sheet-grabber {
     width: 40px; height: 4px; border-radius: 2px;
-    background: rgba(51,38,31,.16); margin: 0 auto 16px;
+    background: rgba(var(--ink-rgb),.16); margin: 0 auto 16px;
   }
   .sheet h3 { margin-bottom: 5px; }
   .sheet p { font-size: 14.5px; }
@@ -740,7 +861,7 @@
   .notif-preview .app-icon {
     width: 36px; height: 36px; border-radius: 9px; flex: none;
     background: var(--paper); position: relative; overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(51,38,31,.08);
+    box-shadow: inset 0 0 0 1px rgba(var(--ink-rgb),.08);
   }
   .notif-preview .app-icon i { position: absolute; border-radius: 50%; mix-blend-mode: multiply; }
   .notif-preview .app-icon i:first-child { width: 19px; height: 19px; background: var(--plum); opacity: .85; left: 3px; top: 7px; }
@@ -797,14 +918,30 @@
   #confettiLayer {
     position: absolute; inset: 0;
     pointer-events: none; overflow: hidden; z-index: 50;
+    perspective: 900px; /* přetáčející se papírky mají hloubku */
   }
+  /* Plácnutí: konfety vystřelí z tlačítka. Let počítá burstFrom() jako malou
+     fyziku (gravitace, odpor vzduchu podle natočení papírku, plachtění do
+     stran) a přehrává ho Web Animations API — za letu na hlavním vlákně nic
+     neběží. Každý papírek má dvě strany: sytou a světlou, při přetáčení se
+     střídají jako u skutečného papíru. */
   .confetti-piece {
-    position: absolute; top: -16px;
-    width: 8px; height: 13px; border-radius: 2px; opacity: .95;
-    animation: confettiFall linear forwards;
+    position: absolute; left: 0; top: 0;
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
   }
-  @keyframes confettiFall {
-    to { top: 105%; transform: rotate(720deg); opacity: .8; }
+  .confetti-piece i {
+    position: absolute; inset: 0; border-radius: 1.5px;
+    backface-visibility: hidden;
+  }
+  .confetti-piece i:last-child { transform: rotateY(180deg); }
+  /* tlačítko si plácne taky — krátké odskočení */
+  .btn.hi5 { animation: hi5 .5s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes hi5 {
+    0%   { transform: none; }
+    35%  { transform: scale(1.06) rotate(-1.2deg); }
+    65%  { transform: scale(.98) rotate(.8deg); }
+    100% { transform: none; }
   }
 
   /* ===== Karta s otázkou / povídání ===== */
@@ -812,7 +949,7 @@
     display: flex; gap: 6px; flex: 1; margin: 0 16px;
   }
   .progress-track span {
-    flex: 1; height: 4px; border-radius: 2px; background: rgba(51,38,31,.12);
+    flex: 1; height: 4px; border-radius: 2px; background: rgba(var(--ink-rgb),.12);
     transition: background .3s ease;
   }
   .progress-track span.done { background: var(--plum); }
@@ -826,8 +963,10 @@
     position: relative;
     margin-bottom: 18px;
     /* pevná velikost — karta se při otočení (líc/rub/bonusovka) nezvětšuje;
-       výška pokrývá i nejvyšší rub (teploměr + tři dvouřádkové doptávačky) */
-    min-height: 470px;
+       výška pokrývá i nejvyšší rub (teploměr + tři dvouřádkové doptávačky).
+       Na nízkých displejích (iPhone SE, 667 px) se sníží, ať se pod ni vejdou
+       nápověda i obě tlačítka bez scrollování. */
+    min-height: clamp(360px, calc(100dvh - 300px), 470px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -837,9 +976,13 @@
   }
   /* boky velké karty jdou od líce dozadu; proti světlému líci musí být
      o odstín tmavší než u tmavého rubu, jinak nejsou vidět */
-  .question-card > .card-edge {
-    background: linear-gradient(90deg, #D9C9B7 0%, #EFE5D9 45%, #D2C1AE 100%);
-  }
+  .question-card > .card-edge { background: var(--edge-face); --edge-inset: var(--radius-lg); }
+  /* V klidu se boky nekreslí: rovina natočená přesně o 90° se občas vykreslí
+     jako vlasová linka podél hrany. Vidět jsou jen během otáčení karty;
+     animační třídy se po dotočení sundávají (viz animationend níže v JS). */
+  .question-card > .card-edge { opacity: 0; }
+  .question-card.flip-out > .card-edge, .question-card.flip-in > .card-edge,
+  .question-card.joker-in > .card-edge, .question-card.peek > .card-edge { opacity: 1; }
   .question-card > .card-edge.l { transform-origin: left center;  transform: rotateY(90deg); }
   .question-card > .card-edge.r { transform-origin: right center; transform: rotateY(-90deg); }
   /* u rubu bonusovky a lícem dolů je karta tmavá — bok pak světlejší */
@@ -868,7 +1011,7 @@
     content: "";
     position: absolute;
     inset: 11px;
-    border: 1px solid rgba(192,138,45,.30);
+    border: 1px solid rgba(var(--honey-rgb),.30);
     border-radius: 15px;
     pointer-events: none;
   }
@@ -892,27 +1035,28 @@
     list-style: none; counter-reset: fu;
     margin: 0;
   }
+  /* telefon leží na stole mezi dvěma lidmi — rub se čte z větší dálky než běžný text */
   .back-fu li {
     counter-increment: fu;
-    font-size: 15px; color: var(--ink); line-height: 1.45;
-    padding: 12px 0 12px 28px; position: relative;
-    border-top: 1px dashed rgba(51,38,31,.12);
+    font-size: 16.5px; color: var(--ink); line-height: 1.4;
+    padding: 11px 0 11px 30px; position: relative;
+    border-top: 1px dashed rgba(var(--ink-rgb),.12);
   }
   .back-fu li:first-child { border-top: none; padding-top: 4px; }
   .back-fu li::before {
     content: counter(fu);
-    position: absolute; left: 0; top: 13px;
-    width: 18px; height: 18px; border-radius: 50%;
+    position: absolute; left: 0; top: 12px;
+    width: 20px; height: 20px; border-radius: 50%;
     background: var(--rose-soft); color: var(--rose);
-    font-size: 11px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
   .back-fu li:first-child::before { top: 5px; }
   .back-soft {
-    font-size: 14px; font-style: italic; color: var(--ink-soft);
+    font-size: 15.5px; font-style: italic; color: var(--ink-soft);
     line-height: 1.5;
     margin-top: auto; padding-top: 11px;
-    border-top: 1px dashed rgba(51,38,31,.12);
+    border-top: 1px dashed rgba(var(--ink-rgb),.12);
   }
   .back-soft .bs-label {
     display: block; font-style: normal;
@@ -921,6 +1065,15 @@
     margin-bottom: 2px;
   }
   .flip-hint { text-align: center; margin-top: 12px; animation: screenIn .3s ease both; }
+  @media (max-height: 700px) {
+    .question-card { padding: 30px 28px 26px; }
+    .question-card.back-side { padding-top: 34px; }
+    .back-fu li { padding: 8px 0 8px 30px; }
+    .back-fu li::before { top: 9px; }
+    .back-soft { padding-top: 8px; }
+    .btn-row { padding-top: 16px; }
+    .card-fan { margin-top: clamp(24px, 8vh, 64px); }
+  }
 
   /* ===== Závěr ===== */
   .finish-stats {
@@ -961,13 +1114,13 @@
 <div class="phone">
 
   <!-- ===== 1. Úvod ===== -->
-  <section class="screen active" id="s-welcome">
+  <section class="screen active first" id="s-welcome">
     <div class="center-col">
       <div class="hero-mark"><div class="c1"></div><div class="c2"></div></div>
       <span class="audience-chip">Pro rodiče a děti</span>
       <h1>Mezi námi</h1>
       <p style="margin-top:14px; max-width:290px; margin-left:auto; margin-right:auto;">
-        Hra, která pomáhá otevírat složitá témata, o kterých je někdy těžké mluvit.
+        Karty s otázkami, které pomáhají otevírat témata, o kterých je někdy těžké mluvit.
       </p>
     </div>
     <div class="btn-row">
@@ -1058,6 +1211,13 @@
     </div>
 
     <p class="muted" id="welcomeBack" hidden style="margin:-6px 0 6px;">✋ Vítejte zpátky. Sliby platí dál.</p>
+
+    <!-- návaznost: poslední téma a hloubka, klepnutí vede rovnou do vějíře -->
+    <button class="resume-chip" id="resumeChip" hidden onclick="continueLast()">
+      <span class="resume-icon"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 4.5v15a1 1 0 0 0 1.52.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 6 4.5z"/></svg></span>
+      <span class="resume-text"><span class="resume-label">Naposledy</span><span class="resume-what" id="resumeWhat"></span></span>
+      <svg class="ic resume-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
 
     <div class="section-label">O čem si dnes budete povídat?</div>
     <div class="deck-grid" id="deckGrid"></div>
@@ -1215,7 +1375,7 @@
       </p>
       <div class="finish-stats">
         <div class="stat"><div class="num" id="statQuestions">0</div><div class="lbl" id="statQuestionsLbl">otázek</div></div>
-        <div class="stat"><div class="num">2</div><div class="lbl">odvážlivci</div></div>
+        <div class="stat"><div class="num" id="statTalks">2</div><div class="lbl" id="statTalksLbl">odvážlivci</div></div>
         <div class="stat"><div class="num words" id="statDepth">—</div><div class="lbl" id="statDepthLbl">hloubka</div></div>
       </div>
     </div>
@@ -1251,7 +1411,16 @@
       </button>
     </div>
 
-    <div class="section-label">Hra</div>
+    <div class="section-label">Vzhled</div>
+    <div class="settings-group">
+      <button class="settings-item" onclick="openThemePage()">
+        <span class="item-icon" style="background:var(--honey-soft); color:var(--honey);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg></span>
+        <span class="item-label">Vzhled aplikace</span>
+        <span class="item-note" id="themeCurrent"></span>
+      </button>
+    </div>
+
+    <div class="section-label">Povídání</div>
     <div class="settings-group">
       <button class="settings-item" onclick="startOnboard(true)">
         <span class="item-icon" style="background:var(--plum-soft); color:var(--plum);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
@@ -1275,7 +1444,7 @@
       <div class="settings-item static">
         <span class="item-icon" style="background:var(--sage-soft); color:var(--sage);"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
         <span class="item-label">Povolit oznámení<br><span class="item-note">Jednou týdně otázka, nebo malé povzbuzení</span></span>
-        <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Povolit oznámení" onclick="toggleWeeklyNotifs()"><span class="knob"></span></button>
+        <button class="switch" id="notifSwitch" role="switch" aria-checked="false" aria-label="Povolit oznámení" onclick="haptic('tap'); toggleWeeklyNotifs()"><span class="knob"></span></button>
       </div>
     </div>
     <p class="muted" id="notifDeniedNote" hidden>Oznámení jsou pro tuhle aplikaci v telefonu vypnutá. Povolte je v Nastavení&nbsp;→ Mezi&nbsp;námi&nbsp;→ Oznámení.</p>
@@ -1420,7 +1589,7 @@
   <!-- ===== Vysouvací okno: nabídka nedělní inspirace =====
        Vyjede zespodu po návratu na témata, až po dokončeném povídání — tedy
        když už rodič ví, co mu appka dá. Jen v nativní appce, jen jednou. -->
-  <div class="sheet-backdrop" id="sheetBackdrop" hidden onclick="declineNotifOffer()"></div>
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden onclick="dismissSheet()"></div>
   <section class="sheet" id="notifSheet" hidden aria-label="Nedělní inspirace">
     <div class="sheet-grabber"></div>
     <h3>Ať to nezapadne</h3>
@@ -1435,6 +1604,19 @@
     <div class="sheet-actions">
       <button class="btn btn-primary" onclick="acceptNotifOffer()">Ano, posílejte</button>
       <button class="btn btn-ghost" onclick="declineNotifOffer()">Teď ne</button>
+    </div>
+  </section>
+
+  <!-- ===== Vysouvací okno: potvrzení =====
+       Místo systémového confirm() — stejný papír, stejný rytmus jako zbytek
+       appky. Plní ho askSheet(). -->
+  <section class="sheet" id="confirmSheet" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="sheet-grabber"></div>
+    <h3 id="confirmTitle"></h3>
+    <p id="confirmText"></p>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" id="confirmOk"></button>
+      <button class="btn btn-ghost" id="confirmCancel"></button>
     </div>
   </section>
 
@@ -2651,6 +2833,72 @@ const notifPlugin = nativePlugin("LocalNotifications");
    systém (iOS: max 3× za rok, kdo už hodnotil, ten ho neuvidí). Návratová
    hodnota nic neprozradí, takže se nedá zjistit, jestli okno vyskočilo. */
 const reviewPlugin = nativePlugin("InAppReview");
+
+/* ================= Haptika =================
+   Karetní hra bez hmatu je poloviční. Nativní plugin; na webu Android
+   vibrace, na iOS webu nic — a vždycky potichu selhat. */
+const hapticsPlugin = nativePlugin("Haptics");
+function haptic(kind) {
+  try {
+    if (hapticsPlugin) {
+      if (kind === "pick") hapticsPlugin.impact({ style: "MEDIUM" });
+      else if (kind === "hi5") {
+        hapticsPlugin.impact({ style: "HEAVY" });
+        setTimeout(() => hapticsPlugin.impact({ style: "HEAVY" }), 120);
+      }
+      else if (kind === "success") hapticsPlugin.notification({ type: "SUCCESS" });
+      else hapticsPlugin.impact({ style: "LIGHT" }); // tap, flip
+    } else if (navigator.vibrate) {
+      navigator.vibrate(kind === "hi5" ? [35, 70, 35] : kind === "success" ? [20, 50, 20] : kind === "pick" ? 18 : 10);
+    }
+  } catch (e) { /* bez haptiky appka jede dál */ }
+}
+
+/* ================= Vzhled (světlý / večerní) =================
+   Tři volby: podle telefonu (výchozí), světlý, tmavý. V režimu podle
+   telefonu se navíc appka ztmaví sama u večerních Bleskovek — ty říkají
+   „zhasněte“, tak ať do tmy nesvítí bílou kartou. */
+const THEME_KEY = "mezi-nami-theme";
+const THEME_MODES = ["auto", "light", "dark"];
+let themeMode = "auto";
+try { const m = localStorage.getItem(THEME_KEY); if (THEME_MODES.includes(m)) themeMode = m; } catch (e) {}
+let eveningDim = false;
+const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+const statusBarPlugin = nativePlugin("StatusBar");
+
+function themeLabel(mode) {
+  return mode === "light" ? t("Světlý") : mode === "dark" ? t("Tmavý") : t("Podle telefonu");
+}
+function isDarkTheme() {
+  return themeMode === "dark" || (themeMode === "auto" && (systemDark.matches || eveningDim));
+}
+function applyTheme(animate) {
+  const dark = isDarkTheme();
+  const root = document.documentElement;
+  // přebarvení plynule jen při skutečné změně za běhu (večerní Bleskovky, přepnutí)
+  if ((root.getAttribute("data-theme") === "dark") !== dark && animate
+      && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    root.classList.add("theme-anim");
+    setTimeout(() => root.classList.remove("theme-anim"), 500);
+  }
+  if (dark) root.setAttribute("data-theme", "dark"); else root.removeAttribute("data-theme");
+  // meta se srovnává vždy: atribut už mohl nastavit skript v hlavičce, meta ne
+  document.getElementById("themeColor").setAttribute("content", dark ? "#1F1815" : "#FAF4EC");
+  // v nativní appce ať má stavová lišta čitelný text (DARK = světlé písmo na tmavém)
+  if (statusBarPlugin) { try { statusBarPlugin.setStyle({ style: dark ? "DARK" : "LIGHT" }); } catch (e) {} }
+}
+function setThemeMode(mode) {
+  themeMode = mode;
+  try { localStorage.setItem(THEME_KEY, mode); } catch (e) {}
+  applyTheme(true);
+}
+function setEveningDim(on) {
+  if (eveningDim === on) return;
+  eveningDim = on;
+  applyTheme(true);
+}
+try { systemDark.addEventListener("change", () => applyTheme(true)); } catch (e) {}
+
 const NOTIF_ID_BASE = 900; // id 900–911, ať se nepletou s ničím dalším
 
 /* nejbližších `count` nedělí v 18:00 (dnešek se počítá, jen dokud 18:00 nebylo) */
@@ -2818,19 +3066,51 @@ const state = {
   notifStart: null, // první naplánovaná neděle (ms) — drží pořadí zpráv v cyklu
   notifAsked: false, // na nedělní inspiraci jsme se po povídání už zeptali
   talksDone: 0,    // dokončená povídání celkem — řídí, kdy se nabídne hodnocení
-  reviewAsked: 0   // kolikrát appka vyvolala systémový dotaz na hodnocení
+  reviewAsked: 0,  // kolikrát appka vyvolala systémový dotaz na hodnocení
+  lastDeck: null,  // poslední téma a hloubka — chip „Naposledy“ na domovské obrazovce
+  lastDepth: null
 };
 
-/* ================= Navigace ================= */
-function go(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  const el = document.getElementById(id);
-  el.classList.add("active");
-  el.scrollTop = 0;
+/* ================= Navigace =================
+   Směr přechodu se odvozuje z „hloubky“ obrazovky: do hlubší se jde dopředu
+   (obsah přijede zprava), do mělčí zpět (zleva). Kde to hierarchie neumí
+   (průvodce otevřený z nastavení), volající směr řekne sám. */
+const SCREEN_DEPTH = {
+  "s-welcome": 0, "s-onboard": 1, "s-names": 2, "s-home": 3,
+  "s-deck": 4, "s-settings": 4, "s-blesk-time": 4, "s-weekly": 4,
+  "s-draw": 5, "s-principles": 5, "s-settings-page": 5, "s-blesk": 5,
+  "s-finish": 6
+};
+const visitedScreens = new Set(); // nástup po částech jen při prvním vstupu
+let leaveTimer = null;
+
+function go(id, dir) {
+  const next = document.getElementById(id);
+  const prev = document.querySelector(".screen.active");
+  if (prev === next) { next.scrollTop = 0; return; }
+  if (!dir) dir = prev && (SCREEN_DEPTH[id] || 0) < (SCREEN_DEPTH[prev.id] || 0) ? "back" : "forward";
+  // dobíhající odchod předchozí obrazovky ukončit hned, ať se nevrství
+  document.querySelectorAll(".screen.leaving").forEach(s => s.classList.remove("leaving", "leave-back"));
+  clearTimeout(leaveTimer);
+  if (prev) {
+    const scrolled = prev.scrollTop;
+    prev.classList.remove("active", "first", "from-back");
+    prev.classList.add("leaving");
+    prev.classList.toggle("leave-back", dir === "back");
+    prev.scrollTop = scrolled; // absolutní pozice by ji poslala nahoru — nechat, kde byla
+    leaveTimer = setTimeout(() => prev.classList.remove("leaving", "leave-back"), 220);
+  }
+  next.classList.toggle("from-back", dir === "back");
+  next.classList.toggle("first", !visitedScreens.has(id));
+  visitedScreens.add(id);
+  next.classList.add("active");
+  next.scrollTop = 0;
 }
 
 function goHome() {
   releaseWakeLock(); // mimo povídání může displej normálně zhasínat
+  cancelPeek();
+  setEveningDim(false); // večerní ztmavení patří jen k večerním Bleskovkám
   renderHome(); // ať tečky pokroku odpovídají aktuálnímu stavu
   go("s-home");
 }
@@ -2877,7 +3157,9 @@ function saveStore() {
       notifStart: state.notifStart,
       notifAsked: state.notifAsked,
       talksDone: state.talksDone,
-      reviewAsked: state.reviewAsked
+      reviewAsked: state.reviewAsked,
+      lastDeck: state.lastDeck,
+      lastDepth: state.lastDepth
     }));
   } catch (e) { /* soukromý režim — hra funguje i bez ukládání */ }
 }
@@ -2891,7 +3173,7 @@ const ONBOARD_SLIDES_CS = [
   { emoji: "💬", bg: "var(--sky-soft)", title: "Otázky, které sbližují rodiče a děti",
     text: "Otázky o rodině, pocitech i starostech pro děti od 6 do 9 let doplňují zábavné výzvy." },
   { emoji: "🤝", bg: "var(--plum-soft)", title: "Jednoduchá pravidla pro oba",
-    text: "Stačí jen vylosovat kartu a povídat si. Nic se neukládá, hrát můžete kdekoli — třeba v autě." }
+    text: "Stačí vylosovat kartu a povídat si. Nic se neukládá a povídat si můžete kdekoli — třeba v autě." }
 ];
 const ONBOARD_SLIDES = pack("onboard", ONBOARD_SLIDES_CS);
 let onboardIdx = 0;
@@ -2900,7 +3182,7 @@ let onboardFromSettings = false; // z nastavení se průvodce jen prohlíží �
 function startOnboard(fromSettings) {
   onboardFromSettings = !!fromSettings;
   showOnboard(0);
-  go("s-onboard");
+  go("s-onboard", "forward");
 }
 
 /* dir === "back" → obsah přilétá zleva, jinak zprava */
@@ -2926,7 +3208,8 @@ function showOnboard(i, dir) {
 
 function onboardNext() {
   if (onboardIdx < ONBOARD_SLIDES.length - 1) { showOnboard(onboardIdx + 1); return; }
-  go(onboardFromSettings ? "s-settings" : "s-names");
+  if (onboardFromSettings) { go("s-settings", "back"); return; }
+  go("s-names");
 }
 
 function onboardBack() {
@@ -2935,7 +3218,8 @@ function onboardBack() {
 }
 
 function onboardSkip() {
-  go(onboardFromSettings ? "s-settings" : "s-names");
+  if (onboardFromSettings) { go("s-settings", "back"); return; }
+  go("s-names");
 }
 
 /* Návrat zpět ze jmen — na poslední slide průvodce */
@@ -2958,6 +3242,14 @@ function renderHome() {
   // bleskovky se ukážou jen v jazyce, kde jsou přeložené
   document.getElementById("bleskLabel").hidden = !HAS_BLESKOVKY;
   document.getElementById("bleskHomeCard").hidden = !HAS_BLESKOVKY;
+  // navázat, kde skončili: poslední téma a hloubka, rovnou do vějíře
+  const chip = document.getElementById("resumeChip");
+  const last = state.lastDeck ? DECKS.find(d => d.id === state.lastDeck) : null;
+  chip.hidden = !last || !Number.isInteger(state.lastDepth);
+  if (!chip.hidden) {
+    document.getElementById("resumeWhat").textContent =
+      `${last.title} · ${DEPTH_NAMES[state.lastDepth]}`;
+  }
   const grid = document.getElementById("deckGrid");
   grid.innerHTML = "";
   DECKS.forEach(d => {
@@ -2979,6 +3271,22 @@ function renderHome() {
   });
 }
 
+/* Chip „Naposledy“: stejné téma a hloubka, bez mezizastávky na výběru */
+function continueLast() {
+  const deck = DECKS.find(d => d.id === state.lastDeck);
+  if (!deck || !Number.isInteger(state.lastDepth)) return;
+  haptic("tap");
+  enableGyro(); // dotaz na gyroskop smí iOS ukázat jen přímo z klepnutí
+  state.deck = deck;
+  state.depth = state.lastDepth;
+  startSession();
+}
+
+function clearDepthPick() {
+  depthPicking = false;
+  document.querySelectorAll(".depth-option").forEach(o => o.classList.remove("selected", "dimmed"));
+}
+
 function openDeck(id) {
   state.deck = DECKS.find(d => d.id === id);
   state.depth = null;
@@ -2987,7 +3295,6 @@ function openDeck(id) {
   document.getElementById("deckIntroTitle").textContent = state.deck.title;
   document.getElementById("deckIntroDesc").textContent = state.deck.desc;
   document.querySelectorAll(".depth-option").forEach(o => {
-    o.classList.remove("selected");
     const dep = o.dataset.depth;
     const pool = state.deck.questions[dep];
     const seenCount = pool.filter((_, i) =>
@@ -3001,8 +3308,7 @@ function openDeck(id) {
     // v pravém slotu vždy jen jedno — štítek nese víc než šipka, tak má přednost
     o.querySelector(".depth-arrow").hidden = seenCount > 0;
   });
-  depthPicking = false;
-  document.querySelectorAll(".depth-option").forEach(o => o.classList.remove("selected"));
+  clearDepthPick();
   go("s-deck");
 }
 
@@ -3014,12 +3320,17 @@ function pickDepth(d) {
   if (depthPicking) return;
   depthPicking = true;
   state.depth = d;
-  document.querySelectorAll(".depth-option").forEach(o =>
-    o.classList.toggle("selected", Number(o.dataset.depth) === d));
+  haptic("tap");
+  enableGyro(); // dotaz na gyroskop smí iOS ukázat jen přímo z klepnutí, ne po pauze
+  document.querySelectorAll(".depth-option").forEach(o => {
+    const mine = Number(o.dataset.depth) === d;
+    o.classList.toggle("selected", mine);
+    o.classList.toggle("dimmed", !mine);
+  });
   setTimeout(() => {
     depthPicking = false;
     startSession();
-  }, 220);
+  }, 260);
 }
 
 /* ================= Povídání ================= */
@@ -3039,6 +3350,10 @@ function beginSession() {
   state.step = 0;
   state.answered = 0;
   state.jokerLeft = true;
+  state.lastDeck = state.deck.id;
+  state.lastDepth = state.depth;
+  saveStore();
+  peekShown = false;
   sessionRunning = true;
   requestWakeLock();
   enableGyro();
@@ -3064,22 +3379,116 @@ function emojiBurst() {
   }
 }
 
-/* --- konfety --- */
-function confetti() {
+/* --- plácnutí: konfety z tlačítka, tlačítko odskočí ---
+   Každý papírek se simuluje dopředu po 1/60 s a z dráhy se poskládají
+   keyframy pro Web Animations API. Fyzika je záměrně „na displej“, ne
+   v metrech: gravitace 950 px/s², odpor vzduchu silnější, když papírek
+   letí naplocho, plachtění do stran svázané s přetáčením. Díky tomu papírky
+   vyletí rychle, nahoře se zastaví a dolů se snášejí kolébavě a různě rychle. */
+function burstFrom(el) {
+  el.classList.remove("hi5");
+  void el.offsetWidth;
+  el.classList.add("hi5");
+  el.addEventListener("animationend", () => el.classList.remove("hi5"), { once: true });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!Element.prototype.animate) return;
+
   const layer = document.getElementById("confettiLayer");
-  const colors = ["#6E3B52", "#C96F5B", "#C08A2D", "#7C8A6E", "#E8A93D"];
-  for (let i = 0; i < 40; i++) {
+  const lr = layer.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2 - lr.left, cy = r.top + r.height / 2 - lr.top;
+  const floor = lr.height + 40; // pod spodní hranou displeje papírek končí
+  // [sytá strana, světlá strana] — dvoubarevný papír
+  const COLORS = [
+    ["#6E3B52", "#C9A9BA"], ["#C96F5B", "#F0C2B5"], ["#C08A2D", "#EFD39A"],
+    ["#7C8A6E", "#C5CDBA"], ["#E8A93D", "#F9DEA8"], ["#9B5F7E", "#E3CBD8"]
+  ];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const G = 950, DT = 1 / 60, T_MAX = 2.9;
+
+  for (let i = 0; i < 36; i++) {
+    const [front, back] = COLORS[i % COLORS.length];
+    // směs jako ve skutečném sáčku: obdélníčky, čtverečky a pár tenkých proužků
+    const kind = Math.random();
+    const w = kind < .15 ? rnd(3.5, 5) : kind < .35 ? rnd(7, 10) : rnd(6, 11);
+    const h = kind < .15 ? rnd(16, 24) : kind < .35 ? w : rnd(10, 16);
     const p = document.createElement("div");
     p.className = "confetti-piece";
-    p.style.left = Math.random() * 100 + "%";
-    p.style.background = colors[i % colors.length];
-    p.style.animationDuration = (0.9 + Math.random() * 0.8) + "s";
-    p.style.animationDelay = (Math.random() * 0.25) + "s";
-    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    p.style.width = w.toFixed(1) + "px";
+    p.style.height = h.toFixed(1) + "px";
+    p.innerHTML = `<i style="background:${front}"></i><i style="background:${back}"></i>`;
+
+    // start rozptýlený po tlačítku, ne z jednoho bodu
+    let x = cx + rnd(-.3, .3) * r.width;
+    let y = cy + rnd(-.3, .3) * r.height;
+    // pár líných papírků jen nadskočí a spadne u tlačítka — dává to hloubku
+    const speed = Math.random() < .2 ? rnd(300, 600) : rnd(1000, 1800);
+    const ang = (Math.random() - Math.random()) * .65; // úzký kužel kolem svislice, hustší uprostřed
+    let vx = Math.sin(ang) * speed, vy = -Math.cos(ang) * speed;
+    const drag = rnd(3.4, 4.8);
+    let ax = rnd(0, 6.28), az = rnd(0, 6.28);          // natočení: přetáčení a otáčení v ploše
+    const wx = (Math.random() < .5 ? -1 : 1) * rnd(5, 11); // 1–2 přetočení za sekundu
+    const wz = rnd(-3, 3);
+    const glide = rnd(1.5, 2.4);
+
+    const samples = [];
+    let t = 0, step = 0;
+    while (t <= T_MAX) {
+      // Rychlý papírek letí hranou napřed a moc nebrzdí; jak zpomaluje,
+      // převáží plocha, odpor vzroste a dolů už se jen snáší. Naplocho brzdí
+      // víc než na hranu — proto se každý snáší jinak rychle.
+      const align = Math.min(1, Math.hypot(vx, vy) / 900);
+      const flat = (.55 + .9 * Math.abs(Math.cos(ax))) * (1 - .65 * align);
+      const gl = vy > 0 ? glide * Math.sin(ax) * vy : 0;    // při pádu plachtí do strany podle natočení
+      vx += (-drag * flat * vx + gl) * DT;
+      vy += (G - drag * flat * vy) * DT;
+      x += vx * DT;
+      y += vy * DT;
+      ax += wx * DT;
+      az += wz * DT;
+      const gone = y > floor;
+      if (step % 2 === 0 || gone) {
+        const fade = y > floor - 90 ? Math.max(0, (floor - y) / 90)
+          : (t > T_MAX - .45 ? Math.max(0, (T_MAX - t) / .45) : 1);
+        const wobble = .45 * Math.sin(ax * .5);
+        samples.push({ t, o: fade,
+          tr: `translate3d(${(x - w / 2).toFixed(1)}px, ${(y - h / 2).toFixed(1)}px, 0) ` +
+              `rotateX(${ax.toFixed(2)}rad) rotateY(${wobble.toFixed(2)}rad) rotateZ(${az.toFixed(2)}rad)` });
+      }
+      if (gone) break;
+      t += DT;
+      step++;
+    }
+    const dur = samples[samples.length - 1].t || DT;
+    const frames = samples.map(s => ({ offset: Math.min(1, s.t / dur), opacity: s.o, transform: s.tr }));
+    frames[frames.length - 1].offset = 1;
+    frames[frames.length - 1].opacity = 0;
+
     layer.appendChild(p);
-    setTimeout(() => p.remove(), 2200);
+    const anim = p.animate(frames, {
+      duration: dur * 1000, delay: rnd(0, 110), easing: "linear", fill: "both"
+    });
+    anim.onfinish = () => p.remove();
+    setTimeout(() => p.remove(), (dur + .5) * 1000); // pojistka, kdyby onfinish nepřišel
   }
 }
+
+/* --- nakouknutí na rub ---
+   První karta v sezení (a první bleskovka v kategorii) po chvilce klidu
+   jednou pootočí — ať je i bez čtení nápovědy jasné, že má druhou stranu. */
+let peekTimer = null, peekShown = false;
+function schedulePeek(card, canPeek) {
+  clearTimeout(peekTimer);
+  if (peekShown || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  peekTimer = setTimeout(() => {
+    if (!canPeek() || !card.closest(".screen.active")) return;
+    peekShown = true;
+    card.classList.remove("flip-in", "joker-in");
+    void card.offsetWidth;
+    card.classList.add("peek");
+    card.addEventListener("animationend", () => card.classList.remove("peek"), { once: true });
+  }, 1600);
+}
+function cancelPeek() { clearTimeout(peekTimer); }
 
 /* --- losování karet --- */
 /* Rozevření vějíře. Menší úhel = větší karta se vejde na obrazovku,
@@ -3118,6 +3527,7 @@ function goDraw() {
     // U dvou karet nemá co povytáhnout — vějíř by jen poskočil.
     if (count > 2 && fromCenter === 0) c.style.setProperty("--raise", "-23px");
     c.textContent = "?";
+    c.setAttribute("aria-label", t("Karta {n} z {count}", { n: i + 1, count: count }));
     c.onclick = () => pickCard(c);
     fan.appendChild(c);
   }
@@ -3137,13 +3547,16 @@ function resetBigCard() {
   jokerCovered = false;
   const big = document.getElementById("bigCard");
   big.style.visibility = "";
-  big.classList.remove("joker", "back-side", "face-down", "flip-out");
+  big.classList.remove("joker", "back-side", "face-down", "flip-out", "peek");
+  cancelPeek();
   document.getElementById("jokerCover").hidden = true;
   document.getElementById("cardFront").hidden = false;
   document.getElementById("cardBack").hidden = true;
   document.getElementById("flipHint").hidden = true;
   document.getElementById("drawFinishBtn").hidden = true;
-  document.getElementById("drawGoBtn").disabled = false;
+  const goBtn = document.getElementById("drawGoBtn");
+  goBtn.disabled = false;
+  goBtn.style.pointerEvents = "";
 }
 
 let jokerCovered = false; // bonusovka čeká lícem dolů na otočení
@@ -3157,6 +3570,7 @@ function flipCard() {
   if (lastPickJoker) {
     if (!jokerCovered) return; // otočená bonusovka už rub nemá
     flipping = true;
+    haptic("flip");
     jokerCovered = false;
     big.classList.remove("flip-in");
     big.classList.add("flip-out");
@@ -3170,13 +3584,16 @@ function flipCard() {
       void big.offsetWidth; // restart animace otočení
       big.classList.add("joker-in");
       emojiBurst();
+      haptic("success");
       document.getElementById("drawBtnRow").hidden = false;
       flipping = false;
     }, 170);
     return;
   }
   flipping = true;
-  big.classList.remove("flip-in", "joker-in");
+  cancelPeek();
+  haptic("flip");
+  big.classList.remove("flip-in", "joker-in", "peek");
   big.classList.add("flip-out");
   setTimeout(() => {
     flipped = !flipped;
@@ -3212,6 +3629,7 @@ function jokerContent(isFinal) {
 function pickCard(cardEl) {
   if (picking) return;
   picking = true;
+  haptic("pick");
   // obsah se losuje až teď — karty ve vějíři jsou jen ruby; bonusovka proto
   // nikdy nepadne jako úplně první, aniž by to šlo poznat
   const poolSize = state.queue.length + (state.jokerLeft ? 1 : 0);
@@ -3293,6 +3711,7 @@ function revealPickedCard(isJoker, instant) {
       big.classList.remove("flip-in", "joker-in");
       void big.offsetWidth; // restart animace otočení
       big.classList.add("flip-in");
+      schedulePeek(big, () => !flipping && !flipped && !lastPickJoker);
     }
   }
   document.getElementById("flipHint").hidden = false; // teď naskočí i hint
@@ -3366,8 +3785,10 @@ function proceedFromDraw() {
   state.step++;
   state.answered++;
   state.seen.add(state.current.key);
-  document.getElementById("drawGoBtn").disabled = true; // ať plácnutí nejde odklikat dvakrát
-  confetti();
+  const goBtn = document.getElementById("drawGoBtn");
+  goBtn.style.pointerEvents = "none"; // ať plácnutí nejde odklikat dvakrát — ale tlačítko nezešedne uprostřed oslavy
+  haptic("hi5");
+  burstFrom(goBtn);
   setTimeout(() => {
     if (state.queue.length === 0 && !state.jokerLeft) { finishSession(); return; }
     goDraw();
@@ -3407,7 +3828,11 @@ function finishSession() {
     t(state.answered === 1 ? "otázka" : "otázky");
   document.getElementById("statDepth").textContent = DEPTH_NAMES[state.depth];
   document.getElementById("statDepthLbl").textContent = t("hloubka"); // závěr sdílí i bleskovka
+  // tichý záznam místo věčně stejných „2 odvážlivců“
+  document.getElementById("statTalks").textContent = state.talksDone;
+  document.getElementById("statTalksLbl").textContent = t("povídání celkem");
 
+  haptic("success");
   go("s-finish");
 }
 
@@ -3424,10 +3849,7 @@ async function maybeOfferNotifs() {
   if (await notifPermission() === "denied") return false;
   // v náhledu je text, který doopravdy přijde jako první
   document.getElementById("notifPreviewText").textContent = WEEKLY_NOTIFS[0].body;
-  document.getElementById("sheetBackdrop").hidden = false;
-  const sheet = document.getElementById("notifSheet");
-  sheet.classList.remove("closing");
-  sheet.hidden = false;
+  showSheet(document.getElementById("notifSheet"), declineNotifOffer);
   return true;
 }
 
@@ -3451,20 +3873,68 @@ function maybeAskReview() {
   }, 900);
 }
 
-/* zavření s dojezdem dolů; pak teprve schovat */
-function closeNotifSheet() {
-  const sheet = document.getElementById("notifSheet");
+/* ===== Vysouvací okna (sheety) =====
+   Jeden podklad, víc oken (nabídka inspirace, potvrzení). Zavření vždy
+   s dojezdem dolů; klepnutí na podklad i stažení prstem znamená „ne“. */
+let openSheetEl = null, sheetOnDismiss = null;
+
+function showSheet(el, onDismiss) {
   const backdrop = document.getElementById("sheetBackdrop");
-  if (sheet.hidden) return;
-  sheet.classList.add("closing");
+  backdrop.hidden = false;
+  backdrop.classList.remove("closing");
+  backdrop.style.opacity = "";
+  el.classList.remove("closing");
+  el.style.transform = "";
+  el.hidden = false;
+  openSheetEl = el;
+  sheetOnDismiss = onDismiss || null;
+}
+
+function hideSheet(el) {
+  const backdrop = document.getElementById("sheetBackdrop");
+  if (!el || el.hidden) return;
+  if (openSheetEl === el) { openSheetEl = null; sheetOnDismiss = null; }
+  el.classList.add("closing");
   backdrop.classList.add("closing");
   setTimeout(() => {
-    sheet.hidden = true;
-    sheet.classList.remove("closing");
-    sheet.style.transform = "";
-    backdrop.hidden = true;
-    backdrop.classList.remove("closing");
+    el.hidden = true;
+    el.classList.remove("closing");
+    el.style.transform = "";
+    el.style.transition = "";
+    if (!openSheetEl) {
+      backdrop.hidden = true;
+      backdrop.classList.remove("closing");
+      backdrop.style.opacity = "";
+    }
   }, 300);
+}
+
+function dismissSheet() {
+  if (!openSheetEl) return;
+  if (sheetOnDismiss) sheetOnDismiss(); else hideSheet(openSheetEl);
+}
+
+function closeNotifSheet() { hideSheet(document.getElementById("notifSheet")); }
+
+/* Potvrzení v rytmu appky místo systémového confirm(). Vrací Promise<boolean>. */
+function askSheet(opts) {
+  return new Promise(resolve => {
+    const el = document.getElementById("confirmSheet");
+    const text = document.getElementById("confirmText");
+    document.getElementById("confirmTitle").textContent = opts.title;
+    text.textContent = opts.text || "";
+    text.hidden = !opts.text;
+    const ok = document.getElementById("confirmOk");
+    const cancel = document.getElementById("confirmCancel");
+    ok.textContent = opts.ok;
+    cancel.textContent = opts.cancel || t("Zpět");
+    ok.classList.toggle("danger", !!opts.danger);
+    let settled = false;
+    const finish = (val) => { if (settled) return; settled = true; hideSheet(el); resolve(val); };
+    ok.onclick = () => finish(true);
+    cancel.onclick = () => finish(false);
+    showSheet(el, () => finish(false));
+  });
 }
 
 async function acceptNotifOffer() {
@@ -3482,27 +3952,47 @@ function declineNotifOffer() {
   saveStore();
 }
 
-/* Stažení okna dolů ho zavře — úchyt nahoře to slibuje, tak ať to platí. */
-(function enableSheetDrag() {
-  const sheet = document.getElementById("notifSheet");
-  let y0 = 0, dy = 0, dragging = false;
+/* Stažení okna dolů ho zavře — úchyt nahoře to slibuje, tak ať to platí.
+   Okno jde s prstem a podklad průhledne úměrně. Puštění za prahem nebo
+   švihem zavře, jinak se okno vrátí pružně na místo. */
+function enableSheetDrag(sheet) {
+  const backdrop = document.getElementById("sheetBackdrop");
+  let y0 = 0, dy = 0, lastY = 0, lastT = 0, vel = 0, dragging = false;
   sheet.addEventListener("touchstart", (e) => {
-    dragging = true; dy = 0;
-    y0 = e.touches[0].clientY;
+    dragging = true; dy = 0; vel = 0;
+    y0 = lastY = e.touches[0].clientY; lastT = e.timeStamp;
     sheet.style.transition = "none";
+    backdrop.style.transition = "none";
   }, { passive: true });
   sheet.addEventListener("touchmove", (e) => {
     if (!dragging) return;
-    dy = Math.max(0, e.touches[0].clientY - y0); // jen dolů
+    const y = e.touches[0].clientY;
+    dy = Math.max(0, y - y0); // jen dolů
+    const dt = Math.max(1, e.timeStamp - lastT);
+    vel = (y - lastY) / dt; // px/ms, kladné = dolů
+    lastY = y; lastT = e.timeStamp;
     sheet.style.transform = `translateY(${dy}px)`;
+    backdrop.style.opacity = String(Math.max(0, 1 - dy / Math.max(1, sheet.offsetHeight)));
   }, { passive: true });
   sheet.addEventListener("touchend", () => {
+    if (!dragging) return;
     dragging = false;
-    sheet.style.transition = "";
-    if (dy > 70) { declineNotifOffer(); return; }
-    sheet.style.transform = ""; // málo — vrátit na místo
+    if (dy > 90 || (dy > 24 && vel > .5)) {
+      sheet.style.transition = "";
+      backdrop.style.transition = "";
+      dismissSheet();
+      return;
+    }
+    // málo — pružně zpátky na místo
+    sheet.style.transition = "transform .38s cubic-bezier(.22,1.1,.36,1)";
+    backdrop.style.transition = "opacity .3s ease";
+    sheet.style.transform = "";
+    backdrop.style.opacity = "";
+    setTimeout(() => { sheet.style.transition = ""; backdrop.style.transition = ""; }, 400);
   }, { passive: true });
-})();
+}
+enableSheetDrag(document.getElementById("notifSheet"));
+enableSheetDrag(document.getElementById("confirmSheet"));
 
 /* Odchod ze závěrečné obrazovky: domů a teprve tam případná nabídka
    nedělní inspirace — ať závěr povídání zůstane jen o povídání. */
@@ -3514,7 +4004,11 @@ async function leaveFinish() {
 }
 
 function confirmLeave() {
-  if (confirm(t("Opustit povídání a vrátit se na témata?"))) goHome();
+  askSheet({
+    title: t("Opustit povídání?"),
+    text: t("Vrátíte se na témata. Otázky, které jste už probrali, zůstanou započítané."),
+    ok: t("Opustit povídání"), cancel: t("Zůstat")
+  }).then(yes => { if (yes) goHome(); });
 }
 
 /* ================= Bleskovky ================= */
@@ -3529,6 +4023,8 @@ function openBleskovky() {
 
 function leaveBleskovka() {
   releaseWakeLock(); // odchod bez dokončení — displej může zase zhasínat
+  cancelPeek();
+  setEveningDim(false);
   go("s-blesk-time");
 }
 
@@ -3536,6 +4032,8 @@ function openBleskCategory(key) {
   bleskTime = key;
   bleskUsed = new Set();
   bleskCurrent = null;
+  peekShown = false;
+  setEveningDim(key === "vecer"); // večer se appka ztmaví sama (jen v režimu podle telefonu)
   document.getElementById("bleskCatLabel").textContent = BLESKOVKY[key].title;
   sessionRunning = true;
   requestWakeLock(); // při hře displej nezhasíná, stejně jako u povídání
@@ -3576,14 +4074,17 @@ function drawBleskovka(first) {
   const card = document.getElementById("bleskCard");
   if (first === true) {
     renderBleskovka();
-    card.classList.remove("flip-in", "flip-out");
+    card.classList.remove("flip-in", "flip-out", "peek");
     void card.offsetWidth;
     card.classList.add("flip-in");
+    schedulePeek(card, () => !bleskFlipping && !bleskFlipped);
     return;
   }
   // výměna karty stejným dvoufázovým otočením jako ve hře
   bleskFlipping = true;
-  card.classList.remove("flip-in");
+  cancelPeek();
+  haptic("pick");
+  card.classList.remove("flip-in", "peek");
   card.classList.add("flip-out");
   setTimeout(() => {
     card.classList.remove("flip-out");
@@ -3597,8 +4098,10 @@ function drawBleskovka(first) {
 function flipBleskovka() {
   if (bleskFlipping) return;
   bleskFlipping = true;
+  cancelPeek();
+  haptic("flip");
   const card = document.getElementById("bleskCard");
-  card.classList.remove("flip-in");
+  card.classList.remove("flip-in", "peek");
   card.classList.add("flip-out");
   setTimeout(() => {
     bleskFlipped = !bleskFlipped;
@@ -3617,16 +4120,21 @@ function flipBleskovka() {
 
 function finishBleskovka() {
   releaseWakeLock();
-  document.getElementById("bleskDoneBtn").disabled = true;
-  confetti();
+  const doneBtn = document.getElementById("bleskDoneBtn");
+  doneBtn.style.pointerEvents = "none";
+  haptic("hi5");
+  burstFrom(doneBtn);
   setTimeout(() => {
-    document.getElementById("bleskDoneBtn").disabled = false;
+    doneBtn.style.pointerEvents = "";
     document.getElementById("finishText").textContent =
       t("Pár minut naplno jen pro vás dva — a ty se počítají nejvíc.");
     document.getElementById("statQuestions").textContent = "1";
     document.getElementById("statQuestionsLbl").textContent = t("bleskovka");
     document.getElementById("statDepth").textContent = BLESKOVKY[bleskTime].title;
     document.getElementById("statDepthLbl").textContent = t("denní doba");
+    document.getElementById("statTalks").textContent = "2";
+    document.getElementById("statTalksLbl").textContent = t("odvážlivci");
+    haptic("success");
 
     go("s-finish");
   }, 900);
@@ -3641,6 +4149,7 @@ function openSettings() {
     DEFAULT_NAMES.includes(state.nameKid) ? "" : state.nameKid;
   renderNotifSwitch();
   document.getElementById("langCurrent").textContent = LANG_LABEL;
+  document.getElementById("themeCurrent").textContent = themeLabel(themeMode);
   // na webu je přepínač neaktivní s vysvětlením — plánovaná oznámení tam nejsou
   document.getElementById("notifSwitch").disabled = !notifPlugin;
   document.getElementById("notifWebNote").hidden = !!notifPlugin;
@@ -3660,8 +4169,14 @@ function settingsNamesChanged() {
 }
 
 /* Reset maže jen postup (prošlé otázky) — jména mají vlastní sekci Rodina */
-function resetProgress() {
-  if (!confirm(t("Opravdu resetovat postup? Prošlé otázky se začnou počítat od začátku. Jména zůstanou."))) return;
+async function resetProgress() {
+  const yes = await askSheet({
+    title: t("Resetovat postup?"),
+    text: t("Prošlé otázky se začnou počítat od začátku. Jména zůstanou."),
+    ok: t("Resetovat postup"), cancel: t("Nechat"), danger: true
+  });
+  if (!yes) return;
+  haptic("success");
   state.seen = new Set();
   state.done = new Set();
   saveStore();
@@ -3674,7 +4189,10 @@ function resetProgress() {
    a z nastavení (mode "settings", jen ke čtení) */
 function openPrinciples(mode) {
   const fromSettings = mode === "settings";
-  document.getElementById("principlesBack").onclick = () => go(fromSettings ? "s-settings" : "s-deck");
+  document.getElementById("principlesBack").onclick = () => {
+    clearDepthPick();
+    go(fromSettings ? "s-settings" : "s-deck");
+  };
   document.getElementById("pledgeEyebrow").hidden = fromSettings;
   document.getElementById("pledgeRow").hidden = fromSettings;
   go("s-principles");
@@ -3687,7 +4205,7 @@ function pledgeDone() {
 }
 
 /* ---- podstránky nastavení ---- */
-const APP_VERSION = "1.10"; // zvedat při větších změnách
+const APP_VERSION = "1.11"; // zvedat při větších změnách
 const GITHUB_URL = "https://github.com/dalikjebuh-coder/mezi-nami-deti";
 const CONTACT_EMAIL = "font@email.cz";
 const LINKEDIN_URL = "https://www.linkedin.com/in/dalibor-novak-22787199/";
@@ -3869,6 +4387,40 @@ function openLanguagePage() {
   go("s-settings-page");
 }
 
+/* Vzhled — tři řádky jako u jazyka, jen se přepíná hned, bez restartu */
+function openThemePage() {
+  document.getElementById("settingsPageTitle").textContent = t("Vzhled aplikace");
+  const body = document.getElementById("settingsPageBody");
+  body.innerHTML = "";
+
+  const group = document.createElement("div");
+  group.className = "settings-group";
+  THEME_MODES.forEach(mode => {
+    const item = document.createElement("button");
+    item.className = "settings-item lang-option";
+    item.setAttribute("aria-current", mode === themeMode ? "true" : "false");
+    item.innerHTML = '<span class="item-label"></span>';
+    item.querySelector(".item-label").textContent = themeLabel(mode);
+    item.onclick = () => {
+      haptic("tap");
+      setThemeMode(mode);
+      group.querySelectorAll(".lang-option").forEach(o =>
+        o.setAttribute("aria-current", o === item ? "true" : "false"));
+      document.getElementById("themeCurrent").textContent = themeLabel(mode);
+    };
+    group.appendChild(item);
+  });
+  body.appendChild(group);
+
+  const note = document.createElement("p");
+  note.className = "muted";
+  note.style.marginTop = "12px";
+  note.textContent = t("Večerní Bleskovky se ztmaví samy, když se vzhled řídí telefonem.");
+  body.appendChild(note);
+
+  go("s-settings-page");
+}
+
 function openSettingsPage(key) {
   const page = SETTINGS_PAGES[key];
   document.getElementById("settingsPageTitle").textContent = page.title;
@@ -3885,10 +4437,10 @@ document.getElementById("setNameKid").addEventListener("input", settingsNamesCha
    dojezdem. Progressive enhancement: bez gyroskopu (desktop) nebo bez
    povolení (iOS) se prostě nic neděje. iOS vyžaduje requestPermission
    z uživatelského gesta — volá se při startu povídání či bleskovky. */
-const gyro = { x: 0, y: 0, tx: 0, ty: 0, on: false, asked: false };
+const gyro = { x: 0, y: 0, tx: 0, ty: 0, on: false, asked: false, running: false };
 
 function enableGyro() {
-  if (gyro.asked) return;
+  if (gyro.asked) { ensureGyroLoop(); return; }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (typeof DeviceOrientationEvent === "undefined") return;
   gyro.asked = true;
@@ -3911,10 +4463,25 @@ function startGyro() {
     gyro.ty = Math.max(-5, Math.min(5, e.gamma / 6));
     gyro.tx = Math.max(-5, Math.min(5, (e.beta - 45) / 6));
   });
+  ensureGyroLoop();
+}
+
+/* Smyčka běží jen během povídání či bleskovky — mimo kartu není co naklánět,
+   tak ať telefon zbytečně nepočítá. Po skončení se karta srovná. */
+function ensureGyroLoop() {
+  if (!gyro.on || gyro.running || !sessionRunning) return;
+  gyro.running = true;
   requestAnimationFrame(gyroLoop);
 }
 
 function gyroLoop() {
+  if (!sessionRunning) {
+    gyro.running = false;
+    gyro.x = gyro.y = 0;
+    document.getElementById("tiltDraw").style.transform = "";
+    document.getElementById("tiltBlesk").style.transform = "";
+    return;
+  }
   gyro.x += (gyro.tx - gyro.x) * 0.08; // měkce dojet, nikdy neskočit
   gyro.y += (gyro.ty - gyro.y) * 0.08;
   const t = `perspective(900px) rotateX(${(-gyro.x).toFixed(2)}deg) rotateY(${gyro.y.toFixed(2)}deg)`;
@@ -3922,6 +4489,18 @@ function gyroLoop() {
   document.getElementById("tiltBlesk").style.transform = t;
   requestAnimationFrame(gyroLoop);
 }
+
+/* Po dotočení karty sundat animační třídu: boky (.card-edge) se kreslí jen
+   během otáčení a koncový stav animace je stejně `transform: none`. */
+["bigCard", "bleskCard"].forEach(id => {
+  const card = document.getElementById(id);
+  card.addEventListener("animationend", (e) => {
+    if (e.target !== card) return;
+    if (e.animationName === "flipIn" || e.animationName === "jokerIn") {
+      card.classList.remove("flip-in", "joker-in");
+    }
+  });
+});
 
 /* přejetí prstem přes kartu ji otočí stejně jako klepnutí */
 function addFlipSwipe(el, flip) {
@@ -3939,6 +4518,22 @@ function addFlipSwipe(el, flip) {
 addFlipSwipe(document.getElementById("bigCard"), flipCard);
 addFlipSwipe(document.getElementById("bleskCard"), flipBleskovka);
 
+/* Průvodce: tečky slibují listování, tak ať jde slidy i přejet prstem */
+(function enableOnboardSwipe() {
+  const el = document.getElementById("s-onboard");
+  let sx = 0, sy = 0;
+  el.addEventListener("touchstart", (e) => {
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+  }, { passive: true });
+  el.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0) onboardNext(); else onboardBack();
+  }, { passive: true });
+})();
+
 /* ================= PWA =================
    Service worker jen na http(s) — při otevření souboru napřímo se přeskočí. */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
@@ -3950,6 +4545,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 /* ================= Start =================
    Návrat: jména i pokrok čekají v telefonu — onboarding se přeskočí. */
 document.getElementById("appVersion").textContent = APP_VERSION;
+applyTheme(false); // atribut už nastavil skript v hlavičce; tady se sladí stavová lišta
 let saved = null;
 try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
 if (saved && saved.nameKid) {
@@ -3961,6 +4557,8 @@ if (saved && saved.nameKid) {
   state.notifAsked = !!saved.notifAsked;
   state.talksDone = saved.talksDone || 0;
   state.reviewAsked = saved.reviewAsked || 0;
+  state.lastDeck = saved.lastDeck || null;
+  state.lastDepth = Number.isInteger(saved.lastDepth) ? saved.lastDepth : null;
   state.seen = new Set(saved.seen || []);
   // starší uložený stav bez „seen“ — hotové kombinace už neodpovídají větší zásobě otázek
   state.done = new Set(saved.seen ? saved.done || [] : []);

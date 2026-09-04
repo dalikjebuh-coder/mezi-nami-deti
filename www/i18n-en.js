@@ -19,8 +19,8 @@ ui: {
   "Mezi námi — rodiče a děti": "The Two of Us — parents and kids",
   "Mezi námi": "The Two of Us",
   "Pro rodiče a děti": "For parents and kids",
-  "Hra, která pomáhá otevírat složitá témata, o kterých je někdy těžké mluvit.":
-    "A game that opens up the conversations nobody quite knows how to start.",
+  "Karty s otázkami, které pomáhají otevírat témata, o kterých je někdy těžké mluvit.":
+    "Question cards that open up the conversations nobody quite knows how to start.",
   "Začít": "Start",
   "Vše zůstává jen ve vašem telefonu.": "Everything stays on your phone.",
 
@@ -123,7 +123,6 @@ ui: {
   "Splněno! Losujeme dál": "Done! Keep going",
   "🖐️ Plácněte si — a hotovo!": "🖐️ High-five — and done!",
   "🖐️ Plácněte si a losujte dál": "🖐️ High-five and draw again",
-  "Opustit povídání a vrátit se na témata?": "Leave this talk and go back to topics?",
 
   /* --- Závěr --- */
   "Dokázali jste to.": "You did it.",
@@ -145,13 +144,32 @@ ui: {
   "Jazyk aplikace": "App language",
   "Přepnutí aplikaci restartuje. Jména i postup zůstanou.":
     "Switching restarts the app. Names and progress stay.",
-  "Hra": "The game",
+  "Povídání": "Talks",
+
+  /* --- 1.11: vzhled, potvrzovací okna, návaznost --- */
+  "Vzhled": "Appearance",
+  "Vzhled aplikace": "Appearance",
+  "Podle telefonu": "Match the phone",
+  "Světlý": "Light",
+  "Tmavý": "Dark",
+  "Večerní Bleskovky se ztmaví samy, když se vzhled řídí telefonem.":
+    "Evening Quick Ones dim on their own when appearance follows the phone.",
+  "Naposledy": "Last time",
+  "Karta {n} z {count}": "Card {n} of {count}",
+  "Opustit povídání?": "Leave the talk?",
+  "Vrátíte se na témata. Otázky, které jste už probrali, zůstanou započítané.":
+    "You'll go back to the topics. The questions you've already covered still count.",
+  "Opustit povídání": "Leave the talk",
+  "Zůstat": "Stay",
+  "Resetovat postup?": "Reset your progress?",
+  "Prošlé otázky se začnou počítat od začátku. Jména zůstanou.":
+    "Covered questions start from zero again. Names stay.",
+  "Nechat": "Keep it",
+  "povídání celkem": "talks so far",
   "Znovu projít průvodce": "Replay the intro",
   "Tři sliby": "The three promises",
   "Resetovat postup": "Reset progress",
   "✓ Postup resetován": "✓ Progress reset",
-  "Opravdu resetovat postup? Prošlé otázky se začnou počítat od začátku. Jména zůstanou.":
-    "Reset your progress? Questions you've already been through will start over. Names stay.",
   "Oznámení": "Notifications",
   "Povolit oznámení": "Allow notifications",
   "Jednou týdně otázka, nebo malé povzbuzení": "One question or a small nudge, once a week",
@@ -211,7 +229,7 @@ onboard: [
   { emoji: "💬", bg: "var(--sky-soft)", title: "Questions that bring you closer",
     text: "Questions about family, feelings and worries, written for kids 6 to 9 — plus playful challenges in between." },
   { emoji: "🤝", bg: "var(--plum-soft)", title: "Simple rules for both of you",
-    text: "Draw a card and talk. Your answers aren't recorded, and you can play anywhere — even in the car." }
+    text: "Draw a card and talk. Your answers aren't recorded, and you can do it anywhere — even in the car." }
 ],
 
 /* Balíčky otázek. `id` musí zůstat české ("skola", "kamaradi", …) — na nich
