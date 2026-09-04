@@ -106,6 +106,37 @@ Aplikaci teď jde ohodnotit přímo z Nastavení. Pokud vám doma k něčemu je,
 hvězdičky pomůžou ostatním rodičům ji vůbec najít. Díky.
 ```
 
+## Text „Co je nového“ pro 1.11
+
+```
+Aplikace se teď ovládá příjemněji. Přibyl večerní režim, který u večerních
+Bleskovek ztlumí displej sám, takže vás před spaním nebude oslňovat. Karty
+reagují na dotek, plácnutí má pořádné konfety a na domovské obrazovce vás
+čeká téma, u kterého jste minule skončili.
+```
+
+## „What to Test“ pro TestFlight — build 22 (1.11)
+
+```
+Nová verze je hlavně o ovládání, tak ji prosím zkuste na skutečném telefonu:
+
+1. Vylosujte kartu, otočte ji a plácněte si. Telefon by měl u každého z toho
+   krátce cuknout — jinak silně u plácnutí než u otočení.
+2. Nastavení → Vzhled. Vyzkoušejte světlý, tmavý i Podle telefonu. V tmavém
+   režimu se koukněte i na horní lištu telefonu, jestli je na ní vidět čas.
+3. Bleskovky → Večerní zklidnění. V režimu Podle telefonu by aplikace měla
+   sama ztmavnout a po návratu na témata se zase rozsvítit.
+4. Zavřete povídání křížkem vlevo nahoře. Místo systémového okna vyjede
+   potvrzení zespodu — zkuste ho i stáhnout prstem dolů.
+5. Na malém telefonu (SE, mini) zkontrolujte, že se pod kartu vejdou obě
+   tlačítka a nic se nemusí odscrollovat.
+6. Až vylosujete kartu, chvíli na ni nesahejte. Měla by jednou nakouknout
+   na druhou stranu.
+
+Co mě zajímá nejvíc: sedí síla cuknutí, nebo je ho moc? A nepůsobí přejíždění
+mezi obrazovkami pomalu?
+```
+
 ---
 
 ## Nastavení v App Store Connect

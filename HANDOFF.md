@@ -5,7 +5,9 @@
 - **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.11** (živá od 4. 9. 2026)
 - **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,
   https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
-- **iOS 1.10:** hodnocení v App Storu (viz níže) — v repu hotové, **ještě neodeslané**
+- **iOS 1.10:** v TestFlightu — `ios-v18` = build 20, `ios-v19` = build 21 (s angličtinou),
+  oba běhy prošly. Jestli se 1.10 poslala do recenze v App Store Connect, z repa nepoznám.
+- **iOS 1.11:** `ios-v20` = build 22, otagováno 4. 9. 2026 — jde do TestFlightu na test
 - **Angličtina:** kompletní, živá na webu; do App Storu ještě nešla (viz níže)
 - **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
   otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
@@ -19,8 +21,8 @@
 
 Zapracovaný UI audit z 3. 9. (návrhy 1–14 kromě dvouprstého plácnutí — rodič
 s dítětem se dotýkat displeje zároveň nemusí). Commit `51bdfec`, **pushnuto
-4. 9. 2026 — web je živý na 1.11**. Do obchodů zatím nic nešlo: iOS čeká na tag
-`ios-v18`, Android na `android-v3`. Vše ověřené v prohlížeči (375×812 i 375×667,
+4. 9. 2026 — web je živý na 1.11**. iOS: otagováno **`ios-v20`** (build 22), jde
+do TestFlightu na test. Android čeká na `android-v3` a na Play účet. Vše ověřené v prohlížeči (375×812 i 375×667,
 světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatím ne**.
 
 **Co se změnilo v `www/index.html`**
@@ -162,7 +164,8 @@ Package.swift si přepíše CI při `cap sync ios` (jako u in-app-review).
 
 ## Co zbývá k vydání 1.10
 
-1. Otagovat `ios-v18` → CI nahraje build do TestFlightu
+1. ~~Otagovat `ios-v18`~~ — hotovo 28. 8. (build 20), plus `ios-v19` 30. 8.
+   (build 21, s angličtinou). Verze 1.11 to mezitím obsahově přebila.
 2. Projít na telefonu (hodnocení po 3. povídání se dá vyzkoušet smazáním appky
    a odehráním tří povídání; iOS okno se ukáže max 3× za rok)
 3. V App Store Connect nová verze **1.10**, vložit „Co je nového", vybrat build
@@ -251,7 +254,10 @@ Verze appky zůstává 1.10 — zvedne se až při vydání.
 - Appka je **jeden soubor** `www/index.html` (bez závislostí), stránky `podpora.html`, `soukromi.html`
 - Po každé změně obsahu **zvednout `CACHE` v `www/sw.js`** (konvence repa)
 - Push do `main` → GitHub Pages nasadí web ~za 15 s
-- iOS release = tag **`ios-vN`** (poslední `ios-v17` = build 19 = vydaná 1.9); číslo buildu si CI bere z `GITHUB_RUN_NUMBER`,
+- iOS release = tag **`ios-vN`**; číslo buildu si CI bere z `GITHUB_RUN_NUMBER`
+  (`run_number` workflow, ne pořadí tagu — dřív to bylo skoro stejné číslo, dnes už ne).
+  Historie: `ios-v17` = build 19 = vydaná 1.9 · `ios-v18` = 20 · `ios-v19` = 21 (obojí 1.10)
+  · `ios-v20` = 22 (1.11). Další volný tag je **`ios-v21`**. Číslo buildu
   ručně se nezvedá. Verzi zvedat na **4 místech**: `MARKETING_VERSION` v pbxproj,
   `APP_VERSION` v index.html, `package.json` a `versionName` v android/app/build.gradle.
 - CI si `www/` kopíruje samo (`npx cap sync ios`) — Xcode lokálně netřeba (a není nainstalovaný)
