@@ -10,7 +10,7 @@
 <script>
 (function () {
   try {
-    var mode = localStorage.getItem("mezi-nami-theme") || "auto";
+    var mode = localStorage.getItem("mezi-nami-theme") || "light";
     var dark = mode === "dark" || (mode === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
     if (dark) document.documentElement.setAttribute("data-theme", "dark");
   } catch (e) {}
@@ -479,9 +479,10 @@
     display: flex; align-items: center; justify-content: center;
   }
   .resume-icon .ic { width: 15px; height: 15px; margin-left: 2px; }
-  .resume-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .resume-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
   .resume-label { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--plum); opacity: .75; }
-  .resume-what { font-size: 15px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* běžný řez — hierarchii uvnitř chipu dělá velikost a barva, ne tučnost */
+  .resume-what { font-size: 15px; font-weight: 400; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .resume-arrow { color: var(--plum); opacity: .6; }
 
   .section-label {
@@ -2855,12 +2856,14 @@ function haptic(kind) {
 }
 
 /* ================= Vzhled (světlý / večerní) =================
-   Tři volby: podle telefonu (výchozí), světlý, tmavý. V režimu podle
-   telefonu se navíc appka ztmaví sama u večerních Bleskovek — ty říkají
-   „zhasněte“, tak ať do tmy nesvítí bílou kartou. */
+   Tři volby: světlý (výchozí), tmavý, podle telefonu. Appka se záměrně
+   neřídí telefonem sama od sebe — papírový vzhled je světlý a kdo chce
+   tmu, řekne si o ni. Výjimka jsou večerní Bleskovky: ty říkají
+   „zhasněte“, tak se u nich appka na chvíli ztlumí, ať do tmy nesvítí
+   bílou kartou. Zpátky se rozsvítí při odchodu. */
 const THEME_KEY = "mezi-nami-theme";
-const THEME_MODES = ["auto", "light", "dark"];
-let themeMode = "auto";
+const THEME_MODES = ["light", "dark", "auto"];
+let themeMode = "light";
 try { const m = localStorage.getItem(THEME_KEY); if (THEME_MODES.includes(m)) themeMode = m; } catch (e) {}
 let eveningDim = false;
 const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
@@ -2870,7 +2873,9 @@ function themeLabel(mode) {
   return mode === "light" ? t("Světlý") : mode === "dark" ? t("Tmavý") : t("Podle telefonu");
 }
 function isDarkTheme() {
-  return themeMode === "dark" || (themeMode === "auto" && (systemDark.matches || eveningDim));
+  if (themeMode === "dark") return true;
+  if (eveningDim) return true; // večerní Bleskovky ztlumí i světlý režim
+  return themeMode === "auto" && systemDark.matches;
 }
 function applyTheme(animate) {
   const dark = isDarkTheme();
@@ -4415,7 +4420,7 @@ function openThemePage() {
   const note = document.createElement("p");
   note.className = "muted";
   note.style.marginTop = "12px";
-  note.textContent = t("Večerní Bleskovky se ztmaví samy, když se vzhled řídí telefonem.");
+  note.textContent = t("Večerní Bleskovky se na chvíli ztmaví samy. Patří to ke zklidnění před spaním.");
   body.appendChild(note);
 
   go("s-settings-page");

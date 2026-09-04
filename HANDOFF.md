@@ -54,10 +54,14 @@ světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatí
   jinak pružný návrat. Opuštění povídání i reset postupu jdou přes sheet.
 - **Večerní režim** — `html[data-theme="dark"]` s teplou tmavou paletou, průhledné
   odvozeniny přes `--ink-rgb/--plum-rgb/--honey-rgb/--card-rgb`, `--cream` pro text
-  na plum rubech, `--edge-face` pro boky karty. Volba v Nastavení → Vzhled (podle
-  telefonu / světlý / tmavý, `mezi-nami-theme`), skript v `<head>` nastaví atribut
-  před prvním vykreslením. V režimu podle telefonu se appka ztmaví sama u
-  **večerních Bleskovek** (`setEveningDim`), zpět při odchodu. Stavová lišta přes
+  na plum rubech, `--edge-face` pro boky karty. Volba v Nastavení → Vzhled
+  (`mezi-nami-theme`), pořadí **světlý / tmavý / podle telefonu**.
+  **Výchozí je světlý, bez ohledu na nastavení telefonu** — appka je papírová
+  a kdo chce tmu, řekne si o ni; „podle telefonu" je jen jedna z voleb.
+  Skript v `<head>` nastaví atribut před prvním vykreslením (výchozí `light`).
+  Jediná výjimka: u **večerních Bleskovek** se appka na chvíli ztlumí
+  (`setEveningDim`) i ve světlém režimu a při odchodu se rozsvítí — `isDarkTheme()`
+  proto `eveningDim` vyhodnocuje nezávisle na režimu. Stavová lišta přes
   `@capacitor/status-bar` (`setStyle DARK/LIGHT`), `theme-color` meta se přepíná.
 - **Domů: chip „Naposledy“** — `state.lastDeck/lastDepth` (localStorage), klepnutí
   = `continueLast()` rovnou do vějíře.
@@ -81,7 +85,7 @@ světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatí
   texty bez „hra“ na úvodu, ve 3. slidu průvodce a v nastavení („Povídání“).
 - **i18n**: 17 nových EN klíčů + změněné předlohy (úvod, „Povídání“), stale klíče
   confirm() odstraněné; `scripts/i18n-extract.py` → 0 chybějících.
-- `sw.js` CACHE **v57**. Verze zvednutá na **1.11** na všech 4 místech
+- `sw.js` CACHE **v58**. Verze zvednutá na **1.11** na všech 4 místech
   (`APP_VERSION`, `package.json`, `versionName`, `MARKETING_VERSION`) — iOS
   a Android tak mají verzi připravenou na příští tag.
 

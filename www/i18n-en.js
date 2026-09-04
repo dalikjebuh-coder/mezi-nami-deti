@@ -152,8 +152,8 @@ ui: {
   "Podle telefonu": "Match the phone",
   "Světlý": "Light",
   "Tmavý": "Dark",
-  "Večerní Bleskovky se ztmaví samy, když se vzhled řídí telefonem.":
-    "Evening Quick Ones dim on their own when appearance follows the phone.",
+  "Večerní Bleskovky se na chvíli ztmaví samy. Patří to ke zklidnění před spaním.":
+    "Evening Quick Ones dim for a moment on their own. It's part of winding down for bed.",
   "Naposledy": "Last time",
   "Karta {n} z {count}": "Card {n} of {count}",
   "Opustit povídání?": "Leave the talk?",
