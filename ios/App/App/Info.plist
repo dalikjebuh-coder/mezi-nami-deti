@@ -39,8 +39,6 @@
 	<array>
 		<string>armv7</string>
 	</array>
-	<key>NSMotionUsageDescription</key>
-	<string>Karta s otázkou se jemně naklání podle náklonu telefonu.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

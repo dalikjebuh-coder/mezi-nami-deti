@@ -48,6 +48,28 @@ světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatí
   přes `disabled` (šedlo), ale `pointer-events`. Reduced motion: jen odskok.
 - **Nakouknutí karty** — první karta v sezení (a první bleskovka v kategorii) po
   1,6 s klidu jednou pootočí (`schedulePeek`, `.peek`); ruší se klepnutím/odchodem.
+- **Značka „Otočit kartu"** (5. 9. 2026, po testování) — nápověda pod kartou byla
+  13,5px v `--ink-faint` a **uživatelé při testu rub vůbec nenašli**, takže přišli
+  o doptávačky i jemnější znění. Místo `<p class="muted flip-hint">` pod kartou je
+  teď `<div class="flip-mark">` **uvnitř** karty u spodního okraje: Lucide ikona
+  otočení + „Otočit kartu", medovou barvou jako ozdobná linka a uvozovka. Patří ke
+  kartě, ne pod ni. Mezikrok byla plumová pilulka s obrysem pod kartou — příliš
+  velká váha, konkurovala tlačítku plácnutí.
+  **Značka je jen na líci** (`.question-card.back-side .flip-mark { display: none }`)
+  — kdo došel na rub, otáčení už objevil, a rub potřebuje každý řádek pro
+  doptávačky; zpátky se jde klepnutím na kartu. Text je proto vždy „Otočit kartu"
+  a nemění se, takže odpadl pomocník `setFlipHint()` i klíče o návratu.
+  `pointer-events: none`, klepnutí obslouží karta sama. Na tmavém rubu bonusovky
+  (`.face-down`) se medová mění na `--cream`.
+  Odsazení zdola 22px (na nízkých displejích 16px). Spodní padding karty je 46px
+  jen na líci; rub si ho bere zpátky na 34px (nízké displeje 38/26px).
+  **Pozor na `height: 18px`** — bez pevné výšky se absolutně pozicovaný potomek
+  flex kontejneru roztáhne přes zbylou výšku karty a jeho box koliduje s obsahem.
+- **Poznámka k ladění v náhledu:** Browser pane hlásí stránku jako
+  `visibilityState: "hidden"`, takže se karta na screenshotech často nevykreslí
+  vůbec a 3D animace se brzdí. Rozměry měřené během běžící `flip-in` animace jsou
+  pak nesmyslné. Před měřením vždy počkat, až doběhnou `getAnimations()`. Prázdný
+  snímek karty dělá i publikovaná verze bez jakékoli změny — není to regrese.
 - **Sheety místo `confirm()`** — `askSheet({title,text,ok,cancel,danger})` vrací
   Promise; společný `showSheet/hideSheet/dismissSheet` pro nabídku inspirace i
   potvrzení (`#confirmSheet`). Tažení dolů: podklad průhledne úměrně, švih zavře,
@@ -76,16 +98,25 @@ světlý i tmavý režim) a po nasazení i na živé adrese; **na telefonu zatí
   u velké karty = `--radius-lg`), dřív při otáčení přečnívaly jako rovný proužek.
   V klidu se nekreslí (`opacity: 0`) — rovina na hranu se vykreslovala jako
   vlasová linka po stranách; vidět jsou jen během `flip-out/flip-in/joker-in/peek`,
-  a `flip-in`/`joker-in` se po dotočení sundávají přes `animationend`.
+  a `flip-in`/`joker-in` se po dotočení sundávají přes `animationend`
+  **i `animationcancel`** — animaci otočení ruší nakouknutí karty a schování
+  obrazovky, `animationend` v takovém případě nepřijde a třída by zůstala viset.
+  `resetBigCard()` je sundává taky, jako pojistka při dalším losu.
 - **Průvodce** — přejetí prstem mezi slidy.
-- Drobnosti: `aria-label` „Karta n z N“ na kartách vějíře; gyroskopická smyčka běží
-  jen během sezení (`ensureGyroLoop`, po konci se karta srovná); dotaz na gyroskop
-  se volá přímo v `pickDepth`/`continueLast` (gesto, ne po timeoutu); karty témat
+- **Gyroskopický náklon karty ZRUŠEN** (5. 9. 2026) — efekt (±5°) nebyl na
+  telefonu prakticky vidět, ale vynucoval si nativní dialog o přístupu
+  k pohybovým datům. Špatný obchod, tak šel pryč celý: `gyro`, `enableGyro`,
+  `startGyro`, `ensureGyroLoop`, `gyroLoop`, čtyři volání, CSS `.tilt`
+  i obalové `<div id="tiltDraw|tiltBlesk">`. Z `ios/App/App/Info.plist` odstraněn
+  **`NSMotionUsageDescription`** — appka už o pohybová data nežádá. Geometrie
+  karty se odstraněním obalu nezměnila (ověřeno: 323×470 na stejné pozici),
+  navíc zmizelo zbytečné `will-change: transform`.
+- Drobnosti: `aria-label` „Karta n z N“ na kartách vějíře; karty témat
   těsnější (padding/gap/proužky), ať „Strachy a starosti“ drží na jednom řádku;
   texty bez „hra“ na úvodu, ve 3. slidu průvodce a v nastavení („Povídání“).
 - **i18n**: 17 nových EN klíčů + změněné předlohy (úvod, „Povídání“), stale klíče
   confirm() odstraněné; `scripts/i18n-extract.py` → 0 chybějících.
-- `sw.js` CACHE **v58**. Verze zvednutá na **1.11** na všech 4 místech
+- `sw.js` CACHE **v59**. Verze zvednutá na **1.11** na všech 4 místech
   (`APP_VERSION`, `package.json`, `versionName`, `MARKETING_VERSION`) — iOS
   a Android tak mají verzi připravenou na příští tag.
 
@@ -98,7 +129,7 @@ Package.swift si přepíše CI při `cap sync ios` (jako u in-app-review).
 1. Haptika na všech čtyřech místech (vějíř, otočení, plácnutí, závěr) — v iOS
    simulátoru nejde.
 2. Stavová lišta v tmavém režimu (světlé písmo) a při přepnutí zpět.
-3. Dotaz na pohyb/gyroskop se ukáže hned při klepnutí na hloubku (ne až po pauze).
+3. Že se **nikde neptá na pohybová data** — gyroskop je pryč i s deklarací v plistu.
 4. Večerní ztmavení u Bleskovek jde plynule (0,45 s) a po návratu na témata se vrátí.
 5. Tažení sheetu prstem — práh 90 px nebo švih.
 

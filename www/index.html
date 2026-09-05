@@ -201,10 +201,6 @@
   @keyframes leaveFwd  { to { opacity: 0; transform: translateX(-18px); } }
   @keyframes leaveBack { to { opacity: 0; transform: translateX(18px); } }
   @keyframes fadeIn { from { opacity: 0; } }
-  @keyframes screenIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: none; }
-  }
 
   /* ===== Postupné najíždění obsahu =====
      Sekce obrazovky nastupují odshora dolů s malým rozestupem — ale jen při
@@ -733,10 +729,6 @@
   .blesk-icon { font-size: 52px; line-height: 1; margin-bottom: 14px; }
   .blesk-text { text-align: left; font-size: 17px; line-height: 1.55; color: var(--ink); }
 
-  /* gyroskopický náklon karty — transform dostává obal, aby se nepral
-     s flip animacemi karty uvnitř */
-  .tilt { transform-style: preserve-3d; will-change: transform; }
-
   /* ===== Nastavení — menu a podstránky =====
      Skupiny po vzoru iOS: sekce = jeden zaoblený celek, položky uvnitř
      oddělené vlasovou linkou, vlevo ikonka (Lucide) v barevném čipu. */
@@ -958,7 +950,7 @@
   .question-card {
     background: var(--card);
     border-radius: var(--radius-lg);
-    padding: 40px 38px 34px;
+    padding: 40px 38px 54px;
     box-shadow: var(--shadow-float);
     text-align: center;
     position: relative;
@@ -1023,7 +1015,7 @@
   #bigCard { cursor: pointer; }
   .question-card.back-side::before { display: none; }
   /* větší horní odsazení, ať má rub nahoře stejný vzduch jako po stranách */
-  .question-card.back-side { padding-top: 54px; }
+  .question-card.back-side { padding-top: 54px; padding-bottom: 34px; }
   /* rub vyplní celou výšku karty, ať jde záchrana „Když nevíš“ zarovnat dolů */
   .card-back { text-align: left; display: flex; flex-direction: column; flex: 1; width: 100%; }
   .back-title {
@@ -1065,10 +1057,34 @@
     text-transform: uppercase; color: var(--rose);
     margin-bottom: 2px;
   }
-  .flip-hint { text-align: center; margin-top: 12px; animation: screenIn .3s ease both; }
+  /* ===== Otočit kartu =====
+     Rub nese doptávačky a jemnější znění — půlku toho, proč appka funguje.
+     Dokud to byla světle šedá věta pod kartou, lidé ji při testování
+     přehlédli a rub vůbec nenašli. Značka teď sedí uvnitř karty u spodního
+     okraje, medovou barvou jako ozdobná linka a uvozovka — patří ke kartě,
+     ne pod ni. Klepnutí obslouží karta sama, proto `pointer-events: none`.
+     Na rubu značka není: kdo tam došel, otáčení už objevil, a rub potřebuje
+     každý řádek pro doptávačky. Zpátky se jde klepnutím na kartu. */
+  .flip-mark {
+    /* Pevná výška schválně: absolutně pozicovaný potomek flex kontejneru se
+       jinak roztáhne přes celou zbylou výšku karty (stretch ze `align-items`)
+       a jeho box pak zasahuje do textu na rubu — text by sice vyšel opticky
+       správně, ale prvek by kolidoval s obsahem. */
+    position: absolute; left: 0; right: 0; bottom: 30px; height: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    color: var(--honey);
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 600; line-height: 1;
+    pointer-events: none;
+  }
+  .flip-mark .ic { width: 15px; height: 15px; flex: none; }
+  .question-card.back-side .flip-mark { display: none; }
+  /* na tmavém rubu karty (bonusovka lícem dolů) by medová zanikla */
+  .question-card.face-down .flip-mark { color: var(--cream); opacity: .75; }
   @media (max-height: 700px) {
-    .question-card { padding: 30px 28px 26px; }
-    .question-card.back-side { padding-top: 34px; }
+    .question-card { padding: 30px 28px 44px; }
+    .flip-mark { bottom: 22px; font-size: 12.5px; }
+    .question-card.back-side { padding-top: 34px; padding-bottom: 26px; }
     .back-fu li { padding: 8px 0 8px 30px; }
     .back-fu li::before { top: 9px; }
     .back-soft { padding-top: 8px; }
@@ -1268,7 +1284,6 @@
       <span class="muted" id="bleskCatLabel"></span>
     </div>
     <div class="center-col">
-      <div class="tilt" id="tiltBlesk">
       <div class="question-card blesk-question" id="bleskCard" style="margin-bottom:0;" onclick="flipBleskovka()">
         <div class="card-edge l"></div>
         <div class="card-edge r"></div>
@@ -1280,9 +1295,8 @@
           <p class="back-title" id="bleskBackTitle"></p>
           <p class="blesk-text" id="bleskText"></p>
         </div>
+        <div class="flip-mark" id="bleskHint"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>Otočit kartu</span></div>
       </div>
-      </div>
-      <p class="muted flip-hint" id="bleskHint">Otoč a zjisti víc</p>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="bleskDoneBtn" onclick="finishBleskovka()">Splněno, dokázali jsme to!</button>
@@ -1335,7 +1349,6 @@
     </div>
 
     <div class="center-col" id="drawResult" hidden>
-      <div class="tilt" id="tiltDraw">
       <div class="question-card" id="bigCard" style="margin-bottom:0;" onclick="flipCard()">
         <div class="card-edge l"></div>
         <div class="card-edge r"></div>
@@ -1352,9 +1365,8 @@
           <ol class="back-fu" id="backFu"></ol>
           <p class="back-soft"><span class="bs-label">🪄 Když nevíš, jak odpovědět</span><span id="backSoft"></span></p>
         </div>
+        <div class="flip-mark" id="flipHint" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span>Otočit kartu</span></div>
       </div>
-      </div>
-      <p class="muted flip-hint" id="flipHint" hidden>Klepni na kartu — poradíme, jak si o tom povídat</p>
     </div>
 
     <div class="btn-row" id="drawBtnRow" hidden>
@@ -3281,7 +3293,6 @@ function continueLast() {
   const deck = DECKS.find(d => d.id === state.lastDeck);
   if (!deck || !Number.isInteger(state.lastDepth)) return;
   haptic("tap");
-  enableGyro(); // dotaz na gyroskop smí iOS ukázat jen přímo z klepnutí
   state.deck = deck;
   state.depth = state.lastDepth;
   startSession();
@@ -3326,7 +3337,6 @@ function pickDepth(d) {
   depthPicking = true;
   state.depth = d;
   haptic("tap");
-  enableGyro(); // dotaz na gyroskop smí iOS ukázat jen přímo z klepnutí, ne po pauze
   document.querySelectorAll(".depth-option").forEach(o => {
     const mine = Number(o.dataset.depth) === d;
     o.classList.toggle("selected", mine);
@@ -3361,7 +3371,6 @@ function beginSession() {
   peekShown = false;
   sessionRunning = true;
   requestWakeLock();
-  enableGyro();
   goDraw();
 }
 
@@ -3552,7 +3561,7 @@ function resetBigCard() {
   jokerCovered = false;
   const big = document.getElementById("bigCard");
   big.style.visibility = "";
-  big.classList.remove("joker", "back-side", "face-down", "flip-out", "peek");
+  big.classList.remove("joker", "back-side", "face-down", "flip-out", "peek", "flip-in", "joker-in");
   cancelPeek();
   document.getElementById("jokerCover").hidden = true;
   document.getElementById("cardFront").hidden = false;
@@ -3606,9 +3615,6 @@ function flipCard() {
     big.classList.toggle("back-side", flipped);
     document.getElementById("cardFront").hidden = flipped;
     document.getElementById("cardBack").hidden = !flipped;
-    document.getElementById("flipHint").textContent = flipped
-      ? t("Klepni zpátky na otázku")
-      : t("Klepni na kartu — poradíme, jak si o tom povídat");
     void big.offsetWidth; // restart animace otočení
     big.classList.add("flip-in");
     flipping = false;
@@ -3676,9 +3682,8 @@ function fillPickedCard(isJoker) {
     document.getElementById("cardFront").hidden = true;
     document.getElementById("jokerCover").hidden = false;
     big.classList.add("face-down");
-    // hint zůstává skrytý — odhalí ho revealPickedCard, ať pod letící kartou
-    // nenaskakuje text (má vlastní animaci screenIn)
-    document.getElementById("flipHint").textContent = t("Klepni na kartu a otoč si ji");
+    // značka „Otočit kartu“ zůstává skrytá — odhalí ji až revealPickedCard,
+    // ať pod letící kartou nic neprobleskuje
   } else {
     // připravit rub: doptávací otázky → záchrana; u „škálovacích“ se původní
     // otázka teploměru vplete jako 2. doptávačka (prohloubit k pocitu)
@@ -3692,8 +3697,6 @@ function fillPickedCard(isJoker) {
       fu.appendChild(li);
     });
     document.getElementById("backSoft").textContent = state.current.soft;
-    document.getElementById("flipHint").textContent =
-      t("Klepni na kartu — poradíme, jak si o tom povídat");
     document.getElementById("drawFinishBtn").hidden = false;
   }
   document.getElementById("drawGoBtn").textContent = isJoker
@@ -4042,7 +4045,6 @@ function openBleskCategory(key) {
   document.getElementById("bleskCatLabel").textContent = BLESKOVKY[key].title;
   sessionRunning = true;
   requestWakeLock(); // při hře displej nezhasíná, stejně jako u povídání
-  enableGyro();
   drawBleskovka(true);
   go("s-blesk");
 }
@@ -4068,7 +4070,6 @@ function renderBleskovka() {
   document.getElementById("bleskTitle").textContent = bleskCurrent.title;
   document.getElementById("bleskBackTitle").textContent = bleskCurrent.title;
   document.getElementById("bleskText").textContent = bleskCurrent.text;
-  document.getElementById("bleskHint").textContent = t("Otoč a zjisti víc");
 }
 
 function drawBleskovka(first) {
@@ -4114,9 +4115,6 @@ function flipBleskovka() {
     card.classList.toggle("back-side", bleskFlipped);
     document.getElementById("bleskFront").hidden = bleskFlipped;
     document.getElementById("bleskBack").hidden = !bleskFlipped;
-    document.getElementById("bleskHint").textContent = bleskFlipped
-      ? t("Klepni zpátky na název")
-      : t("Otoč a zjisti víc");
     void card.offsetWidth;
     card.classList.add("flip-in");
     bleskFlipping = false;
@@ -4437,74 +4435,21 @@ function openSettingsPage(key) {
 document.getElementById("setNameParent").addEventListener("input", settingsNamesChanged);
 document.getElementById("setNameKid").addEventListener("input", settingsNamesChanged);
 
-/* ================= Gyroskopický náklon karty =================
-   Karta se jemně naklání podle náklonu telefonu (max ±5°), s měkkým
-   dojezdem. Progressive enhancement: bez gyroskopu (desktop) nebo bez
-   povolení (iOS) se prostě nic neděje. iOS vyžaduje requestPermission
-   z uživatelského gesta — volá se při startu povídání či bleskovky. */
-const gyro = { x: 0, y: 0, tx: 0, ty: 0, on: false, asked: false, running: false };
-
-function enableGyro() {
-  if (gyro.asked) { ensureGyroLoop(); return; }
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof DeviceOrientationEvent === "undefined") return;
-  gyro.asked = true;
-  if (typeof DeviceOrientationEvent.requestPermission === "function") {
-    // iOS 13+ — dialog se smí ukázat jen z klepnutí
-    DeviceOrientationEvent.requestPermission()
-      .then((state) => { if (state === "granted") startGyro(); })
-      .catch(() => {});
-  } else {
-    startGyro();
-  }
-}
-
-function startGyro() {
-  if (gyro.on) return;
-  gyro.on = true;
-  window.addEventListener("deviceorientation", (e) => {
-    if (e.gamma == null || e.beta == null) return;
-    // gamma = náklon do stran; beta = předozadní (telefon v ruce ≈ 45° je neutrál)
-    gyro.ty = Math.max(-5, Math.min(5, e.gamma / 6));
-    gyro.tx = Math.max(-5, Math.min(5, (e.beta - 45) / 6));
-  });
-  ensureGyroLoop();
-}
-
-/* Smyčka běží jen během povídání či bleskovky — mimo kartu není co naklánět,
-   tak ať telefon zbytečně nepočítá. Po skončení se karta srovná. */
-function ensureGyroLoop() {
-  if (!gyro.on || gyro.running || !sessionRunning) return;
-  gyro.running = true;
-  requestAnimationFrame(gyroLoop);
-}
-
-function gyroLoop() {
-  if (!sessionRunning) {
-    gyro.running = false;
-    gyro.x = gyro.y = 0;
-    document.getElementById("tiltDraw").style.transform = "";
-    document.getElementById("tiltBlesk").style.transform = "";
-    return;
-  }
-  gyro.x += (gyro.tx - gyro.x) * 0.08; // měkce dojet, nikdy neskočit
-  gyro.y += (gyro.ty - gyro.y) * 0.08;
-  const t = `perspective(900px) rotateX(${(-gyro.x).toFixed(2)}deg) rotateY(${gyro.y.toFixed(2)}deg)`;
-  document.getElementById("tiltDraw").style.transform = t;
-  document.getElementById("tiltBlesk").style.transform = t;
-  requestAnimationFrame(gyroLoop);
-}
-
 /* Po dotočení karty sundat animační třídu: boky (.card-edge) se kreslí jen
-   během otáčení a koncový stav animace je stejně `transform: none`. */
+   během otáčení a koncový stav animace je stejně `transform: none`.
+   Kromě `animationend` i `animationcancel`: schová-li se obrazovka uprostřed
+   otáčení (odchod z povídání), animace se zruší a `animationend` nepřijde —
+   třída by zůstala viset a boky by na kartě svítily i v klidu. */
 ["bigCard", "bleskCard"].forEach(id => {
   const card = document.getElementById(id);
-  card.addEventListener("animationend", (e) => {
+  const sundat = (e) => {
     if (e.target !== card) return;
     if (e.animationName === "flipIn" || e.animationName === "jokerIn") {
       card.classList.remove("flip-in", "joker-in");
     }
-  });
+  };
+  card.addEventListener("animationend", sundat);
+  card.addEventListener("animationcancel", sundat);
 });
 
 /* přejetí prstem přes kartu ji otočí stejně jako klepnutí */

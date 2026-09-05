@@ -115,26 +115,29 @@ reagují na dotek, plácnutí má pořádné konfety a na domovské obrazovce v�
 čeká téma, u kterého jste minule skončili.
 ```
 
-## „What to Test“ pro TestFlight — build 22 (1.11)
+## „What to Test“ pro TestFlight — build 23 (1.11)
 
 ```
 Nová verze je hlavně o ovládání, tak ji prosím zkuste na skutečném telefonu:
 
 1. Vylosujte kartu, otočte ji a plácněte si. Telefon by měl u každého z toho
    krátce cuknout — jinak silně u plácnutí než u otočení.
-2. Nastavení → Vzhled. Vyzkoušejte světlý, tmavý i Podle telefonu. V tmavém
-   režimu se koukněte i na horní lištu telefonu, jestli je na ní vidět čas.
-3. Bleskovky → Večerní zklidnění. V režimu Podle telefonu by aplikace měla
-   sama ztmavnout a po návratu na témata se zase rozsvítit.
-4. Zavřete povídání křížkem vlevo nahoře. Místo systémového okna vyjede
+2. Na kartě dole je medové „Otočit kartu“. Všimli byste si ho, kdybych vám
+   o něm neřekl? Na rubu jsou tipy, jak se doptat dál.
+3. Nastavení → Vzhled. Aplikace je nově vždycky světlá, i když máte v telefonu
+   tmavý režim. Zkuste přepnout na Tmavý a zpátky; v tmavém se koukněte i na
+   horní lištu telefonu, jestli je na ní vidět čas.
+4. Bleskovky → Večerní zklidnění. Aplikace by měla sama ztmavnout a po návratu
+   na témata se zase rozsvítit.
+5. Zavřete povídání křížkem vlevo nahoře. Místo systémového okna vyjede
    potvrzení zespodu — zkuste ho i stáhnout prstem dolů.
-5. Na malém telefonu (SE, mini) zkontrolujte, že se pod kartu vejdou obě
+6. Na malém telefonu (SE, mini) zkontrolujte, že se pod kartu vejdou obě
    tlačítka a nic se nemusí odscrollovat.
-6. Až vylosujete kartu, chvíli na ni nesahejte. Měla by jednou nakouknout
-   na druhou stranu.
+7. Aplikace se už neptá na přístup k pohybovým datům. Kdyby se na to zeptala,
+   dejte mi prosím vědět — to by byla chyba.
 
-Co mě zajímá nejvíc: sedí síla cuknutí, nebo je ho moc? A nepůsobí přejíždění
-mezi obrazovkami pomalu?
+Co mě zajímá nejvíc: sedí síla cuknutí, nebo je ho moc? A je „Otočit kartu“
+dost vidět?
 ```
 
 ---

@@ -75,8 +75,7 @@ ui: {
   "Večerní zklidnění": "Evening wind-down",
   "Uzavřít den v klidu a připravit hlavu na spaní":
     "Close the day calmly and get ready for sleep",
-  "Otoč a zjisti víc": "Flip it to see more",
-  "Klepni zpátky na název": "Tap to go back",
+  "Otočit kartu": "Flip the card",
   "Splněno, dokázali jsme to!": "Done — we did it!",
   "Navrhnout jinou": "Show me another",
   "bleskovka": "quick one",
@@ -113,10 +112,6 @@ ui: {
     "Your turn to ask! Come up with any question for your parent — and they have to answer honestly.",
   "Pro hlubší rozhovor": "To go deeper",
   "🪄 Když nevíš, jak odpovědět": "🪄 If you're stuck for an answer",
-  "Klepni na kartu — poradíme, jak si o tom povídat":
-    "Tap the card — we'll help you keep it going",
-  "Klepni na kartu a otoč si ji": "Tap the card to flip it",
-  "Klepni zpátky na otázku": "Tap to go back to the question",
   "Jdeme si povídat": "Let's talk",
   "Pro dnešek stačí": "That's enough for today",
   "A je to! Dokončit povídání": "That's it! Finish up",
