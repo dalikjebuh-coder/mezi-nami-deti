@@ -2,17 +2,22 @@
 
 ## Stav
 
-- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.11** (živá od 4. 9. 2026)
+- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.11**
+  (živá od 4. 9. 2026, naposledy aktualizovaná 5. 9. — značka „Otočit kartu“,
+  bez gyroskopu, světlý výchozí vzhled)
 - **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,
   https://apps.apple.com/cz/app/id6791562078 · dostupnost **CZ + SK**
 - **iOS 1.10:** v TestFlightu — `ios-v18` = build 20, `ios-v19` = build 21 (s angličtinou),
   oba běhy prošly. Jestli se 1.10 poslala do recenze v App Store Connect, z repa nepoznám.
-- **iOS 1.11: V TESTFLIGHTU** — `ios-v20` = build **22**, nahráno 4. 9. 2026,
-  všech 12 kroků CI prošlo (běh
-  https://github.com/dalikjebuh-coder/mezi-nami-deti/actions/runs/33846882092,
-  artefakt `App-ipa` vyprší 3. 12. 2026). Apple build ještě zpracovává, pak se
-  objeví v TestFlightu. Texty „Co je nového" a „What to Test" jsou
-  v `app-store/metadata-cs.md`. Do recenze **neposláno** — je to test.
+- **iOS 1.11: V TESTFLIGHTU, build 23** — `ios-v21` = build **23**, nahráno
+  5. 9. 2026, všech 12 kroků CI prošlo (běh
+  https://github.com/dalikjebuh-coder/mezi-nami-deti/actions/runs/33969393033).
+  Nahrazuje build 22 (`ios-v20`, 4. 9.) — ten je překonaný, testovat se má 23.
+  Texty „Co je nového" a „What to Test" (pro build 23) jsou
+  v `app-store/metadata-cs.md`.
+  **Do recenze neposláno.** Aby se 1.11 objevila na App Storu, musí se v App
+  Store Connect ručně založit verze 1.11, vložit „Co je nového", vybrat build 23
+  a odeslat k recenzi — tenhle krok CI neumí a nikdo ho zatím neudělal.
 - **Angličtina:** kompletní, živá na webu; do App Storu ještě nešla (viz níže)
 - **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
   otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
