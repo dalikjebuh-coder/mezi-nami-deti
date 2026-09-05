@@ -151,9 +151,9 @@ dost vidět?
 | **Kids Category** | **NE** — vyžadovala by rodičovskou bránu před odchodem z aplikace, což by zablokovalo i `tel:` odkazy na Linku bezpečí |
 | Věkové hodnocení | Vyplnit dotazník; očekávaně **4+** |
 | Cena | Zdarma |
-| Privacy Policy URL | `https://dalikjebuh-coder.github.io/mezi-nami-deti/soukromi.html` |
-| Support URL | `https://dalikjebuh-coder.github.io/mezi-nami-deti/podpora.html` |
-| Marketing URL | `https://dalikjebuh-coder.github.io/mezi-nami-deti/` (volitelné) |
+| Privacy Policy URL | `https://app.mezi-nami-app.cz/soukromi.html` |
+| Support URL | `https://app.mezi-nami-app.cz/podpora.html` |
+| Marketing URL | `https://app.mezi-nami-app.cz/` (volitelné) |
 | Účet pro recenzenta | Netřeba — aplikace nemá přihlášení |
 | Export compliance | Vyřešeno v projektu (`ITSAppUsesNonExemptEncryption = false`) |
 | Jazyk | Čeština jako primární |

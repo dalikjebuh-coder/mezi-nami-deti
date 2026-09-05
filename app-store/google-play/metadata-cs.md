@@ -104,8 +104,8 @@ bonusové karty a Bleskovky na pár minut. Vše offline a bez sběru dat.
 | Kategorie | **Parenting** (přesnější než Education — appka je nástroj rodiče) |
 | Cena | Zdarma, žádné nákupy v aplikaci |
 | Reklamy („Contains ads“) | **Ne** |
-| Privacy Policy URL | `https://dalikjebuh-coder.github.io/mezi-nami-deti/soukromi.html` |
-| Web | `https://dalikjebuh-coder.github.io/mezi-nami-deti/` |
+| Privacy Policy URL | `https://app.mezi-nami-app.cz/soukromi.html` |
+| Web | `https://app.mezi-nami-app.cz/` |
 | Kontaktní e-mail | povinný a **veřejně viditelný** — zvol, který chceš ukázat světu |
 | Jazyk záznamu | čeština (cs-CZ) jako výchozí |
 | Země distribuce | Česko + Slovensko (víc nemá smysl, obsah je česky) |

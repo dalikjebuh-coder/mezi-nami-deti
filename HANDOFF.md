@@ -2,7 +2,7 @@
 
 ## Stav
 
-- **Web:** https://dalikjebuh-coder.github.io/mezi-nami-deti/ — verze **1.11**
+- **Web:** https://app.mezi-nami-app.cz/ — verze **1.11**
   (živá od 4. 9. 2026, naposledy aktualizovaná 5. 9. — značka „Otočit kartu“,
   bez gyroskopu, světlý výchozí vzhled)
 - **iOS: VYDÁNO** — 1.9 (build 19) schváleno a vydáno, Apple ID **6791562078**,

@@ -2,7 +2,7 @@
 
 Hra, která pomáhá rodičům a dětem (6–9 let) otevírat témata, o kterých je někdy těžké mluvit. Dítě losuje karty s otázkami, odpovídají oba — nahlas, beze spěchu, bez hodnocení.
 
-**Hrát:** https://dalikjebuh-coder.github.io/mezi-nami-deti/
+**Hrát:** https://app.mezi-nami-app.cz/
 
 Na iPhonu: otevřít v Safari → Sdílet → **Přidat na plochu**. Appka pak funguje offline a vše zůstává jen v telefonu — nic se nikam neposílá.
 
