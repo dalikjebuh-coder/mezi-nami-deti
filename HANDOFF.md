@@ -19,12 +19,22 @@
   Store Connect ručně založit verze 1.11, vložit „Co je nového", vybrat build 23
   a odeslat k recenzi — tenhle krok CI neumí a nikdo ho zatím neudělal.
 - **Angličtina:** kompletní, živá na webu; do App Storu ještě nešla (viz níže)
-- **Android:** **podepsaný AAB hotový** — tag `android-v2`, versionCode 4,
-  otisk podpisu ověřen proti keystore (SHA256 9E:0F:29:…:D1:B2:39 ✓).
-  Artefakt `mezi-nami-aab` u běhu
-  https://github.com/dalikjebuh-coder/mezi-nami-deti/actions/runs/31898565031
-  (expiruje 13. 11. 2026 — pak stačí nový tag). Secrets nastavené.
-  Čeká se jen na Google Play Developer účet a ruční nahrání.
+- **Android: V UZAVŘENÉM TESTOVÁNÍ na Google Play** (stav k 8. 9. 2026).
+  Play účet ověřený (osobní, ID 4675286069944110891), aplikace
+  „Mezi námi: rodiče a děti" / `com.dalikjebuh.mezinami` **schválená Googlem**,
+  kanál *Uzavřené testování - Alpha* aktivní s vydáním **1.10** (tag
+  `android-v3`, versionCode 5, podpis ověřen), 177 zemí, záznam v obchodě
+  a všechna prohlášení vyplněná (cílovka 18+, Data safety „no data collected",
+  bez reklamního ID, žádné zdravotní funkce).
+  **Testery dodává Testers Community** (plán Starter, 15 testerů, 14 €,
+  odesláno 8. 9.) přes skupinu Google `testers-community@googlegroups.com`
+  nastavenou v záložce Testeři. Opt-in odkaz
+  https://play.google.com/apps/testing/com.dalikjebuh.mezinami
+  ukazuje „App not available" každému účtu mimo tu skupinu — **to je normální**,
+  ne chyba.
+  **Zbývá:** počkat, až v konzoli naskočí 12+ testerů (tím startuje povinných
+  14 dní), během okna nahrát do stejného kanálu aktualizaci (1.11), pak požádat
+  o produkční přístup. Připomínka na kontrolu testerů je naplánovaná na 10. 9.
 - Repo: `~/mezi-nami-deti`, branch `main`, čisté a pushnuté
 
 ## Verze 1.11 — interakce, animace, večerní režim (4. 9. 2026, WEB ŽIVĚ)
