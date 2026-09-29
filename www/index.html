@@ -1665,6 +1665,23 @@ const LANGUAGES = [{ code: "cs", label: "Čeština" }].concat(
    Bere se první jazyk z telefonu, který umíme; slovenština míří na češtinu,
    ta je Slovákům bližší než angličtina. Když se netrefí nic, angličtina. */
 function detectLang() {
+  /* Odkaz z webu mezi-nami-app.cz posílá ?lang=cs|en — jazyk si návštěvník
+     vybral už na webu. Uloží se jako ruční volba a z adresy se smaže, aby
+     pozdější přepnutí v Nastavení (reload) nepřebil. */
+  try {
+    const params = new URLSearchParams(location.search);
+    let fromUrl = (params.get("lang") || "").toLowerCase();
+    if (fromUrl === "sk") fromUrl = "cs";
+    if (fromUrl) {
+      params.delete("lang");
+      const q = params.toString();
+      history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
+    }
+    if (fromUrl && LANGUAGES.some(l => l.code === fromUrl)) {
+      try { localStorage.setItem(LANG_KEY, fromUrl); } catch (e) {}
+      return fromUrl;
+    }
+  } catch (e) {}
   let saved = null;
   try { saved = localStorage.getItem(LANG_KEY); } catch (e) {}
   if (saved && LANGUAGES.some(l => l.code === saved)) return saved;
