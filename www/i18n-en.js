@@ -1339,14 +1339,14 @@ pages: {
       <li><strong>No accounts, no sign-up.</strong> Open the app and play.</li>
       <li><strong>Nothing is sent anywhere.</strong> Names and progress stay in your phone's memory.</li>
       <li><strong>Answers are never written down.</strong> You talk out loud — the app keeps no trace of it.</li>
-      <li><strong>No analytics, no ads, no cookies.</strong></li>
+      <li><strong>No ads, no cookies.</strong> Only the browser version counts anonymous visits.</li>
       <li><strong>Works offline.</strong> After the first load it doesn't need the internet.</li>
     </ul>
     <p>You can erase everything with “Reset progress” (and by clearing the names), by deleting the app — or, if you're playing in a browser, by clearing the site data.</p>` },
 
   "zasady": { title: "Privacy policy", html: `
     <p>The Two of Us does not collect or transmit any personal data.</p>
-    <p>The names you enter are stored only in your device's local storage and never leave it. The app contains no third-party analytics or advertising tools and uses no cookies.</p>
+    <p>The names you enter are stored only in your device's local storage and never leave it. The app contains no advertising tools and uses no cookies. The web version (not the native app) measures visits anonymously with Umami — no cookies, nothing stored on your device, no identification of individual visitors; I only see totals.</p>
     <p>The web version is hosted on GitHub Pages, which — like any website — may briefly record technical access data (such as an IP address) in its server logs. The app has no access to those logs and does nothing with them.</p>
     <p>Privacy questions go straight to the author at <a href="mailto:font@email.cz?subject=The%20Two%20of%20Us%20%E2%80%94%20privacy">font@email.cz</a>, or on <a href="https://www.linkedin.com/in/dalibor-novak-22787199/" target="_blank" rel="noopener">LinkedIn</a>.</p>` },
 

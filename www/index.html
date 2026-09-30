@@ -1125,6 +1125,16 @@
   .lang-option[aria-current="true"]::after { opacity: 1; color: var(--plum); }
   .lang-note { margin-bottom: 16px; }
 </style>
+<script>
+/* Anonymní měření návštěv (Umami) jen na webu; nativní appka nic nenačítá a zůstává offline. */
+if (location.hostname === 'app.mezi-nami-app.cz') {
+  var um = document.createElement('script');
+  um.defer = true; um.src = 'https://cloud.umami.is/script.js';
+  um.setAttribute('data-website-id', 'dae23f4c-bb59-4305-963d-c5c7526eef99');
+  um.setAttribute('data-domains', 'app.mezi-nami-app.cz');
+  document.head.appendChild(um);
+}
+</script>
 </head>
 <body>
 
